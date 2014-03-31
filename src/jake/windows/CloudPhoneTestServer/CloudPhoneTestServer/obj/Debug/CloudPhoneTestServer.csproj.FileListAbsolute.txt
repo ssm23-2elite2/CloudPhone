@@ -1,1 +1,0 @@
-D:\Workspace\SSM\CloudPhone\src\jake\windows\CloudPhoneTestServer\CloudPhoneTestServer\bin\Debug\CloudPhoneTestServer.exe.config
