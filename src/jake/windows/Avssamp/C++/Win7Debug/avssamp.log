@@ -1,0 +1,43 @@
+﻿Build started 2014-03-31 오후 11:15:40.
+     1>Project "D:\Workspace\SSM\CloudPhone\src\jake\windows\Avssamp\C++\avssamp.vcxproj" on node 2 (Build target(s)).
+     1>StampInf:
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\stampinf.exe -d "*" -a "x86" -v "*" -k "1.11" -u "1.11.0" -f Win7Debug\avssamp.inf 
+         Stamping Win7Debug\avssamp.inf [Version] section with DriverVer=03/31/2014,23.15.41.198
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /IWin7Debug\ /I"C:\Program Files (x86)\Windows Kits\8.1\Include\KM" /Zi /nologo /W4 /WX /Od /Oi /Oy- /D _X86_=1 /D i386=1 /D STD_CALL /D DEPRECATE_DDK_FUNCTIONS=1 /D MSC_NOOPT /D _WIN32_WINNT=0x0601 /D WINVER=0x0601 /D WINNT=1 /D NTDDI_VERSION=0x06010000 /D DBG=1 /D UNICODE /D _UNICODE /D DEBUG_LEVEL=DEBUGLVL_BLAB /D _WIN2K_COMPAT_SLIST_USAGE /D _NO_SYS_GUID_OPERATOR_EQ_ /GF /Gm- /Zp8 /GS /Gy /fp:precise /Zc:wchar_t- /Zc:forScope- /GR- /Fo"Win7Debug\\" /Fd"Win7Debug\vc120.pdb" /Gz /wd4748 /wd4603 /wd4627 /wd4986 /wd4987 /wd4996 /FI"C:\Program Files (x86)\Windows Kits\8.1\Include\Shared\warning.h" /analyze- /errorReport:prompt /kernel -cbstring /d1import_no_registry /d2AllowCompatibleILVersions /d2Zi+ audio.cpp avssamp.cpp capture.cpp filter.cpp image.cpp purecall.c video.cpp wave.cpp
+         audio.cpp
+         avssamp.cpp
+         capture.cpp
+         filter.cpp
+         image.cpp
+         Generating Code...
+         Compiling...
+         purecall.c
+         Generating Code...
+         Compiling...
+         video.cpp
+         wave.cpp
+         Generating Code...
+       ResourceCompile:
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\rc.exe /D _X86_=1 /D i386=1 /D STD_CALL /D DEPRECATE_DDK_FUNCTIONS=1 /D MSC_NOOPT /D _WIN32_WINNT=0x0601 /D WINVER=0x0601 /D WINNT=1 /D NTDDI_VERSION=0x06010000 /D DBG=1 /D "SMP_ID=\\\"{EF1DD8BA-097A-4157-9BA9-F538ACF8F937}\\\"" /D UNICODE /D _UNICODE /D DEBUG_LEVEL=DEBUGLVL_BLAB /D _WIN2K_COMPAT_SLIST_USAGE /D _NO_SYS_GUID_OPERATOR_EQ_ /l"0x0409" /I"C:\Program Files (x86)\Windows Kits\8.1\Include\UM" /IWin7Debug\ /I"C:\Program Files (x86)\Windows Kits\8.1\Include\KM" /nologo /fo"Win7Debug\avssamp.res" avssamp.rc 
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"Win7Debug\avssamp.sys" /VERSION:"6.3" /INCREMENTAL:NO /NOLOGO /WX /SECTION:"INIT,d" "C:\Program Files (x86)\Windows Kits\8.1\lib\win7\KM\x86\memcmp.lib" "C:\Program Files (x86)\Windows Kits\8.1\lib\win7\KM\x86\BufferOverflowK.lib" "C:\Program Files (x86)\Windows Kits\8.1\lib\win7\KM\x86\ntoskrnl.lib" "C:\Program Files (x86)\Windows Kits\8.1\lib\win7\KM\x86\hal.lib" "C:\Program Files (x86)\Windows Kits\8.1\lib\win7\KM\x86\wmilib.lib" "C:\Program Files (x86)\Windows Kits\8.1\lib\win7\KM\x86\ks.lib" /NODEFAULTLIB /MANIFEST:NO /DEBUG /PDB:"Win7Debug\avssamp.pdb" /SUBSYSTEM:NATIVE,"6.01" /Driver /OPT:REF /OPT:ICF /ENTRY:"GsDriverEntry@8" /RELEASE /IMPLIB:"Win7Debug\avssamp.lib" /MERGE:"_TEXT=.text;_PAGE=PAGE" /MACHINE:X86 /PROFILE /kernel /IGNORE:4198,4010,4037,4039,4065,4070,4078,4087,4089,4221 /osversion:6.3 /pdbcompress /debugtype:pdata   -merge:PAGECONST=PAGE Win7Debug\avssamp.res
+         Win7Debug\audio.obj
+         Win7Debug\avssamp.obj
+         Win7Debug\capture.obj
+         Win7Debug\filter.obj
+         Win7Debug\image.obj
+         Win7Debug\purecall.obj
+         Win7Debug\video.obj
+         Win7Debug\wave.obj
+         avssamp.vcxproj -> D:\Workspace\SSM\CloudPhone\src\jake\windows\Avssamp\C++\Win7Debug\avssamp.sys
+       DriverTestSign:
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\signtool.exe sign /ph /sha1 "91822450F186A088216810BB69BA83174E55C02A" 
+         Done Adding Additional Store
+         Successfully signed: D:\Workspace\SSM\CloudPhone\src\jake\windows\Avssamp\C++\Win7Debug\avssamp.sys
+         
+     1>Done Building Project "D:\Workspace\SSM\CloudPhone\src\jake\windows\Avssamp\C++\avssamp.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:04.01
