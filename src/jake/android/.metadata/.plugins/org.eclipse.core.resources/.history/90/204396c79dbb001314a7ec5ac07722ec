@@ -1,0 +1,56 @@
+package com.ssm232.elite.cloudphonetest;
+
+import android.app.Service;
+import android.content.Intent;
+import android.graphics.PixelFormat;
+import android.os.IBinder;
+import android.util.Log;
+import android.view.Gravity;
+import android.view.WindowManager;
+import android.widget.RelativeLayout;
+
+import com.ssm232.elite.cloudphonetest.camera.CameraPreview;
+
+public class CloudPhoneService extends Service {
+	
+	private final String LOG = "CloudPhoneService";
+	private CameraPreview mPreview;
+	
+	@Override
+	public IBinder onBind(Intent intent) {
+		return null;
+	}
+
+	@Override
+	@Deprecated
+	public void onStart(Intent intent, int startId) {
+		Log.d(LOG, "onStart");
+		super.onStart(intent, startId);
+		
+		mPreview = new CameraPreview(this, 0, CameraPreview.LayoutMode.FitToParent);
+        //LayoutParams previewLayoutParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+				WindowManager.LayoutParams.WRAP_CONTENT,
+				WindowManager.LayoutParams.WRAP_CONTENT,
+				WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,//TYPE_SYSTEM_ALERT,//TYPE_SYSTEM_OVERLAY,
+				WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE |
+				WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN, //will cover status bar as well!!!
+				PixelFormat.TRANSLUCENT);
+		params.gravity = Gravity.LEFT | Gravity.TOP;
+		params.setTitle("");
+		WindowManager wm = (WindowManager) getSystemService(WINDOW_SERVICE);
+		wm.addView(mPreview, new RelativeLayout.LayoutParams(
+				RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
+	}
+	
+	@Override
+	public void onDestroy() {
+		Log.d(LOG, "onDestroy");
+		super.onDestroy();
+		
+		if(mPreview != null) {
+			((WindowManager) getSystemService(WINDOW_SERVICE)).removeView(mPreview);
+			mPreview = null;
+		}
+	}
+}

@@ -1,0 +1,8 @@
+package com.ssm232.elite.cloudphonetest
+
+interface IPassU{
+	String getConnectionStatus();
+	boolean isConnected();
+	void connect(String ip, int port);
+	void disconnect();	
+}

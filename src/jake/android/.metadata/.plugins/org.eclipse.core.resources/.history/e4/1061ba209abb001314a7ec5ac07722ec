@@ -1,0 +1,120 @@
+package com.ssm232.elite.cloudphonetest.conn;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+
+import android.util.Log;
+
+public class CloudPhoneSocket {
+	private final String LOG = "CloudPhoneSocket";
+	
+	private Socket socket;
+	private OutputStream sendStream;
+	private InputStream recvStream;
+	private PacketReceiver packetReceiver;	
+
+	private ServerConnectionListener mServerConnectionListener;
+	
+	public CloudPhoneSocket(ServerConnectionListener listener){
+		Log.w(LOG, "CloudPhoneSocket");
+		mServerConnectionListener = listener;
+	}
+	
+	public boolean isConnected(){
+		Log.w(LOG, "isConnected");
+		return socket != null ? socket.isConnected() : false;		
+	}
+	
+	
+	public synchronized boolean connect(String ip, int port){
+		Log.w(LOG, "connect");
+		try{
+			socket = new Socket();
+			socket.connect(new InetSocketAddress(ip, port), 2000); // Set timeout to 2 seconds
+
+			// Open outputStream
+			sendStream = socket.getOutputStream();
+			packetSender = new PacketSender(sendStream);
+			
+			// Open inputStream
+			recvStream = socket.getInputStream();		
+						
+			// Create and start packet receiver
+			packetReceiver = new PacketReceiver(recvStream);
+			packetReceiver.setPacketListener(this);
+			packetReceiver.start();	
+
+			mServerConnectionListener.onServerConnected(ip, port);
+			
+			Packet packet = new Packet(
+					PacketHeader.Message_Type.CLIENT, 0, 2, 1, 0,
+					127, 0, 0, 1, AR.width, AR.height);
+			sendEcho(packet.toString().getBytes());
+			return true;
+		} catch(IOException e) {
+			e.printStackTrace();
+			mServerConnectionListener.onServerConnectionFailed();
+			
+			return false;
+		}
+	}
+	
+	public void disconnect(){
+		if(D.D) Log.w(LOG, "disconnect");
+		Packet packet = new Packet(PacketHeader.Message_Type.CLIENT, client_id, 0, 0,  1,
+				127, 0, 0, 1, AR.width, AR.height);
+		sendEcho(packet.toString().getBytes());
+		
+		synchronized(this){
+			if(socket != null){
+				try{				
+					recvStream.close();
+					sendStream.close();
+					packetReceiver = null;				
+					socket.close();		
+					socket = null;
+				}catch(IOException e){
+					e.printStackTrace();
+				} finally{
+					mServerConnectionListener.onServerDisconnected();
+				}
+			}
+		}
+	}
+	
+	private void cleanup(){
+		if(D.D) Log.w(LOG, "cleanup");
+		Packet packet = new Packet(PacketHeader.Message_Type.CLIENT, client_id, 0, 0, 1,
+				127, 0, 0, 1, AR.width, AR.height);
+		sendEcho(packet.toString().getBytes());
+		
+		synchronized(this){
+			if(socket != null){
+				try{
+					recvStream.close();
+					sendStream.close();
+					packetReceiver = null;
+					socket.close();
+					socket = null;
+
+				}catch(IOException e){
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	@Override
+	public void onPacketReceived(Packet packet) {
+		
+	}
+	
+	@Override
+	public void onInterrupt() {
+		
+	}
+}
+

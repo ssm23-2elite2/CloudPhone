@@ -1,0 +1,16 @@
+package com.ssm232.elite.cloudphonetest.conn;
+
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+
+public class CloudPhoneSocket {
+	private Socket socket;
+	private OutputStream sendStream;
+	private InputStream recvStream;
+	private PacketReceiver packetReceiver;	
+
+	private ServerConnectionListener mServerConnectionListener;
+	
+	
+}

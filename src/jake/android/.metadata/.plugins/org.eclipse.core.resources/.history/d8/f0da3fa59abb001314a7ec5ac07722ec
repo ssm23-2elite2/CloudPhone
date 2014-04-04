@@ -1,0 +1,30 @@
+package com.ssm232.elite.cloudphonetest;
+
+import android.app.Service;
+import android.content.Intent;
+import android.os.IBinder;
+
+public class CloudPhoneService extends Service {
+	
+	private final String LOG = "CloudPhoneService";
+	
+	@Override
+	public IBinder onBind(Intent intent) {
+		return null;
+	}
+
+	@Override
+	@Deprecated
+	public void onStart(Intent intent, int startId) {
+		Log.d(LOG, "onStart");
+		super.onStart(intent, startId);
+		
+		
+	}
+	
+	@Override
+	public void onDestroy() {
+		Log.d(LOG, "onDestroy");
+		super.onDestroy();
+	}
+}

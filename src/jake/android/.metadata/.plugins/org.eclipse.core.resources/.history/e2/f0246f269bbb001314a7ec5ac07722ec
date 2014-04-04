@@ -1,0 +1,34 @@
+package com.ssm232.elite.cloudphonetest;
+
+import android.app.Service;
+import android.content.Intent;
+import android.os.IBinder;
+import android.util.Log;
+import android.view.View;
+import android.widget.RelativeLayout;
+
+public class CloudPhoneService extends Service {
+	
+	private final String LOG = "CloudPhoneService";
+	private RelativeLayout mLayout;
+	@Override
+	public IBinder onBind(Intent intent) {
+		return null;
+	}
+
+	@Override
+	@Deprecated
+	public void onStart(Intent intent, int startId) {
+		Log.d(LOG, "onStart");
+		super.onStart(intent, startId);
+		
+		mLayout = new RelativeLayout(this);
+		mLayout.setVisibility(View.GONE);
+	}
+	
+	@Override
+	public void onDestroy() {
+		Log.d(LOG, "onDestroy");
+		super.onDestroy();
+	}
+}
