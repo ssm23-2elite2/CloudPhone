@@ -43,9 +43,9 @@
             // btn_serverOn
             // 
             this.btn_serverOn.Font = new System.Drawing.Font("Malgun Gothic", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            this.btn_serverOn.Location = new System.Drawing.Point(387, 42);
+            this.btn_serverOn.Location = new System.Drawing.Point(438, 128);
             this.btn_serverOn.Name = "btn_serverOn";
-            this.btn_serverOn.Size = new System.Drawing.Size(102, 35);
+            this.btn_serverOn.Size = new System.Drawing.Size(102, 86);
             this.btn_serverOn.TabIndex = 0;
             this.btn_serverOn.Text = "On";
             this.btn_serverOn.UseVisualStyleBackColor = true;
@@ -54,22 +54,22 @@
             // listLog
             // 
             this.listLog.Cursor = System.Windows.Forms.Cursors.Default;
-            this.listLog.Font = new System.Drawing.Font("Malgun Gothic", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
+            this.listLog.Font = new System.Drawing.Font("Malgun Gothic", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.listLog.FormattingEnabled = true;
-            this.listLog.ItemHeight = 17;
+            this.listLog.ItemHeight = 15;
             this.listLog.Location = new System.Drawing.Point(12, 466);
             this.listLog.Name = "listLog";
             this.listLog.ScrollAlwaysVisible = true;
-            this.listLog.Size = new System.Drawing.Size(507, 276);
+            this.listLog.Size = new System.Drawing.Size(724, 274);
             this.listLog.TabIndex = 1;
             this.listLog.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.listLog_DrawItem);
             // 
             // btn_serverOff
             // 
             this.btn_serverOff.Font = new System.Drawing.Font("Malgun Gothic", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            this.btn_serverOff.Location = new System.Drawing.Point(387, 83);
+            this.btn_serverOff.Location = new System.Drawing.Point(563, 128);
             this.btn_serverOff.Name = "btn_serverOff";
-            this.btn_serverOff.Size = new System.Drawing.Size(102, 34);
+            this.btn_serverOff.Size = new System.Drawing.Size(102, 86);
             this.btn_serverOff.TabIndex = 2;
             this.btn_serverOff.Text = "Off";
             this.btn_serverOff.UseVisualStyleBackColor = true;
@@ -91,7 +91,7 @@
             this.statusBar});
             this.statusStrip.Location = new System.Drawing.Point(0, 745);
             this.statusStrip.Name = "statusStrip";
-            this.statusStrip.Size = new System.Drawing.Size(536, 22);
+            this.statusStrip.Size = new System.Drawing.Size(750, 22);
             this.statusStrip.TabIndex = 4;
             // 
             // statusBar
@@ -123,7 +123,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(536, 767);
+            this.ClientSize = new System.Drawing.Size(750, 767);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.camViewer);
             this.Controls.Add(this.statusStrip);
@@ -133,6 +133,7 @@
             this.Controls.Add(this.btn_serverOn);
             this.Name = "CloudPhoneForm";
             this.Text = "CloudPhoneTestServer";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.CloudPhoneForm_FormClosed);
             this.Load += new System.EventHandler(this.CloudPhoneForm_Load);
             this.statusStrip.ResumeLayout(false);
             this.statusStrip.PerformLayout();
