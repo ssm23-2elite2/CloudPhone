@@ -2,6 +2,11 @@ package com.ssm232.elite.cloudphonetest.camera;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 
 import android.annotation.SuppressLint;
@@ -13,6 +18,7 @@ import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.Size;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.util.Log;
 import android.view.Display;
@@ -45,7 +51,13 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 	private LayoutMode mLayoutMode;
 	private int mCenterPosX = -1;
 	private int mCenterPosY;
-
+	private String ip;
+	private int port;
+	private Socket mSocket;
+	private OutputStream outStream;
+	
+	private boolean mForever = true;
+	
 	PreviewReadyCallback mPreviewReadyCallback = null;
 	private final String LOG = "CameraPreview";
 	public static enum LayoutMode {
@@ -64,7 +76,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 	protected boolean mSurfaceConfiguring = false;
 
 	@SuppressLint("NewApi")
-	public CameraPreview(Context context, int cameraId, LayoutMode mode) {
+	public CameraPreview(Context context, int cameraId, LayoutMode mode, String ip, int port) {
 		super(context); // Always necessary
 		Log.w(LOG, "cameraId :" + cameraId);
 		mContext = context;
@@ -72,7 +84,11 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 		mHolder = getHolder();
 		mHolder.addCallback(this);
 		mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+		this.ip = ip;
+		this.port = port;
 
+		new NetworkTask(ip, port).execute();
+		
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
 			if (Camera.getNumberOfCameras() > cameraId) {
 				mCameraId = cameraId;
@@ -95,7 +111,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
+		Log.w(LOG, "surfaceCreated");
 		try {
+			mCamera.setPreviewCallback(mPreviewCallBack);
+			mCamera.setOneShotPreviewCallback(mPreviewCallBack);
 			mCamera.setPreviewDisplay(mHolder);
 		} catch (IOException e) {
 			mCamera.release();
@@ -111,6 +130,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 	}
 
 	private void doSurfaceChanged(int width, int height) {
+		Log.e(LOG, "doSurfaceChanged");
 		mCamera.stopPreview();
 
 		Camera.Parameters cameraParams = mCamera.getParameters();
@@ -128,12 +148,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 			mPreviewSize = previewSize;
 			mPictureSize = pictureSize;
 			mSurfaceConfiguring = adjustSurfaceLayoutSize(previewSize, portrait, width, height);
-			// Continue executing this method if this method is called recursively.
-			// Recursive call of surfaceChanged is very special case, which is a path from
-			// the catch clause at the end of this method.
-			// The later part of this method should be executed as well in the recursive
-			// invocation of this method, because the layout change made in this recursive
-			// call will not trigger another invocation of this method.
+
 			if (mSurfaceConfiguring && (mSurfaceChangedCallDepth <= 1)) {
 				return;
 			}
@@ -143,7 +158,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 		mSurfaceConfiguring = false;
 
 		try {
-			mCamera.setPreviewCallback(mPreviewCallBack);
 			mCamera.startPreview();
 		} catch (Exception e) {
 			Log.w(LOG_TAG, "Failed to start preview: " + e.getMessage());
@@ -185,17 +199,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 		} else {
 			reqPreviewWidth = reqWidth;
 			reqPreviewHeight = reqHeight;
-		}
-
-		if (DEBUGGING) {
-			Log.v(LOG_TAG, "Listing all supported preview sizes");
-			for (Camera.Size size : mPreviewSizeList) {
-				Log.v(LOG_TAG, "  w: " + size.width + ", h: " + size.height);
-			}
-			Log.v(LOG_TAG, "Listing all supported picture sizes");
-			for (Camera.Size size : mPictureSizeList) {
-				Log.v(LOG_TAG, "  w: " + size.width + ", h: " + size.height);
-			}
 		}
 
 		// Adjust surface size with the closest aspect-ratio
@@ -356,6 +359,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 		if (null == mCamera) {
 			return;
 		}
+		
+		mForever = false;
 		mCamera.stopPreview();
 		mCamera.release();
 		mCamera = null;
@@ -365,24 +370,12 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 		return (mContext.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT);
 	}
 
-	public void setOneShotPreviewCallback(PreviewCallback callback) {
-		if (null == mCamera) {
-			return;
-		}
-		mCamera.setOneShotPreviewCallback(callback);
-	}
-
-	public void setPreviewCallback(PreviewCallback callback) {
-		if (null == mCamera) {
-			return;
-		}
-		mCamera.setPreviewCallback(callback);
-	}
 
 	private Camera.PreviewCallback mPreviewCallBack = new PreviewCallback() {
 		@Override
 		public void onPreviewFrame(byte[] data, Camera camera) {
 			
+			Log.w(LOG, "onPreviewFrame");
 			/**
 			 * Yuv to JPEG
 			 */
@@ -398,6 +391,13 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			image.compressToJpeg(rectangle, 100, out);
 			
+			try {
+				Log.i(LOG, "Write1");
+				outStream.write(out.toByteArray(), 0, out.toByteArray().length);
+				Log.i(LOG, "Write2");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			//out.toByteArray();
 			
 		}
@@ -408,5 +408,45 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
 	public void setOnPreviewReady(PreviewReadyCallback cb) {
 		mPreviewReadyCallback = cb;
+	}
+	
+	public class NetworkTask extends AsyncTask<Void, Void, Void> {
+
+		String dstAddress;
+		int dstPort;
+		String response;
+
+		NetworkTask(String addr, int port) {
+			dstAddress = addr;
+			dstPort = port;
+		}
+
+		@Override
+		protected Void doInBackground(Void... arg0) {
+
+			try {
+				SocketAddress addr = new InetSocketAddress(ip, port);
+				mSocket = new Socket();
+				mSocket.connect(addr, 15000);
+				
+				if(mSocket.isConnected()) {
+					outStream = mSocket.getOutputStream();
+					
+					while(mForever) {
+					
+					}
+				}
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(Void result) {
+			super.onPostExecute(result);
+		}
 	}
 }

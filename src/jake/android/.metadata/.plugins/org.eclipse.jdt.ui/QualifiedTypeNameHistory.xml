@@ -3,7 +3,6 @@
 <fullyQualifiedTypeName name="com.ssm232.elite.cloudphonetest.R"/>
 <fullyQualifiedTypeName name="android.app.Service"/>
 <fullyQualifiedTypeName name="android.os.IBinder"/>
-<fullyQualifiedTypeName name="android.util.Log"/>
 <fullyQualifiedTypeName name="android.view.View"/>
 <fullyQualifiedTypeName name="android.view.WindowManager"/>
 <fullyQualifiedTypeName name="android.widget.Spinner"/>
@@ -17,10 +16,19 @@
 <fullyQualifiedTypeName name="android.view.Gravity"/>
 <fullyQualifiedTypeName name="android.widget.RelativeLayout"/>
 <fullyQualifiedTypeName name="com.ssm232.elite.cloudphonetest.R.id"/>
-<fullyQualifiedTypeName name="android.hardware.Camera"/>
 <fullyQualifiedTypeName name="android.hardware.Camera.PreviewCallback"/>
 <fullyQualifiedTypeName name="android.location.GpsStatus"/>
 <fullyQualifiedTypeName name="android.location.LocationManager"/>
 <fullyQualifiedTypeName name="android.content.Context"/>
 <fullyQualifiedTypeName name="android.location.LocationListener"/>
+<fullyQualifiedTypeName name="java.io.BufferedWriter"/>
+<fullyQualifiedTypeName name="java.lang.Exception"/>
+<fullyQualifiedTypeName name="java.io.ByteArrayOutputStream"/>
+<fullyQualifiedTypeName name="java.io.OutputStream"/>
+<fullyQualifiedTypeName name="com.ssm232.elite.cloudphonetest.camera.CameraPreview.NetworkTask"/>
+<fullyQualifiedTypeName name="java.net.SocketAddress"/>
+<fullyQualifiedTypeName name="java.net.InetSocketAddress"/>
+<fullyQualifiedTypeName name="android.util.Log"/>
+<fullyQualifiedTypeName name="android.hardware.Camera"/>
+<fullyQualifiedTypeName name="java.nio.ByteBuffer"/>
 </qualifiedTypeNameHistroy>

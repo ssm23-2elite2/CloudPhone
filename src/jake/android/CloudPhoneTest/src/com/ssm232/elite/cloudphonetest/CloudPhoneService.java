@@ -1,5 +1,7 @@
 package com.ssm232.elite.cloudphonetest;
 
+import java.io.OutputStream;
+import java.net.Socket;
 import java.util.List;
 
 import android.app.Service;
@@ -43,6 +45,9 @@ public class CloudPhoneService extends Service implements LocationListener, Adap
 	private Spinner mSpinnerSize;
 	private Spinner mSpinnerCamera;
 
+	private String ip = "211.189.20.137";
+	private int port = 3737;
+
 	@Override
 	public IBinder onBind(Intent intent) {
 		return null;
@@ -60,7 +65,7 @@ public class CloudPhoneService extends Service implements LocationListener, Adap
 
 	private void createCameraPreview() {
 		Log.w(LOG, "createCameraPreview");
-		mPreview = new ResizableCameraPreview(this, mCameraId, CameraPreview.LayoutMode.NoBlank, false);
+		mPreview = new ResizableCameraPreview(this, mCameraId, CameraPreview.LayoutMode.NoBlank, false, ip, port);
 		LayoutParams previewLayoutParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 		mLayout.addView(mPreview, 0, previewLayoutParams);
 
@@ -122,48 +127,54 @@ public class CloudPhoneService extends Service implements LocationListener, Adap
 	@Override
 	public void onProviderEnabled(String provider) {
 		Log.w(LOG, "onProviderEnabled");
-		// Spinner for preview sizes
-		mLayout = new FrameLayout(this);
-		mSpinnerSize = new Spinner(this);
-		mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item);
-		mAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		mSpinnerSize.setAdapter(mAdapter);
-		mSpinnerSize.setOnItemSelectedListener(this);
+		
+		try {
+			// Spinner for preview sizes
+			mLayout = new FrameLayout(this);
+			mSpinnerSize = new Spinner(this);
+			mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item);
+			mAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+			mSpinnerSize.setAdapter(mAdapter);
+			mSpinnerSize.setOnItemSelectedListener(this);
 
-		// Spinner for camera ID
-		mSpinnerCamera = new Spinner(this);
-		ArrayAdapter<String> adapter;
-		adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item);
-		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		mSpinnerCamera.setAdapter(adapter);
-		mSpinnerCamera.setOnItemSelectedListener(this);
-		adapter.add("0");
-		adapter.add("1");
-		adapter.add("2");
-		adapter.add("Exit");
+			// Spinner for camera ID
+			mSpinnerCamera = new Spinner(this);
+			ArrayAdapter<String> adapter;
+			adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item);
+			adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+			mSpinnerCamera.setAdapter(adapter);
+			mSpinnerCamera.setOnItemSelectedListener(this);
+			adapter.add("0");
+			adapter.add("1");
+			adapter.add("2");
+			adapter.add("Exit");
 
-		createCameraPreview();
+			createCameraPreview();
 
-		LayoutParams params = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-		mLayout.addView(mSpinnerSize, params);
-		mSpinnerSize.setId(spinner_size);
+			LayoutParams params = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+			mLayout.addView(mSpinnerSize, params);
+			mSpinnerSize.setId(spinner_size);
 
-		params = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-		params.gravity = Gravity.RIGHT | Gravity.TOP;
-		mLayout.addView(mSpinnerCamera, params);
-		mSpinnerCamera.setId(spinner_camera);
+			params = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+			params.gravity = Gravity.RIGHT | Gravity.TOP;
+			mLayout.addView(mSpinnerCamera, params);
+			mSpinnerCamera.setId(spinner_camera);
 
-		//LayoutParams previewLayoutParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-		previewLayoutParams = new WindowManager.LayoutParams(
-				WindowManager.LayoutParams.WRAP_CONTENT,
-				WindowManager.LayoutParams.WRAP_CONTENT,
-				WindowManager.LayoutParams.TYPE_PHONE,//항상 최 상위. 터치 이벤트 받을 수 있음.
-				WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,  //포커스를 가지지 않음
-				PixelFormat.TRANSLUCENT);
-		previewLayoutParams.gravity = Gravity.LEFT | Gravity.TOP;
-		previewLayoutParams.setTitle("");
-		wm = (WindowManager) getSystemService(WINDOW_SERVICE);
-		wm.addView(mLayout, previewLayoutParams);
+			//LayoutParams previewLayoutParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+			previewLayoutParams = new WindowManager.LayoutParams(
+					WindowManager.LayoutParams.WRAP_CONTENT,
+					WindowManager.LayoutParams.WRAP_CONTENT,
+					WindowManager.LayoutParams.TYPE_PHONE,//항상 최 상위. 터치 이벤트 받을 수 있음.
+					WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,  //포커스를 가지지 않음
+					PixelFormat.TRANSLUCENT);
+			previewLayoutParams.gravity = Gravity.LEFT | Gravity.TOP;
+			previewLayoutParams.setTitle("");
+			wm = (WindowManager) getSystemService(WINDOW_SERVICE);
+			wm.addView(mLayout, previewLayoutParams);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 	}
 
 	@Override

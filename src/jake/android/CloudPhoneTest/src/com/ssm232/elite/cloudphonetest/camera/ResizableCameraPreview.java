@@ -1,5 +1,7 @@
 package com.ssm232.elite.cloudphonetest.camera;
 
+import java.io.BufferedWriter;
+import java.io.OutputStream;
 import java.util.List;
 
 import android.content.Context;
@@ -20,10 +22,11 @@ public class ResizableCameraPreview extends CameraPreview {
      * @param activity
      * @param adjustByAspectRatio
      * @param addReversedSizes is set to true to add reversed values of supported preview-sizes to the list.
+     * @param writer 
      */
-    public ResizableCameraPreview(Context context, int cameraId, LayoutMode mode, boolean addReversedSizes) {
-        super(context, cameraId, mode);
-        Log.w(LOG_TAG, "cameraId : " + cameraId);
+    public ResizableCameraPreview(Context context, int cameraId, LayoutMode mode, boolean addReversedSizes, String ip, int port) {
+        super(context, cameraId, mode, ip, port);
+        Log.w(LOG_TAG, "cameraId : " + cameraId);        
         if (addReversedSizes) {
             List<Camera.Size> sizes = mPreviewSizeList;
             int length = sizes.size();
