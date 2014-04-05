@@ -14,7 +14,7 @@
 
 #define VER_FILETYPE                VFT_DRV
 #define VER_FILESUBTYPE             VFT2_UNKNOWN
-#define VER_FILEDESCRIPTION_STR     "AVStream Simulated Hardware Sample"
+#define VER_FILEDESCRIPTION_STR     "AVStream"
 #define VER_INTERNALNAME_STR        "avshws.sys"
 #define VER_ORIGINALFILENAME_STR    "avshws.sys"
 

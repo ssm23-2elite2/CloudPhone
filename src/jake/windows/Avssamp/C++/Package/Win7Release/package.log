@@ -1,5 +1,20 @@
-﻿Build started 2014-03-31 오후 11:56:04.
+﻿Build started 2014-03-31 오후 11:59:12.
+     1>Project "C:\workspace\SSM\CloudPhone\src\jake\windows\Avssamp\C++\Package\package.VcxProj" on node 2 (Build target(s)).
+     1>Inf2Cat:
+         C:\Program Files\Windows Kits\8.1\bin\x86\inf2cat.exe /os:7_x86 /driver:C:\workspace\SSM\CloudPhone\src\jake\windows\Avssamp\C++\Win7Release\package\ 
+         ........................
+         Signability test complete.
+         
+         Errors:
+         None
+         
+         Warnings:
+         None
+         
+         Catalog generation complete.
+         C:\workspace\SSM\CloudPhone\src\jake\windows\Avssamp\C++\Win7Release\package\avssamp.cat
+     1>Done Building Project "C:\workspace\SSM\CloudPhone\src\jake\windows\Avssamp\C++\Package\package.VcxProj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:00.01
+Time Elapsed 00:00:00.90

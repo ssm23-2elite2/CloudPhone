@@ -1,5 +1,32 @@
-﻿Build started 2014-03-31 오후 11:55:52.
+﻿Build started 2014-04-01 오전 12:12:01.
+     1>Project "C:\workspace\SSM\CloudPhone\src\jake\windows\Avshws\C++\avshws.vcxproj" on node 2 (Rebuild target(s)).
+     1>StampInf:
+         C:\Program Files\Windows Kits\8.1\bin\x86\stampinf.exe -d "*" -a "x86" -v "*" -k "1.11" -u "1.11.0" -f Win7Release\avshws.inf 
+         Stamping Win7Release\avshws.inf [Version] section with DriverVer=03/31/2014,16.12.1.430
+       ClCompile:
+         C:\Program Files\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /IWin7Release\ /I"C:\Program Files\Windows Kits\8.1\Include\KM" /Zi /nologo /W4 /WX /Ox /Os /Oy- /D _X86_=1 /D i386=1 /D STD_CALL /D _WIN32_WINNT=0x0601 /D WINVER=0x0601 /D WINNT=1 /D NTDDI_VERSION=0x06010000 /D UNICODE /D _UNICODE /D DEBUG_LEVEL=DEBUGLVL_BLAB /D _WIN2K_COMPAT_SLIST_USAGE /D _NO_SYS_GUID_OPERATOR_EQ_ /GF /Gm- /Zp8 /GS /Gy /fp:precise /Zc:wchar_t- /Zc:forScope- /GR- /Fo"Win7Release\\" /Fd"Win7Release\vc120.pdb" /Gz /wd4603 /wd4627 /wd4986 /wd4987 /wd4996 /FI"C:\Program Files\Windows Kits\8.1\Include\Shared\warning.h" /analyze- /errorReport:prompt /kernel -cbstring  /d1nodatetime /d1import_no_registry /d2AllowCompatibleILVersions /d2Zi+ capture.cpp device.cpp filter.cpp hwsim.cpp image.cpp purecall.c
+         capture.cpp
+         device.cpp
+         filter.cpp
+         hwsim.cpp
+         image.cpp
+         Generating Code...
+         Compiling...
+         purecall.c
+         Generating Code...
+       ResourceCompile:
+         C:\Program Files\Windows Kits\8.1\bin\x86\rc.exe /D _X86_=1 /D i386=1 /D STD_CALL /D _WIN32_WINNT=0x0601 /D WINVER=0x0601 /D WINNT=1 /D NTDDI_VERSION=0x06010000 /D "SMP_ID=\\\"{D4A6CFBD-0708-45C5-A86B-3082DCFF2A73}\\\"" /D UNICODE /D _UNICODE /D DEBUG_LEVEL=DEBUGLVL_BLAB /D _WIN2K_COMPAT_SLIST_USAGE /D _NO_SYS_GUID_OPERATOR_EQ_ /l"0x0409" /I"C:\Program Files\Windows Kits\8.1\Include\UM" /IWin7Release\ /I"C:\Program Files\Windows Kits\8.1\Include\KM" /nologo /fo"Win7Release\avshws.res" avshws.rc 
+       Link:
+         C:\Program Files\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"Win7Release\avshws.sys" /VERSION:"6.3" /INCREMENTAL:NO /NOLOGO /WX /SECTION:"INIT,d" "C:\Program Files\Windows Kits\8.1\lib\win7\KM\x86\memcmp.lib" "C:\Program Files\Windows Kits\8.1\lib\win7\KM\x86\BufferOverflowK.lib" "C:\Program Files\Windows Kits\8.1\lib\win7\KM\x86\ntoskrnl.lib" "C:\Program Files\Windows Kits\8.1\lib\win7\KM\x86\hal.lib" "C:\Program Files\Windows Kits\8.1\lib\win7\KM\x86\wmilib.lib" "C:\Program Files\Windows Kits\8.1\lib\win7\KM\x86\ks.lib" /NODEFAULTLIB /MANIFEST:NO /DEBUG /PDB:"Win7Release\avshws.pdb" /SUBSYSTEM:NATIVE,"6.01" /Driver /OPT:REF /OPT:ICF /ENTRY:"GsDriverEntry@8" /RELEASE /IMPLIB:"Win7Release\avshws.lib" /MERGE:"_TEXT=.text;_PAGE=PAGE" /MACHINE:X86 /PROFILE /SAFESEH /kernel /IGNORE:4198,4010,4037,4039,4065,4070,4078,4087,4089,4221 /osversion:6.3 /pdbcompress /debugtype:pdata   -merge:PAGECONST=PAGE Win7Release\avshws.res
+         Win7Release\capture.obj
+         Win7Release\device.obj
+         Win7Release\filter.obj
+         Win7Release\hwsim.obj
+         Win7Release\image.obj
+         Win7Release\purecall.obj
+         avshws.vcxproj -> C:\workspace\SSM\CloudPhone\src\jake\windows\Avshws\C++\Win7Release\avshws.sys
+     1>Done Building Project "C:\workspace\SSM\CloudPhone\src\jake\windows\Avshws\C++\avshws.vcxproj" (Rebuild target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:00.01
+Time Elapsed 00:00:01.18
