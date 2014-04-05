@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -63,6 +64,14 @@ namespace CloudPhoneTestServer
                 serverThread.Abort();
                 serverThread = null;
             }
+
+            string processName = "CloudPhoneTestServer"; // .exe 는 빼셔야 되여~
+            Process[] processes = Process.GetProcessesByName(processName);
+
+            foreach (Process process in processes)
+            {
+                process.Kill();
+            }
         }
 
         // 클라이언트의 요청을 받아서 이미지를 뿌릴 때 수행되는 함수
@@ -96,7 +105,7 @@ namespace CloudPhoneTestServer
         {
             try
             {
-                IPHostEntry ipHost = Dns.Resolve("localhost");
+                IPHostEntry ipHost = Dns.Resolve("211.189.20.137");
                 IPAddress ipAddr = ipHost.AddressList[0];
                 client = new TcpListener(ipAddr, 3737);
                 client.Start();

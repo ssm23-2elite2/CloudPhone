@@ -28,7 +28,7 @@ namespace CloudPhoneTestClient
         {
             try
             {
-                server = new TcpClient("127.0.0.1", 3737);
+                server = new TcpClient("211.189.20.137", 3737);
                 ns = server.GetStream();
                 isConnected = true;
             }
@@ -54,7 +54,7 @@ namespace CloudPhoneTestClient
             {
                 try
                 {
-                    server = new TcpClient("127.0.0.1", 3737);
+                    server = new TcpClient("211.189.20.137", 3737);
                     ns = server.GetStream();
                     isConnected = true;
                 }
@@ -81,8 +81,7 @@ namespace CloudPhoneTestClient
 
             byte[] buffer = BitConverter.GetBytes(bs.Length);
 
-           // int count = 
-          //  while()
+            ns.Write(buffer, 0, buffer.Length);
             ns.Write(bs, 0, bs.Length);
         }
 

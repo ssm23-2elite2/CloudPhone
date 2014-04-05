@@ -32,18 +32,25 @@ namespace CloudPhoneTestServer
             {
                 TcpClient client = threadListener.AcceptTcpClient();
                 NetworkStream ns = client.GetStream();
-                byte[] buffer = new byte[1024 * 1024];
+                byte[] buffer = new byte[1024];
 
                 while (isRunning)
                 {
                     try
                     {
-                        size = ns.Read(buffer, 0, buffer.Length);
+                        int totalLength = 0;
 
-                        if (size == 0)
-                            break;
+                        ns.Read(buffer, 0, buffer.Length);
+                        int fileLength = BitConverter.ToInt32(buffer, 0);
+                        var stream = new MemoryStream();
+                        while(totalLength < fileLength)
+                        {
+                            int receiveLength = ns.Read(buffer, 0, buffer.Length);
+                            stream.Write(buffer, 0, receiveLength);
+                            totalLength += receiveLength;
+                        }
 
-                        Image image = Image.FromStream(new MemoryStream(buffer));
+                        Image image = Image.FromStream(stream);
                         cloudphoneForm.Invoke(cloudphoneForm.myDelegate, image);
                     }
                     catch (Exception e)
