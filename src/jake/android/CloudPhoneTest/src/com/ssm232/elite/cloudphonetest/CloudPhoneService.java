@@ -3,10 +3,15 @@ package com.ssm232.elite.cloudphonetest;
 import java.util.List;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.hardware.Camera;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.Gravity;
@@ -21,7 +26,7 @@ import android.widget.Spinner;
 import com.ssm232.elite.cloudphonetest.camera.CameraPreview;
 import com.ssm232.elite.cloudphonetest.camera.ResizableCameraPreview;
 
-public class CloudPhoneService extends Service implements AdapterView.OnItemSelectedListener {
+public class CloudPhoneService extends Service implements LocationListener, AdapterView.OnItemSelectedListener {
 
 	private final String LOG = "CloudPhoneService";
 	private ResizableCameraPreview mPreview;
@@ -31,6 +36,7 @@ public class CloudPhoneService extends Service implements AdapterView.OnItemSele
 
 	private WindowManager.LayoutParams previewLayoutParams;
 	private WindowManager wm;
+	private LocationManager lm;
 
 	private int spinner_size = 1024;
 	private int spinner_camera = 2048;
@@ -45,9 +51,77 @@ public class CloudPhoneService extends Service implements AdapterView.OnItemSele
 	@Override
 	@Deprecated
 	public void onStart(Intent intent, int startId) {
-		Log.d(LOG, "onStart");
 		super.onStart(intent, startId);
+		Log.w(LOG, "onStart");
+		
+		lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, Integer.MAX_VALUE, Integer.MAX_VALUE, this);
+	}
 
+	private void createCameraPreview() {
+		Log.w(LOG, "createCameraPreview");
+		mPreview = new ResizableCameraPreview(this, mCameraId, CameraPreview.LayoutMode.NoBlank, false);
+		LayoutParams previewLayoutParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+		mLayout.addView(mPreview, 0, previewLayoutParams);
+
+		mAdapter.clear();
+		mAdapter.add("Auto");
+		List<Camera.Size> sizes = mPreview.getSupportedPreivewSizes();
+		for (Camera.Size size : sizes) {
+			mAdapter.add(size.width + " x " + size.height);
+		}
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+	}
+
+	@Override
+	public void onItemSelected(AdapterView<?> parent, View view, int position,
+			long id) {
+		if(parent.getId() == spinner_size) {
+			Log.w(LOG, "spinner_size " + position);
+			Rect rect = new Rect();
+			mLayout.getDrawingRect(rect);
+			if (0 == position) { // "Auto" selected
+				mPreview.surfaceChanged(null, 0, rect.width(), rect.height());
+			} else {
+				mPreview.setPreviewSize(position - 1, rect.width(), rect.height());
+			}
+		} else if (parent.getId() == spinner_camera) {
+			if(position == 3) {
+				onDestroy();
+			} else {
+				mPreview.stop();
+				mLayout.removeView(mPreview);
+				mCameraId = position;
+				createCameraPreview();
+			}
+		}
+	}
+
+	@Override
+	public void onNothingSelected(AdapterView<?> parent) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
+	public void onLocationChanged(Location location) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onStatusChanged(String provider, int status, Bundle extras) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onProviderEnabled(String provider) {
+		Log.w(LOG, "onProviderEnabled");
 		// Spinner for preview sizes
 		mLayout = new FrameLayout(this);
 		mSpinnerSize = new Spinner(this);
@@ -90,62 +164,15 @@ public class CloudPhoneService extends Service implements AdapterView.OnItemSele
 		previewLayoutParams.setTitle("");
 		wm = (WindowManager) getSystemService(WINDOW_SERVICE);
 		wm.addView(mLayout, previewLayoutParams);
-
-	}
-
-	private void createCameraPreview() {
-		Log.w(LOG, "createCameraPreview");
-		mPreview = new ResizableCameraPreview(this, mCameraId, CameraPreview.LayoutMode.NoBlank, false);
-		LayoutParams previewLayoutParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-		mLayout.addView(mPreview, 0, previewLayoutParams);
-
-		mAdapter.clear();
-		mAdapter.add("Auto");
-		List<Camera.Size> sizes = mPreview.getSupportedPreivewSizes();
-		for (Camera.Size size : sizes) {
-			mAdapter.add(size.width + " x " + size.height);
-		}
 	}
 
 	@Override
-	public void onDestroy() {
-		Log.d(LOG, "onDestroy");
-		super.onDestroy();
-
+	public void onProviderDisabled(String provider) {
+		Log.w(LOG, "onProviderDisabled");
 		if(mLayout != null) {
 			mPreview.stop();
 			((WindowManager) getSystemService(WINDOW_SERVICE)).removeView(mLayout);
 			mLayout = null;
 		}
-	}
-
-	@Override
-	public void onItemSelected(AdapterView<?> parent, View view, int position,
-			long id) {
-		if(parent.getId() == spinner_size) {
-			Log.w(LOG, "spinner_size " + position);
-			Rect rect = new Rect();
-			mLayout.getDrawingRect(rect);
-			if (0 == position) { // "Auto" selected
-				mPreview.surfaceChanged(null, 0, rect.width(), rect.height());
-			} else {
-				mPreview.setPreviewSize(position - 1, rect.width(), rect.height());
-			}
-		} else if (parent.getId() == spinner_camera) {
-			if(position == 3) {
-				onDestroy();
-			} else {
-				mPreview.stop();
-				mLayout.removeView(mPreview);
-				mCameraId = position;
-				createCameraPreview();
-			}
-		}
-	}
-
-	@Override
-	public void onNothingSelected(AdapterView<?> parent) {
-		// TODO Auto-generated method stub
-
 	}
 }
