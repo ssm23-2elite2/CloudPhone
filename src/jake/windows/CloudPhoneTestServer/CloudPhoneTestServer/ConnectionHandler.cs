@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
@@ -10,9 +12,14 @@ namespace CloudPhoneTestServer
 
     public class ConnectionHandler
     {
-        public ConnectionHandler()
+        private CloudPhoneForm cloudphoneForm;
+        private int size;
+
+        public ConnectionHandler(CloudPhoneForm form)
         {
             isRunning = true;
+            cloudphoneForm = form;
+            cloudphoneForm.Invoke(cloudphoneForm._logi, "클라이언트 생성 ConnectionHandler");
         }
 
         public TcpListener threadListener;
@@ -21,25 +28,38 @@ namespace CloudPhoneTestServer
 
         public void clientHandler()
         {
-            TcpClient client = threadListener.AcceptTcpClient();
-            NetworkStream ns = client.GetStream();
-            byte[] buffer = new byte[4096];
-
-            while (isRunning)
+            try
             {
-                try
-                {
-                    ns.Read(buffer, 0, buffer.Length);
+                TcpClient client = threadListener.AcceptTcpClient();
+                NetworkStream ns = client.GetStream();
+                byte[] buffer = new byte[1024 * 1024];
 
-                }
-                catch (Exception e)
+                while (isRunning)
                 {
-                    Console.WriteLine(e.Message);
+                    try
+                    {
+                        size = ns.Read(buffer, 0, buffer.Length);
+
+                        if (size == 0)
+                            break;
+
+                        Image image = Image.FromStream(new MemoryStream(buffer));
+                        cloudphoneForm.Invoke(cloudphoneForm.myDelegate, image);
+                    }
+                    catch (Exception e)
+                    {
+                        cloudphoneForm.Invoke(cloudphoneForm._loge, "clientHandler : " + e.Message);
+                        isRunning = false;
+                    }
                 }
+                ns.Close();
+                client.Close();
             }
-
-            ns.Close();
-            client.Close();
+            catch (Exception e2)
+            {
+                cloudphoneForm.Invoke(cloudphoneForm._loge, "clientHandler : " + e2.Message);
+            }
+            cloudphoneForm.Invoke(cloudphoneForm._logi, "클라이언트가 종료되었습니다.");
         }
     }
 }
