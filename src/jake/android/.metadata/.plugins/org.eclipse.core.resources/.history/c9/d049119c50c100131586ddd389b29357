@@ -1,0 +1,38 @@
+package com.example.cloudphonesimpletest.util;
+
+import java.util.List;
+
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningServiceInfo;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+
+import com.example.cloudphonesimpletest.CloudPhoneService;
+
+public class Util {
+	public static class Services{
+		
+		public static boolean isServiceAliveU(Context context){
+			String serviceCls = CloudPhoneService.class.getName();
+			ActivityManager manager = (ActivityManager)context.getSystemServi1ce(Context.ACTIVITY_SERVICE);
+			List<RunningServiceInfo> serviceList = manager.getRunningServices(Integer.MAX_VALUE);
+			for(RunningServiceInfo info : serviceList){
+				if(info.service.getClassName().equals(serviceCls)){
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		public static ComponentName startPassUService(Context context, String ip, int port){
+			if(!isServiceAliveU(context)){
+				Intent intent = new Intent(context, CloudPhoneService.class);
+				return context.startService(intent);
+			} else {
+				return null;
+			}
+		}
+	}
+	
+}

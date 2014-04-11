@@ -1,5 +1,0 @@
-package com.ssm232.elite.cloudphonetest.conn;
-
-public interface ServerConnectionListener {
-
-}

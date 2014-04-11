@@ -1,8 +1,0 @@
-package com.ssm232.elite.cloudphonetest.conn;
-
-public interface ServerConnectionListener {
-	public void onServerConnected(String ip, int port);
-	public void onServerConnectionFailed();
-	public void onServerConnectionInterrupted();
-	public void onServerDisconnected();
-}

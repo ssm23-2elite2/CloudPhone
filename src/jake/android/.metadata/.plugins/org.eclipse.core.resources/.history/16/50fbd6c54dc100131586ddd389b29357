@@ -1,0 +1,113 @@
+package com.example.cloudphonesimpletest;
+
+import android.app.Service;
+import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.RemoteException;
+
+import com.example.cloudphonesimpletest.intent.CloudPhoneIntent;
+import com.example.cloudphonesimpletest.network.CloudPhoneSocket;
+import com.example.cloudphonesimpletest.network.ScreenTransmissionListener;
+import com.example.cloudphonesimpletest.network.ServerConnectionListener;
+
+public class CloudPhoneService extends Service implements ServerConnectionListener, ScreenTransmissionListener {
+	public enum ServiceState { IDLE, CONNECTING, CONNECTED };
+	
+	private CloudPhoneSocket mSocket;
+	private static ServiceState mState = ServiceState.IDLE;
+	
+	private Handler mHandler;
+	
+	private IBinder mBinder = new ICloudPhone.Stub() {
+
+		@Override
+		public boolean isConnected() throws RemoteException {
+			return (mSocket != null && mSocket.isConnected()) ? true : false;
+		}
+
+		@Override
+		public String getConnectionStatus() throws RemoteException {
+			return mState.name();
+		}
+		
+		@Override
+		public void connect(final String ip, final int port) throws RemoteException {
+			new AsyncTask<Void, Void, Void>() {
+				@Override
+				protected Void doInBackground(Void... params) {
+					if( mSocket.connect(ip, port)) {
+						
+						if(mSocket != null && mSocket.isConnected()) {
+							mState = ServiceState.CONNECTING;
+							sendBroadcast(new Intent(CloudPhoneIntent.ACTION_CONNECTED));
+						}
+					}
+					return null;
+				}
+			}.execute();
+		}
+
+		@Override
+		public void disconnect() throws RemoteException {
+			new AsyncTask<Void, Void, Void>(){
+				@Override
+				protected Void doInBackground(Void... params) {
+					mSocket.disconnect();
+					mState = ServiceState.IDLE;
+					return null;
+				}
+			}.execute();
+		}
+		
+	};
+
+
+	@Override
+	public void onScreenTransferRequested() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onScreenTransferStopRequested() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onScreenTransferInterrupted() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onServerConnected(String ipAddress) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onServerConnectionFailed() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onServerConnectionInterrupted() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onServerDisconnected() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public IBinder onBind(Intent intent) {
+		// TODO Auto-generated method stub
+		return null;
+	}}

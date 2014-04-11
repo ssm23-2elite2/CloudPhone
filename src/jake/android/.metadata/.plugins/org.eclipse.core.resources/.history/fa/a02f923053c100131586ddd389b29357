@@ -1,0 +1,7 @@
+package com.example.cloudphonesimpletest.network;
+
+public interface ScreenTransmissionListener {
+	public void onScreenTransferRequested();
+	public void onScreenTransferStopRequested();
+	public void onScreenTransferInterrupted();
+}

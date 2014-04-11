@@ -1,0 +1,114 @@
+package com.example.cloudphonesimpletest.network;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+
+public class CloudPhoneSocket implements PacketListener {
+	private Socket socket;
+	private OutputStream sendStream;
+	private InputStream recvStream;
+
+	private ServerConnectionListener mServerConnectionListener;
+	
+	private PacketReceiver packetReceiver;	
+	private CameraSender streamSender;
+
+	public CloudPhoneSocket(ServerConnectionListener listener){
+		mServerConnectionListener = listener;
+	}
+
+	public boolean isConnected(){
+		return socket != null ? socket.isConnected() : false;		
+	}
+
+	public synchronized boolean connect(String ip, int port){
+		try{
+			socket = new Socket();
+			socket.connect(new InetSocketAddress(ip, port), 2000); // Set timeout to 2 seconds
+
+			// Open outputStream
+			sendStream = socket.getOutputStream();
+			streamSender = new CameraSender(sendStream);
+
+			// Open inputStream
+			recvStream = socket.getInputStream();		
+
+			// Create and start packet receiver
+			packetReceiver = new PacketReceiver(recvStream);
+			packetReceiver.setPacketListener(this);
+			packetReceiver.start();	
+
+			mServerConnectionListener.onServerConnected(ip);
+
+			return true;
+		} catch(IOException e) {
+			e.printStackTrace();
+			mServerConnectionListener.onServerConnectionFailed();
+
+			return false;
+		}
+	}
+
+	public void disconnect(){
+		synchronized(this){
+			if(socket != null){
+				try{				
+					recvStream.close();
+					sendStream.close();
+					packetReceiver = null;				
+					socket.close();		
+					socket = null;
+				} catch(IOException e) {
+					e.printStackTrace();
+				} finally{
+					mServerConnectionListener.onServerDisconnected();
+				}
+			}
+		}
+	}
+
+	private void cleanup(){
+		synchronized(this){
+			if(socket != null){
+				try{
+					recvStream.close();
+					sendStream.close();
+					packetReceiver = null;
+					socket.close();
+					socket = null;
+
+				} catch(IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	@Override
+	public void onPacketReceived(Packet packet) {
+		
+	}
+
+	@Override
+	public void onInterrupt() {
+		synchronized(this){
+			if(socket!=null){
+				try{					
+					recvStream.close();
+					sendStream.close();
+					packetReceiver = null;
+					socket.close();
+					socket=null;
+								
+				}catch(IOException e){
+					e.printStackTrace();
+				}finally{
+					mServerConnectionListener.onServerConnectionInterrupted();				
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,95 @@
+package com.example.cloudphonesimpletest;
+
+import android.app.Service;
+import android.content.Intent;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.RemoteException;
+
+import com.example.cloudphonesimpletest.network.CloudPhoneSocket;
+import com.example.cloudphonesimpletest.network.ScreenTransmissionListener;
+import com.example.cloudphonesimpletest.network.ServerConnectionListener;
+
+public class CloudPhoneService extends Service implements ServerConnectionListener, ScreenTransmissionListener {
+	public enum ServiceState { IDLE, CONNECTING, CONNECTED };
+	
+	private CloudPhoneSocket mSocket;
+	private static ServiceState mState = ServiceState.IDLE;
+	
+	private Handler mHandler;
+	
+	private IBinder mBinder = new ICloudPhone.Stub() {
+
+		@Override
+		public boolean isConnected() throws RemoteException {
+			return (mSocket != null && mSocket.isConnected()) ? true : false;
+		}
+
+		@Override
+		public String getConnectionStatus() throws RemoteException {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		
+		@Override
+		public void connect(String ip, int port) throws RemoteException {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void disconnect() throws RemoteException {
+			// TODO Auto-generated method stub
+			
+		}
+		
+	};
+
+
+	@Override
+	public void onScreenTransferRequested() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onScreenTransferStopRequested() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onScreenTransferInterrupted() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onServerConnected(String ipAddress) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onServerConnectionFailed() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onServerConnectionInterrupted() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onServerDisconnected() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public IBinder onBind(Intent intent) {
+		// TODO Auto-generated method stub
+		return null;
+	}}

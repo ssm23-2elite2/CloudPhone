@@ -10,12 +10,10 @@
 <stringAttribute key="com.android.ide.eclipse.adt.target" value="AUTO"/>
 <booleanAttribute key="com.android.ide.eclipse.adt.wipedata" value="false"/>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/CloudPhoneSimpleTest"/>
-<listEntry value="/CloudPhoneSimpleTest/AndroidManifest.xml"/>
+<listEntry value="/CloudPhone"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="4"/>
-<listEntry value="1"/>
 </listAttribute>
-<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="CloudPhoneSimpleTest"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="CloudPhone"/>
 </launchConfiguration>

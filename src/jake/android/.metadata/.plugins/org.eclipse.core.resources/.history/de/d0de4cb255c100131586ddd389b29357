@@ -1,0 +1,9 @@
+package com.example.cloudphonesimpletest;
+import java.util.List;
+
+interface ICloudPhone{
+	String getConnectionStatus();
+	boolean isConnected();
+	void connect(String ip, int port);
+	void disconnect();	
+}

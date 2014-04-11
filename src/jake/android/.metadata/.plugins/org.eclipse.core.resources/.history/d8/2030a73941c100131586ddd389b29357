@@ -1,0 +1,63 @@
+package com.example.cloudphonesimpletest.network;
+
+public class PacketHeader {
+	public static final int LENGTH = 6;
+	public static final int OPCODE_LENGTH = 2;
+	public static final int PAYLOAD_LENGTH = 4;
+	
+	public class OpCode{
+		public static final int INVALID = -1;
+		public static final int JPGINFO_SEND = 3;
+		public static final int JPGDATA_SEND = 4;
+	}
+	
+	private int opCode = OpCode.INVALID;
+	private int payloadLength = 0;
+	
+	private static byte[] opCodeBuffer = new byte[OPCODE_LENGTH];
+	private static byte[] packetSizeBuffer = new byte[PAYLOAD_LENGTH];
+	private static byte[] heaerBuffer = new byte[OPCODE_LENGTH+PAYLOAD_LENGTH];
+	
+	private PacketHeader(){
+		
+	}
+	
+	public PacketHeader(int opCode, int dataLength){
+		this.opCode = opCode;
+		this.payloadLength = dataLength;
+	}
+	
+	@Override
+	public String toString(){
+		return String.format("%2d%4d", opCode, payloadLength+LENGTH);
+	}
+	
+	public byte[] asByteArray(){
+		//return toString().getBytes();
+		itoa(opCode, heaerBuffer, OPCODE_LENGTH, 0);
+		itoa(payloadLength+LENGTH, heaerBuffer, PAYLOAD_LENGTH, OPCODE_LENGTH);
+		return heaerBuffer;
+	}
+	
+	private static int ByteToInt(byte [] data){
+		int result = 0;
+		for(int i=0; i<data.length; i++){
+			if(data[i] == ' ')
+				continue;
+			result = result * 10 + (data[i]-'0');
+		}
+		return result;
+	}
+	
+	public static PacketHeader parse(byte[] rawData){
+		PacketHeader header = new PacketHeader();
+		System.arraycopy(rawData, 0, opCodeBuffer, 0, OPCODE_LENGTH);
+		header.setOpCode(ByteToInt(opCodeBuffer));
+		System.arraycopy(rawData, OPCODE_LENGTH, packetSizeBuffer, 0, PAYLOAD_LENGTH);				
+		header.setPayloadLength(ByteToInt(packetSizeBuffer)-PacketHeader.LENGTH);
+		return header;
+	}
+	
+	
+	
+}
