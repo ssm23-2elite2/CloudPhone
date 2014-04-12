@@ -10,36 +10,34 @@ import org.secmem232.cloudphone.util.ConvertUtil;
 public class CameraSender extends PacketSender {
 	private static final int MAXDATASIZE = Packet.MAX_LENGTH - PacketHeader.LENGTH;
 
-	private static final int JPGINFOLENGTH = 10;
+	private static final int INFOLENGTH = 10;
 	private static final int ORIENTATION_INFO_LENGTH = 1;
 
 	private byte[] sendBuffer = new byte[MAXDATASIZE];
-	private byte[] jpgSizeInfo = new byte[JPGINFOLENGTH];
+	private byte[] sizeInfo = new byte[INFOLENGTH];
 
 	public CameraSender(OutputStream out){
 		super(out);		
 	}
 
-	public void screenTransmission(byte[] jpgData, int orientation, int jpgSize) throws IOException{
-		int jpgTotalSize = jpgSize;
+	public void sendCameraPreview(byte[] image, int orientation, int size) throws IOException{
+		int totalSize = size;
 		int transmittedSize = 0;		
 
-		jpgSizeInfo[0] = (byte)orientation;
-		int length = ConvertUtil.itoa(jpgTotalSize, jpgSizeInfo, 1)+ORIENTATION_INFO_LENGTH;
+		sizeInfo[0] = (byte)orientation;
+		int length = ConvertUtil.itoa(totalSize, sizeInfo, 1)+ORIENTATION_INFO_LENGTH;
 
-		Packet jpgInfoPacket = new Packet(OpCode.JPGINFO_SEND, jpgSizeInfo, length);
+		Packet jpgInfoPacket = new Packet(OpCode.INFO_SEND, sizeInfo, length);
 
 		send(jpgInfoPacket);
 
 		//Next send jpg data to host
-		while(jpgTotalSize > transmittedSize){
-			int CurTransSize = (jpgTotalSize-transmittedSize) > MAXDATASIZE ? 
-					MAXDATASIZE : (jpgTotalSize-transmittedSize);
-			System.arraycopy(jpgData, transmittedSize, sendBuffer, 0, CurTransSize);
+		while(totalSize > transmittedSize){
+			int CurTransSize = (totalSize - transmittedSize) > MAXDATASIZE ? MAXDATASIZE : (totalSize - transmittedSize);
+			System.arraycopy(image, transmittedSize, sendBuffer, 0, CurTransSize);
 			transmittedSize += CurTransSize;
 
-			Packet jpgDataPacket = new Packet(OpCode.JPGDATA_SEND, sendBuffer, CurTransSize);
-
+			Packet jpgDataPacket = new Packet(OpCode.DATA_SEND, sendBuffer, CurTransSize);
 			send(jpgDataPacket);
 		}		
 	}

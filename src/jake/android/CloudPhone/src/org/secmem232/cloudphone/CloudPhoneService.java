@@ -2,9 +2,10 @@ package org.secmem232.cloudphone;
 
 import org.secmem232.cloudphone.CameraPreview.CameraPreviewListener;
 import org.secmem232.cloudphone.intent.CloudPhoneIntent;
+import org.secmem232.cloudphone.network.CameraSenderListener;
 import org.secmem232.cloudphone.network.CloudPhoneSocket;
-import org.secmem232.cloudphone.network.ScreenTransmissionListener;
 import org.secmem232.cloudphone.network.ServerConnectionListener;
+import org.secmem232.cloudphone.util.Util;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -23,21 +24,23 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
+import android.widget.FrameLayout;
 
-public class CloudPhoneService extends Service implements LocationListener, ServerConnectionListener, ScreenTransmissionListener,
-		CameraPreviewListener {
+public class CloudPhoneService extends Service implements LocationListener, ServerConnectionListener, CameraSenderListener, CameraPreviewListener {
 	private static final String LOG = "CloudPhoneService";
 	
 	//카메라 관련
 	private LocationManager mLocationManager;
-	private CloudPhoneCameraPreview mPreview;
+	private CameraPreview mPreview;
 	private WindowManager mWindowManager;
 	private NotificationManager mNotificationManager;
 	private int mCameraId = 0;
+	private FrameLayout mLayout;
+	
+	private Intent mGPSIntent;
 	
 	//서비스 상태
 	public enum ServiceState { IDLE, CONNECTING, CONNECTED };
-	
 	private CloudPhoneSocket mSocket;
 	private static ServiceState mState = ServiceState.IDLE;
 	
@@ -97,45 +100,26 @@ public class CloudPhoneService extends Service implements LocationListener, Serv
 	public void onCreate() {
 		super.onCreate();
 		Log.w(LOG, "onCreate");
-		
+		mGPSIntent = new Intent("android.location.GPS_ENABLED_CHANGE");
 		mNotificationManager = (NotificationManager) getSystemService (Context.NOTIFICATION_SERVICE);
         mWindowManager = (WindowManager) getSystemService (Context.WINDOW_SERVICE);
 		mSocket = new CloudPhoneSocket(this);
-		mSocket.setScreenTransMissionListener(this);
+		mSocket.setCameraSenderListener(this);
 		mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, Integer.MAX_VALUE, Integer.MAX_VALUE, this);	
+		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, Integer.MAX_VALUE, Integer.MAX_VALUE, this);
+	}
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
 		
-		
+		mGPSIntent.putExtra("enabled", false);
+		sendBroadcast(mGPSIntent);
 	}
 	
 	public ServiceState getConnectionState() {
 		Log.w(LOG, "getConnectionState");
 		return mState;
-	}
-
-	@Override
-	public void onScreenTransferRequested() {
-		Log.w(LOG, "onScreenTransferRequested");
-		Thread mThread = new Thread(){
-			@Override
-			public void run() {
-				
-			}
-		};
-		mThread.setDaemon(true);
-		mThread.start();
-	}
-
-	@Override
-	public void onScreenTransferStopRequested() {
-		Log.w(LOG, "onScreenTransferStopRequested");
-		
-	}
-
-	@Override
-	public void onScreenTransferInterrupted() {
-		Log.w(LOG, "onScreenTransferInterrupted");
-		onScreenTransferStopRequested();
 	}
 
 	@Override
@@ -185,30 +169,53 @@ public class CloudPhoneService extends Service implements LocationListener, Serv
             .build();
         startForeground(3737, notification);
         
-        mPreview = new CloudPhoneCameraPreview(this, 0, CameraPreview.LayoutMode.NoBlank, false);
-		LayoutParams mLayoutParams = new WindowManager.LayoutParams(
-				1,1,
-			WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,
-			WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
-			PixelFormat.TRANSLUCENT
-		);
+        mLayout = new FrameLayout(this);
+        mPreview = new CameraPreview(this, 0, CameraPreview.LayoutMode.NoBlank);
+        LayoutParams mLayoutParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+        mLayout.addView(mPreview, 0, mLayoutParams);
+		LayoutParams mPreviewLayoutParams = new WindowManager.LayoutParams(
+				WindowManager.LayoutParams.WRAP_CONTENT,
+				WindowManager.LayoutParams.WRAP_CONTENT,
+				WindowManager.LayoutParams.TYPE_PHONE,//항상 최 상위. 터치 이벤트 받을 수 있음.
+				WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,  //포커스를 가지지 않음
+				PixelFormat.TRANSLUCENT);
 		mPreview.setCameraPreviewListener(this);
-		mLayoutParams.gravity = Gravity.LEFT | Gravity.TOP;
-		mWindowManager.addView(mPreview, mLayoutParams);
+		mPreviewLayoutParams.gravity = Gravity.LEFT | Gravity.TOP;
+		mPreviewLayoutParams.setTitle("");
+		mWindowManager.addView(mLayout, mPreviewLayoutParams);
 	}
 
 	@Override
 	public void onProviderDisabled(String provider) {
 		mNotificationManager.cancel(3737);
-		if(mPreview != null) {
+		if(mLayout != null && mPreview != null) {
 			mPreview.stop();
-			mWindowManager.removeView(mPreview);
-			mPreview = null;
+			mWindowManager.removeView(mLayout);
+			mLayout = null;
 		}
 	}
 
 	@Override
 	public void onPreview(byte[] image) {
-		// 실제 전송처리
+		Log.i(LOG, "onPreview :" + image.length);
+		mSocket.sendCameraPreview(image, Util.getRotation(this), image.length);
+	}
+
+	@Override
+	public void onCameraSenderRequested() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onCameraSenderStopRequested() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onCameraSenderInterrupted() {
+		// TODO Auto-generated method stub
+		
 	}
 }

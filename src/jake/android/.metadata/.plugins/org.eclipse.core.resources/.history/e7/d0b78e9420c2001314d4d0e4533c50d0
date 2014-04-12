@@ -1,0 +1,147 @@
+package org.secmem232.cloudphone.network;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+
+import org.secmem232.cloudphone.network.PacketHeader.OpCode;
+
+import android.util.Log;
+
+
+public class CloudPhoneSocket implements PacketListener {
+	private final static String LOG = "CloudPhoneSocket";
+	private Socket mSocket;
+	private OutputStream mSendStream;
+	private InputStream mRecvStream;
+
+	private CameraSenderListener mCameraSenderListener;
+	private ServerConnectionListener mServerConnectionListener;
+	private PacketReceiver mPacketReceiver;	
+	private CameraSender mCameraSender;
+	
+	public CloudPhoneSocket(ServerConnectionListener listener){
+		Log.w(LOG, "CloudPhoneSocket");
+		mServerConnectionListener = listener;
+	}
+
+	public void setCameraSenderListener(CameraSenderListener listener){
+		mCameraSenderListener = listener;
+	}
+	
+	public boolean isConnected(){
+		Log.w(LOG, "isConnected");
+		return mSocket != null ? mSocket.isConnected() : false;		
+	}
+
+	public synchronized boolean connect(String ip, int port){
+		Log.w(LOG, "connect");
+		try{
+			mSocket = new Socket();
+			mSocket.connect(new InetSocketAddress(ip, port), 2000); // Set timeout to 2 seconds
+
+			// Open outputStream
+			mSendStream = mSocket.getOutputStream();
+			mCameraSender = new CameraSender(mSendStream);
+
+			// Open inputStream
+			mRecvStream = mSocket.getInputStream();		
+
+			// Create and start packet receiver
+			mPacketReceiver = new PacketReceiver(mRecvStream);
+			mPacketReceiver.setPacketListener(this);
+			mPacketReceiver.start();	
+
+			mServerConnectionListener.onServerConnected(ip);
+
+			return true;
+		} catch(IOException e) {
+			e.printStackTrace();
+			mServerConnectionListener.onServerConnectionFailed();
+
+			return false;
+		}
+	}
+	
+	//Send image
+	public void screenTransmission(byte[] jpgData, int orientation, int jpgSize){
+		try{
+			mCameraSender.screenTransmission(jpgData, orientation, jpgSize);
+		}catch(IOException e){
+			e.printStackTrace();
+			mCameraSenderListener.onCameraSenderInterrupted();
+		}
+	}
+
+	public void disconnect(){
+		Log.w(LOG, "disconnect");
+		synchronized(this){
+			if(socket != null){
+				try{				
+					mRecvStream.close();
+					mSendStream.close();
+					mPacketReceiver = null;				
+					socket.close();		
+					socket = null;
+				} catch(IOException e) {
+					e.printStackTrace();
+				} finally{
+					mServerConnectionListener.onServerDisconnected();
+				}
+			}
+		}
+	}
+
+	private void cleanup(){
+		Log.w(LOG, "cleanup");
+		synchronized(this){
+			if(socket != null){
+				try{
+					mRecvStream.close();
+					mSendStream.close();
+					mPacketReceiver = null;
+					socket.close();
+					socket = null;
+
+				} catch(IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	@Override
+	public void onPacketReceived(Packet packet) {
+		switch(packet.getOpcode()){		
+		case OpCode.SCREEN_SEND_REQUESTED:			
+			Log.w(LOG, "onPacketReceived.SCREEN_SEND_REQUESTED");
+			break;
+		case OpCode.SCREEN_STOP_REQUESTED:
+			Log.w(LOG, "onPacketReceived.SCREEN_STOP_REQUESTED");
+			break;
+		}
+	}
+
+	@Override
+	public void onInterrupt() {
+		Log.w(LOG, "onInterrupt");
+		synchronized(this){
+			if(socket!=null){
+				try{					
+					mRecvStream.close();
+					mSendStream.close();
+					mPacketReceiver = null;
+					socket.close();
+					socket=null;
+								
+				}catch(IOException e){
+					e.printStackTrace();
+				}finally{
+					mServerConnectionListener.onServerConnectionInterrupted();				
+				}
+			}
+		}
+	}
+}

@@ -1,10 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <qualifiedTypeNameHistroy>
-<fullyQualifiedTypeName name="android.widget.LinearLayout.LayoutParams"/>
-<fullyQualifiedTypeName name="android.widget.RelativeLayout"/>
-<fullyQualifiedTypeName name="com.ssm232.elite.cloudphonetest.R.id"/>
-<fullyQualifiedTypeName name="android.hardware.Camera.PreviewCallback"/>
-<fullyQualifiedTypeName name="android.location.GpsStatus"/>
 <fullyQualifiedTypeName name="java.io.BufferedWriter"/>
 <fullyQualifiedTypeName name="java.io.ByteArrayOutputStream"/>
 <fullyQualifiedTypeName name="java.io.OutputStream"/>
@@ -51,7 +46,6 @@
 <fullyQualifiedTypeName name="android.graphics.PixelFormat"/>
 <fullyQualifiedTypeName name="android.view.Gravity"/>
 <fullyQualifiedTypeName name="android.view.SurfaceHolder.Callback"/>
-<fullyQualifiedTypeName name="org.secmem232.cloudphone.CloudPhoneService"/>
 <fullyQualifiedTypeName name="org.secmem232.cloudphone.CameraPreview.LayoutMode"/>
 <fullyQualifiedTypeName name="android.view.SurfaceView"/>
 <fullyQualifiedTypeName name="org.secmem232.cloudphone.CameraIPreviewListener"/>
@@ -60,4 +54,10 @@
 <fullyQualifiedTypeName name="android.content.Context"/>
 <fullyQualifiedTypeName name="android.view.WindowManager"/>
 <fullyQualifiedTypeName name="android.view.WindowManager.LayoutParams"/>
+<fullyQualifiedTypeName name="android.widget.FrameLayout"/>
+<fullyQualifiedTypeName name="android.hardware.Camera.PreviewCallback"/>
+<fullyQualifiedTypeName name="org.secmem232.cloudphone.CameraPreview"/>
+<fullyQualifiedTypeName name="org.secmem232.cloudphone.network.CameraSenderListener"/>
+<fullyQualifiedTypeName name="org.secmem232.cloudphone.util.Util"/>
+<fullyQualifiedTypeName name="org.secmem232.cloudphone.CloudPhoneService"/>
 </qualifiedTypeNameHistroy>

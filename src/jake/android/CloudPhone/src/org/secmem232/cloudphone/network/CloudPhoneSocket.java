@@ -13,47 +13,46 @@ import android.util.Log;
 
 public class CloudPhoneSocket implements PacketListener {
 	private final static String LOG = "CloudPhoneSocket";
-	private Socket socket;
-	private OutputStream sendStream;
-	private InputStream recvStream;
+	private Socket mSocket;
+	private OutputStream mSendStream;
+	private InputStream mRecvStream;
 
+	private CameraSenderListener mCameraSenderListener;
 	private ServerConnectionListener mServerConnectionListener;
-	private PacketReceiver packetReceiver;	
-	private CameraSender streamSender;
-	private ScreenTransmissionListener mScreenTransListener;
-	
+	private PacketReceiver mPacketReceiver;	
+	private CameraSender mCameraSender;
+
 	public CloudPhoneSocket(ServerConnectionListener listener){
 		Log.w(LOG, "CloudPhoneSocket");
 		mServerConnectionListener = listener;
 	}
 
+	public void setCameraSenderListener(CameraSenderListener listener){
+		mCameraSenderListener = listener;
+	}
+
 	public boolean isConnected(){
 		Log.w(LOG, "isConnected");
-		return socket != null ? socket.isConnected() : false;		
-	}
-	
-	public void setScreenTransMissionListener(ScreenTransmissionListener listener){
-		Log.w(LOG, "setScreenTransMissionListener");
-		mScreenTransListener = listener;
+		return mSocket != null ? mSocket.isConnected() : false;		
 	}
 
 	public synchronized boolean connect(String ip, int port){
 		Log.w(LOG, "connect");
 		try{
-			socket = new Socket();
-			socket.connect(new InetSocketAddress(ip, port), 2000); // Set timeout to 2 seconds
+			mSocket = new Socket();
+			mSocket.connect(new InetSocketAddress(ip, port), 2000); // Set timeout to 2 seconds
 
 			// Open outputStream
-			sendStream = socket.getOutputStream();
-			streamSender = new CameraSender(sendStream);
+			mSendStream = mSocket.getOutputStream();
+			mCameraSender = new CameraSender(mSendStream);
 
 			// Open inputStream
-			recvStream = socket.getInputStream();		
+			mRecvStream = mSocket.getInputStream();		
 
 			// Create and start packet receiver
-			packetReceiver = new PacketReceiver(recvStream);
-			packetReceiver.setPacketListener(this);
-			packetReceiver.start();	
+			mPacketReceiver = new PacketReceiver(mRecvStream);
+			mPacketReceiver.setPacketListener(this);
+			mPacketReceiver.start();	
 
 			mServerConnectionListener.onServerConnected(ip);
 
@@ -66,16 +65,26 @@ public class CloudPhoneSocket implements PacketListener {
 		}
 	}
 
+	//Send image
+	public void sendCameraPreview(byte[] jpgData, int orientation, int jpgSize){
+		try{
+			mCameraSender.sendCameraPreview(jpgData, orientation, jpgSize);
+		}catch(IOException e){
+			e.printStackTrace();
+			mCameraSenderListener.onCameraSenderInterrupted();
+		}
+	}
+
 	public void disconnect(){
 		Log.w(LOG, "disconnect");
 		synchronized(this){
-			if(socket != null){
+			if(mSocket != null){
 				try{				
-					recvStream.close();
-					sendStream.close();
-					packetReceiver = null;				
-					socket.close();		
-					socket = null;
+					mRecvStream.close();
+					mSendStream.close();
+					mPacketReceiver = null;				
+					mSocket.close();		
+					mSocket = null;
 				} catch(IOException e) {
 					e.printStackTrace();
 				} finally{
@@ -88,13 +97,13 @@ public class CloudPhoneSocket implements PacketListener {
 	private void cleanup(){
 		Log.w(LOG, "cleanup");
 		synchronized(this){
-			if(socket != null){
+			if(mSocket != null){
 				try{
-					recvStream.close();
-					sendStream.close();
-					packetReceiver = null;
-					socket.close();
-					socket = null;
+					mRecvStream.close();
+					mSendStream.close();
+					mPacketReceiver = null;
+					mSocket.close();
+					mSocket = null;
 
 				} catch(IOException e) {
 					e.printStackTrace();
@@ -108,13 +117,10 @@ public class CloudPhoneSocket implements PacketListener {
 		switch(packet.getOpcode()){		
 		case OpCode.SCREEN_SEND_REQUESTED:			
 			Log.w(LOG, "onPacketReceived.SCREEN_SEND_REQUESTED");
-			mScreenTransListener.onScreenTransferRequested();
 			break;
 		case OpCode.SCREEN_STOP_REQUESTED:
 			Log.w(LOG, "onPacketReceived.SCREEN_STOP_REQUESTED");
-			mScreenTransListener.onScreenTransferStopRequested();
 			break;
-		
 		}
 	}
 
@@ -122,14 +128,14 @@ public class CloudPhoneSocket implements PacketListener {
 	public void onInterrupt() {
 		Log.w(LOG, "onInterrupt");
 		synchronized(this){
-			if(socket!=null){
+			if(mSocket!=null){
 				try{					
-					recvStream.close();
-					sendStream.close();
-					packetReceiver = null;
-					socket.close();
-					socket=null;
-								
+					mRecvStream.close();
+					mSendStream.close();
+					mPacketReceiver = null;
+					mSocket.close();
+					mSocket=null;
+
 				}catch(IOException e){
 					e.printStackTrace();
 				}finally{

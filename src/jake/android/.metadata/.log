@@ -10655,3 +10655,82 @@ user global configuration and to define the default location to store repositori
 not correct please set the HOME environment variable and restart Eclipse. Otherwise Git for Windows and
 EGit might behave differently since they see different configuration options.
 This warning can be switched off on the Team > Git > Confirmations and Warnings preference page.
+!SESSION 2014-04-12 16:19:23.130 -----------------------------------------------
+eclipse.buildId=M20130204-1200
+java.version=1.7.0_51
+java.vendor=Oracle Corporation
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=ko_KR
+Framework arguments:  -product org.eclipse.epp.package.jee.product
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -product org.eclipse.epp.package.jee.product
+
+!ENTRY org.eclipse.ui 4 4 2014-04-12 16:19:29.106
+!MESSAGE Unable to find Action Set: it.unibz.instasearch.actionSet
+
+!ENTRY org.eclipse.ui 4 4 2014-04-12 16:19:29.109
+!MESSAGE Unable to find Action Set: org.chromium.debug.ui.actionSets
+
+!ENTRY org.eclipse.ui 4 4 2014-04-12 16:19:29.110
+!MESSAGE Unable to find Action Set: org.nodeclipse.pluginslist.core.actionSet
+
+!ENTRY org.eclipse.ui 4 4 2014-04-12 16:19:29.110
+!MESSAGE Unable to find Action Set: org.springsource.ide.eclipse.quicksearch.actionSet
+
+!ENTRY org.eclipse.egit.ui 2 0 2014-04-12 16:19:34.272
+!MESSAGE Warning: The environment variable HOME is not set. The following directory will be used to store the Git
+user global configuration and to define the default location to store repositories: 'C:\Users\Jake'. If this is
+not correct please set the HOME environment variable and restart Eclipse. Otherwise Git for Windows and
+EGit might behave differently since they see different configuration options.
+This warning can be switched off on the Team > Git > Confirmations and Warnings preference page.
+
+!ENTRY org.eclipse.jface 4 0 2014-04-12 17:14:35.301
+!MESSAGE The command ("com.soyatec.uml.project.open") is undefined
+!STACK 0
+java.lang.Exception
+	at org.eclipse.jface.action.ExternalActionManager$CommandCallback.isActive(ExternalActionManager.java:370)
+	at org.eclipse.jface.action.ActionContributionItem.isCommandActive(ActionContributionItem.java:647)
+	at org.eclipse.jface.action.ActionContributionItem.isVisible(ActionContributionItem.java:703)
+	at org.eclipse.ui.internal.PluginActionContributionItem.isVisible(PluginActionContributionItem.java:147)
+	at org.eclipse.jface.action.MenuManager.isChildVisible(MenuManager.java:1004)
+	at org.eclipse.jface.action.MenuManager.isVisible(MenuManager.java:572)
+	at org.eclipse.jface.action.MenuManager.isChildVisible(MenuManager.java:1004)
+	at org.eclipse.jface.action.MenuManager.update(MenuManager.java:768)
+	at org.eclipse.jface.action.MenuManager.handleAboutToShow(MenuManager.java:477)
+	at org.eclipse.jface.action.MenuManager.access$1(MenuManager.java:470)
+	at org.eclipse.jface.action.MenuManager$2.menuShown(MenuManager.java:500)
+	at org.eclipse.swt.widgets.TypedListener.handleEvent(TypedListener.java:255)
+	at org.eclipse.swt.widgets.EventTable.sendEvent(EventTable.java:84)
+	at org.eclipse.swt.widgets.Widget.sendEvent(Widget.java:1053)
+	at org.eclipse.swt.widgets.Widget.sendEvent(Widget.java:1077)
+	at org.eclipse.swt.widgets.Widget.sendEvent(Widget.java:1058)
+	at org.eclipse.swt.widgets.Control.WM_INITMENUPOPUP(Control.java:4881)
+	at org.eclipse.swt.widgets.Control.windowProc(Control.java:4557)
+	at org.eclipse.swt.widgets.Canvas.windowProc(Canvas.java:341)
+	at org.eclipse.swt.widgets.Decorations.windowProc(Decorations.java:1627)
+	at org.eclipse.swt.widgets.Shell.windowProc(Shell.java:2069)
+	at org.eclipse.swt.widgets.Display.windowProc(Display.java:4976)
+	at org.eclipse.swt.internal.win32.OS.TrackPopupMenu(Native Method)
+	at org.eclipse.swt.widgets.Menu._setVisible(Menu.java:257)
+	at org.eclipse.swt.widgets.Display.runPopups(Display.java:4210)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3752)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine$9.run(PartRenderingEngine.java:1053)
+	at org.eclipse.core.databinding.observable.Realm.runWithDefault(Realm.java:332)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine.run(PartRenderingEngine.java:942)
+	at org.eclipse.e4.ui.internal.workbench.E4Workbench.createAndRunUI(E4Workbench.java:86)
+	at org.eclipse.ui.internal.Workbench$5.run(Workbench.java:588)
+	at org.eclipse.core.databinding.observable.Realm.runWithDefault(Realm.java:332)
+	at org.eclipse.ui.internal.Workbench.createAndRunWorkbench(Workbench.java:543)
+	at org.eclipse.ui.PlatformUI.createAndRunWorkbench(PlatformUI.java:149)
+	at org.eclipse.ui.internal.ide.application.IDEApplication.start(IDEApplication.java:124)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:353)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:180)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source)
+	at java.lang.reflect.Method.invoke(Unknown Source)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:629)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:584)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1438)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1414)
