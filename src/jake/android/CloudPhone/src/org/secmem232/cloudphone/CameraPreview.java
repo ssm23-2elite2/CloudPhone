@@ -46,9 +46,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 	private int mCenterPosX = -1;
 	private int mCenterPosY;
 	
-	private boolean mForever = true;
-	
-	PreviewReadyCallback mPreviewReadyCallback = null;
+	private PreviewReadyCallback mPreviewReadyCallback = null;
+	private CameraPreviewListener mCameraPreviewListener = null;
 	private final String LOG = "CameraPreview";
 	public static enum LayoutMode {
 		FitToParent, // Scale to the size that no side is larger than the parent
@@ -58,6 +57,11 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 	public interface PreviewReadyCallback {
 		public void onPreviewReady();
 	}
+	
+	public interface CameraPreviewListener {
+		public void onPreview(byte[] image);
+	}
+
 
 	/**
 	 * State flag: true when surface's layout size is set and surfaceChanged()
@@ -260,7 +264,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 			}
 		}
 
-		FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams)this.getLayoutParams();
+		WindowManager.LayoutParams layoutParams = (WindowManager.LayoutParams)this.getLayoutParams();
 
 		int layoutHeight = (int) (tmpLayoutHeight * fact);
 		int layoutWidth = (int) (tmpLayoutWidth * fact);
@@ -273,10 +277,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 		if ((layoutWidth != this.getWidth()) || (layoutHeight != this.getHeight())) {
 			layoutParams.height = layoutHeight;
 			layoutParams.width = layoutWidth;
-			if (mCenterPosX >= 0) {
-				layoutParams.topMargin = mCenterPosY - (layoutHeight / 2);
-				layoutParams.leftMargin = mCenterPosX - (layoutWidth / 2);
-			}
+			
 			this.setLayoutParams(layoutParams); // this will trigger another surfaceChanged invocation.
 			layoutChanged = true;
 		} else {
@@ -345,8 +346,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 		if (null == mCamera) {
 			return;
 		}
-		
-		mForever = false;
 		mCamera.stopPreview();
 		mCamera.release();
 		mCamera = null;
@@ -376,7 +375,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 			image.compressToJpeg(rectangle, 50, out);
 			
 			//out.toByteArray();
-			
+			if(null != mCameraPreviewListener) {
+				mCameraPreviewListener.onPreview(out.toByteArray());
+			}
 		}
 	};
 	public Camera.Size getPreviewSize() {
@@ -385,5 +386,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
 	public void setOnPreviewReady(PreviewReadyCallback cb) {
 		mPreviewReadyCallback = cb;
+	}
+	
+	public void setCameraPreviewListener(CameraPreviewListener listener) { 
+		mCameraPreviewListener = listener;
 	}
 }

@@ -1,0 +1,498 @@
+package org.secmem232.cloudphone;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.List;
+
+import org.secmem232.cloudphone.CameraPreview.LayoutMode;
+import org.secmem232.cloudphone.CameraPreview.PreviewReadyCallback;
+import org.secmem232.cloudphone.intent.CloudPhoneIntent;
+import org.secmem232.cloudphone.network.CloudPhoneSocket;
+import org.secmem232.cloudphone.network.ScreenTransmissionListener;
+import org.secmem232.cloudphone.network.ServerConnectionListener;
+
+import android.app.Notification;
+import android.app.Service;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.ImageFormat;
+import android.graphics.PixelFormat;
+import android.graphics.Rect;
+import android.graphics.YuvImage;
+import android.hardware.Camera;
+import android.hardware.Camera.PreviewCallback;
+import android.hardware.Camera.Size;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.os.RemoteException;
+import android.util.Log;
+import android.view.Display;
+import android.view.Gravity;
+import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.WindowManager;
+import android.view.WindowManager.LayoutParams;
+import android.widget.FrameLayout;
+import android.widget.Toast;
+
+public class CloudPhoneService extends Service implements LocationListener, ServerConnectionListener, ScreenTransmissionListener,
+	SurfaceHolder.Callback {
+	private static boolean DEBUGGING = true;
+	private static final String LOG = "CloudPhoneService";
+	
+	private static final String CAMERA_PARAM_ORIENTATION = "orientation";
+	private static final String CAMERA_PARAM_LANDSCAPE = "landscape";
+	private static final String CAMERA_PARAM_PORTRAIT = "portrait";
+	//카메라 관련
+	private LocationManager mLocationManager;
+	protected List<Camera.Size> mPreviewSizeList;
+	protected List<Camera.Size> mPictureSizeList;
+	protected Camera.Size mPreviewSize;
+	protected Camera.Size mPictureSize;
+	private CloudPhoneCameraPreview mPreview;
+	private WindowManager mWindowManager;
+	
+	private Camera mCamera;
+	private int mCameraId;
+	private int mSurfaceChangedCallDepth = 0;
+	private int mCenterPosX = -1;
+	private int mCenterPosY;
+	protected boolean mSurfaceConfiguring = false;
+	private LayoutMode mLayoutMode = LayoutMode.NoBlank;
+	private PreviewReadyCallback mPreviewReadyCallback = null;
+	
+	//서비스 상태
+	public enum ServiceState { IDLE, CONNECTING, CONNECTED };
+	
+	private CloudPhoneSocket mSocket;
+	private static ServiceState mState = ServiceState.IDLE;
+	
+	//서버 소켓 관련
+	private IBinder mBinder = new ICloudPhone.Stub() {
+
+		@Override
+		public boolean isConnected() throws RemoteException {
+			Log.w(LOG, "isConnected");
+			return (mSocket != null && mSocket.isConnected()) ? true : false;
+		}
+
+		@Override
+		public String getConnectionStatus() throws RemoteException {
+			Log.w(LOG, "getConnectionStatus");
+			return mState.name();
+		}
+		
+		@Override
+		public void connect(final String ip, final int port) throws RemoteException {
+			Log.w(LOG, "connect");
+			new AsyncTask<Void, Void, Void>() {
+				@Override
+				protected Void doInBackground(Void... params) {
+					if( mSocket.connect(ip, port)) {
+						if(mSocket != null && mSocket.isConnected()) {
+							mState = ServiceState.CONNECTING;
+							sendBroadcast(new Intent(CloudPhoneIntent.ACTION_CONNECTED));
+						}
+					}
+					return null;
+				}
+			}.execute();
+		}
+
+		@Override
+		public void disconnect() throws RemoteException {
+			Log.w(LOG, "disconnect");
+			new AsyncTask<Void, Void, Void>(){
+				@Override
+				protected Void doInBackground(Void... params) {
+					mSocket.disconnect();
+					mState = ServiceState.IDLE;
+					return null;
+				}
+			}.execute();
+		}
+	};
+
+	@Override
+	public IBinder onBind(Intent intent) {
+		Log.w(LOG, "onBind");
+		return mBinder;
+	}
+	
+	@Override
+	public void onCreate() {
+		super.onCreate();
+		Log.w(LOG, "onCreate");
+		// Start foreground service to avoid unexpected kill
+        Notification notification = new Notification.Builder(this)
+            .setContentTitle("Background Video Recorder")
+            .setContentText("")
+            .setSmallIcon(R.drawable.ic_launcher)
+            .build();
+        startForeground(1234, notification);
+		
+        mWindowManager = (WindowManager)this.getSystemService(Context.WINDOW_SERVICE);
+		mSocket = new CloudPhoneSocket(this);
+		mSocket.setScreenTransMissionListener(this);
+		mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, Integer.MAX_VALUE, Integer.MAX_VALUE, this);	
+		
+		
+	}
+	
+	public ServiceState getConnectionState() {
+		Log.w(LOG, "getConnectionState");
+		return mState;
+	}
+
+	@Override
+	public void onScreenTransferRequested() {
+		Log.w(LOG, "onScreenTransferRequested");
+		Thread mThread = new Thread(){
+			@Override
+			public void run() {
+				
+			}
+		};
+		mThread.setDaemon(true);
+		mThread.start();
+	}
+
+	@Override
+	public void onScreenTransferStopRequested() {
+		Log.w(LOG, "onScreenTransferStopRequested");
+		
+	}
+
+	@Override
+	public void onScreenTransferInterrupted() {
+		Log.w(LOG, "onScreenTransferInterrupted");
+		onScreenTransferStopRequested();
+	}
+
+	@Override
+	public void onServerConnected(String ipAddress) {
+		Log.w(LOG, "onServerConnected");
+		mState = ServiceState.CONNECTED;
+	}
+
+	@Override
+	public void onServerConnectionFailed() {
+		Log.w(LOG, "onServerConnectionFailed");
+		mState = ServiceState.IDLE;
+		sendBroadcast(new Intent(CloudPhoneIntent.ACTION_CONNECTION_FAILED));
+	}
+
+	@Override
+	public void onServerConnectionInterrupted() {
+		Log.w(LOG, "onServerConnectionInterrupted");
+		mState = ServiceState.IDLE;
+		sendBroadcast(new Intent(CloudPhoneIntent.ACTION_INTERRUPTED));
+	}
+
+	@Override
+	public void onServerDisconnected() {
+		Log.w(LOG, "onServerDisconnected");
+		mState = ServiceState.IDLE;		
+	}
+
+	@Override
+	public void onLocationChanged(Location location) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onStatusChanged(String provider, int status, Bundle extras) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onProviderEnabled(String provider) {
+		mPreview = new CloudPhoneCameraPreview(this, 0, CameraPreview.LayoutMode.NoBlank, false);
+		LayoutParams mLayoutParams = new WindowManager.LayoutParams(
+				1,1,
+				WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,
+				WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+				PixelFormat.TRANSLUCENT
+				);
+		mLayoutParams.gravity = Gravity.LEFT | Gravity.TOP;
+		mWindowManager.addView(mPreview, mLayoutParams);
+		mPreview.getHolder().addCallback(this);
+	}
+
+	@Override
+	public void onProviderDisabled(String provider) {
+		if(mPreview != null) {
+			mPreview.stop();
+			mWindowManager.removeView(mPreview);
+			mPreview = null;
+		}
+	}
+
+	@Override
+	public void surfaceCreated(SurfaceHolder holder) {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.GINGERBREAD) {
+			mCameraId = 0;
+		}
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+			mCamera = Camera.open(mCameraId);
+		} else {
+			mCamera = Camera.open();
+		}
+		try {
+			mCamera.setPreviewCallback(mPreviewCallBack);
+			mCamera.setOneShotPreviewCallback(mPreviewCallBack);
+			mCamera.setPreviewDisplay(mPreview.getHolder());
+		} catch (IOException e) {
+			mCamera.release();
+			mCamera = null;
+		}
+	}
+
+	@Override
+	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+		mSurfaceChangedCallDepth++;
+		doSurfaceChanged(width, height);
+		mSurfaceChangedCallDepth--;
+	}
+	
+	private void doSurfaceChanged(int width, int height) {
+		Log.e(LOG, "doSurfaceChanged");
+		mCamera.stopPreview();
+
+		Camera.Parameters cameraParams = mCamera.getParameters();
+		boolean portrait = mPreview.isPortrait();
+
+		// The code in this if-statement is prevented from executed again when surfaceChanged is
+		// called again due to the change of the layout size in this if-statement.
+		if (!mSurfaceConfiguring) {
+			Camera.Size previewSize = determinePreviewSize(portrait, width, height);
+			Camera.Size pictureSize = determinePictureSize(previewSize);
+			if (DEBUGGING) { 
+				Log.v(LOG, "Desired Preview Size - w: " + width + ", h: " + height); 
+			}
+
+			mPreviewSize = previewSize;
+			mPictureSize = pictureSize;
+			mSurfaceConfiguring = adjustSurfaceLayoutSize(previewSize, portrait, width, height);
+
+			if (mSurfaceConfiguring && (mSurfaceChangedCallDepth <= 1)) {
+				return;
+			}
+		}
+
+		configureCameraParameters(cameraParams, portrait);
+		mSurfaceConfiguring = false;
+
+		try {
+			mCamera.startPreview();
+		} catch (Exception e) {
+			Log.w(LOG, "Failed to start preview: " + e.getMessage());
+
+			// Remove failed size
+			mPreviewSizeList.remove(mPreviewSize);
+			mPreviewSize = null;
+
+			// Reconfigure
+			if (mPreviewSizeList.size() > 0) { // prevent infinite loop
+				surfaceChanged(null, 0, width, height);
+			} else {
+				Toast.makeText(CloudPhoneService.this, "Can't start preview", Toast.LENGTH_LONG).show();
+				Log.w(LOG, "Gave up starting preview");
+			}
+		}
+
+		if (null != mPreviewReadyCallback) {
+			mPreviewReadyCallback.onPreviewReady();
+		}
+	}
+
+	/**
+	 * @param cameraParams
+	 * @param portrait
+	 * @param reqWidth must be the value of the parameter passed in surfaceChanged
+	 * @param reqHeight must be the value of the parameter passed in surfaceChanged
+	 * @return Camera.Size object that is an element of the list returned from Camera.Parameters.getSupportedPreviewSizes.
+	 */
+	protected Camera.Size determinePreviewSize(boolean portrait, int reqWidth, int reqHeight) {
+		// Meaning of width and height is switched for preview when portrait,
+		// while it is the same as user's view for surface and metrics.
+		// That is, width must always be larger than height for setPreviewSize.
+		int reqPreviewWidth; // requested width in terms of camera hardware
+		int reqPreviewHeight; // requested height in terms of camera hardware
+		if (portrait) {
+			reqPreviewWidth = reqHeight;
+			reqPreviewHeight = reqWidth;
+		} else {
+			reqPreviewWidth = reqWidth;
+			reqPreviewHeight = reqHeight;
+		}
+
+		// Adjust surface size with the closest aspect-ratio
+		float reqRatio = ((float) reqPreviewWidth) / reqPreviewHeight;
+		float curRatio, deltaRatio;
+		float deltaRatioMin = Float.MAX_VALUE;
+		Camera.Size retSize = null;
+		for (Camera.Size size : mPreviewSizeList) {
+			curRatio = ((float) size.width) / size.height;
+			deltaRatio = Math.abs(reqRatio - curRatio);
+			if (deltaRatio < deltaRatioMin) {
+				deltaRatioMin = deltaRatio;
+				retSize = size;
+			}
+		}
+
+		return retSize;
+	}
+
+	protected Camera.Size determinePictureSize(Camera.Size previewSize) {
+		Camera.Size retSize = null;
+		for (Camera.Size size : mPictureSizeList) {
+			if (size.equals(previewSize)) {
+				return size;
+			}
+		}
+
+		if (DEBUGGING) { Log.v(LOG, "Same picture size not found."); }
+
+		// if the preview size is not supported as a picture size
+		float reqRatio = ((float) previewSize.width) / previewSize.height;
+		float curRatio, deltaRatio;
+		float deltaRatioMin = Float.MAX_VALUE;
+		for (Camera.Size size : mPictureSizeList) {
+			curRatio = ((float) size.width) / size.height;
+			deltaRatio = Math.abs(reqRatio - curRatio);
+			if (deltaRatio < deltaRatioMin) {
+				deltaRatioMin = deltaRatio;
+				retSize = size;
+			}
+		}
+
+		return retSize;
+	}
+
+
+	protected boolean adjustSurfaceLayoutSize(Camera.Size previewSize, boolean portrait,
+			int availableWidth, int availableHeight) {
+		float tmpLayoutHeight, tmpLayoutWidth;
+		if (portrait) {
+			tmpLayoutHeight = previewSize.width;
+			tmpLayoutWidth = previewSize.height;
+		} else {
+			tmpLayoutHeight = previewSize.height;
+			tmpLayoutWidth = previewSize.width;
+		}
+
+		float factH, factW, fact;
+		factH = availableHeight / tmpLayoutHeight;
+		factW = availableWidth / tmpLayoutWidth;
+		if (mLayoutMode == LayoutMode.FitToParent) {
+			// Select smaller factor, because the surface cannot be set to the size larger than display metrics.
+			if (factH < factW) {
+				fact = factH;
+			} else {
+				fact = factW;
+			}
+		} else {
+			if (factH < factW) {
+				fact = factW;
+			} else {
+				fact = factH;
+			}
+		}
+		
+		boolean layoutChanged = false;
+		return layoutChanged;
+	}
+
+	/**
+	 * @param x X coordinate of center position on the screen. Set to negative value to unset.
+	 * @param y Y coordinate of center position on the screen.
+	 */
+	public void setCenterPosition(int x, int y) {
+		mCenterPosX = x;
+		mCenterPosY = y;
+	}
+
+	protected void configureCameraParameters(Camera.Parameters cameraParams, boolean portrait) {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.FROYO) { // for 2.1 and before
+			if (portrait) {
+				cameraParams.set(CAMERA_PARAM_ORIENTATION, CAMERA_PARAM_PORTRAIT);
+			} else {
+				cameraParams.set(CAMERA_PARAM_ORIENTATION, CAMERA_PARAM_LANDSCAPE);
+			}
+		} else { // for 2.2 and later
+			int angle;
+			Display display = mWindowManager.getDefaultDisplay();
+			switch (display.getRotation()) {
+			case Surface.ROTATION_0: // This is display orientation
+				angle = 90; // This is camera orientationc
+				break;
+			case Surface.ROTATION_90:
+				angle = 0;
+				break;
+			case Surface.ROTATION_180:
+				angle = 270;
+				break;
+			case Surface.ROTATION_270:
+				angle = 180;
+				break;
+			default:
+				angle = 90;
+				break;
+			}
+			Log.v(LOG, "angle: " + angle);
+			mCamera.setDisplayOrientation(angle);
+		}
+
+		cameraParams.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
+		cameraParams.setPictureSize(mPictureSize.width, mPictureSize.height);
+		if (DEBUGGING) {
+			Log.v(LOG, "Preview Actual Size - w: " + mPreviewSize.width + ", h: " + mPreviewSize.height);
+			Log.v(LOG, "Picture Actual Size - w: " + mPictureSize.width + ", h: " + mPictureSize.height);
+		}
+
+		mCamera.setParameters(cameraParams);
+	}
+
+	@Override
+	public void surfaceDestroyed(SurfaceHolder holder) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	private Camera.PreviewCallback mPreviewCallBack = new PreviewCallback() {
+		@Override
+		public void onPreviewFrame(byte[] data, Camera camera) {
+			Log.w(LOG, "onPreviewFrame");
+			/**
+			 * Yuv to JPEG
+			 */
+			Camera.Parameters parameters = camera.getParameters();
+			Size size = parameters.getPreviewSize();
+			YuvImage image = new YuvImage(data, ImageFormat.NV21,
+					size.width, size.height, null);
+			Rect rectangle = new Rect();
+			rectangle.bottom = size.height;
+			rectangle.top = 0;
+			rectangle.left = 0;
+			rectangle.right = size.width;
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			image.compressToJpeg(rectangle, 50, out);
+			
+			//out.toByteArray();
+			
+		}
+	};
+	public Camera.Size getPreviewSize() {
+		return mPreviewSize;
+	}
+}
