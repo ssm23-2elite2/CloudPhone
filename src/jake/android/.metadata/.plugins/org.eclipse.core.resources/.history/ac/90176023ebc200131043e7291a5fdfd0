@@ -29,15 +29,16 @@ public class CameraSender extends PacketSender {
 
 		Packet packet = new Packet(OpCode.INFO_SEND, sizeInfo, length);
 
-		Send(packet);
+		send(jpgInfoPacket);
 
+		//Next send jpg data to host
 		while(totalSize > transmittedSize){
 			int CurTransSize = (totalSize - transmittedSize) > MAXDATASIZE ? MAXDATASIZE : (totalSize - transmittedSize);
 			System.arraycopy(image, transmittedSize, sendBuffer, 0, CurTransSize);
 			transmittedSize += CurTransSize;
 
-			Packet dataPacket = new Packet(OpCode.DATA_SEND, sendBuffer, CurTransSize);
-			Send(dataPacket);
+			Packet jpgDataPacket = new Packet(OpCode.DATA_SEND, sendBuffer, CurTransSize);
+			send(jpgDataPacket);
 		}		
 	}
 }

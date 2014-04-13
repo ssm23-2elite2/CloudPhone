@@ -68,6 +68,7 @@ public class CloudPhoneSocket implements PacketListener {
 	//Send image
 	public void SendCameraPreview(byte[] image, int orientation, int size){
 		try{
+			Log.e(LOG, "IMAGESIZE : " + image.length);
 			mCameraSender.SendCameraPreview(image, orientation, size);
 		}catch(IOException e){
 			e.printStackTrace();

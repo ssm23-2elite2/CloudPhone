@@ -36,8 +36,8 @@ public class CameraSender extends PacketSender {
 			System.arraycopy(image, transmittedSize, sendBuffer, 0, CurTransSize);
 			transmittedSize += CurTransSize;
 
-			Packet dataPacket = new Packet(OpCode.DATA_SEND, sendBuffer, CurTransSize);
-			Send(dataPacket);
+			Packet jpgDataPacket = new Packet(OpCode.DATA_SEND, sendBuffer, CurTransSize);
+			Send(jpgDataPacket);
 		}		
 	}
 }

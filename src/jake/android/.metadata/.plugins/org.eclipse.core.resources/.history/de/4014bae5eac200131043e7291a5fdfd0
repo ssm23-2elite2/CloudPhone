@@ -20,24 +20,25 @@ public class CameraSender extends PacketSender {
 		super(out);		
 	}
 
-	public void SendCameraPreview(byte[] image, int orientation, int size) throws IOException{
+	public void sendCameraPreview(byte[] image, int orientation, int size) throws IOException{
 		int totalSize = size;
 		int transmittedSize = 0;		
 
 		sizeInfo[0] = (byte)orientation;
 		int length = ConvertUtil.itoa(totalSize, sizeInfo, 1) + ORIENTATION_INFO_LENGTH;
 
-		Packet packet = new Packet(OpCode.INFO_SEND, sizeInfo, length);
+		Packet jpgInfoPacket = new Packet(OpCode.INFO_SEND, sizeInfo, length);
 
-		Send(packet);
+		send(jpgInfoPacket);
 
+		//Next send jpg data to host
 		while(totalSize > transmittedSize){
 			int CurTransSize = (totalSize - transmittedSize) > MAXDATASIZE ? MAXDATASIZE : (totalSize - transmittedSize);
 			System.arraycopy(image, transmittedSize, sendBuffer, 0, CurTransSize);
 			transmittedSize += CurTransSize;
 
-			Packet dataPacket = new Packet(OpCode.DATA_SEND, sendBuffer, CurTransSize);
-			Send(dataPacket);
+			Packet jpgDataPacket = new Packet(OpCode.DATA_SEND, sendBuffer, CurTransSize);
+			send(jpgDataPacket);
 		}		
 	}
 }

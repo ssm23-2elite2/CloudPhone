@@ -3,18 +3,19 @@
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
 		<item value="261" key="DIALOG_WIDTH"/>
 		<item value="119" key="DIALOG_Y_ORIGIN"/>
-		<item value="380" key="DIALOG_HEIGHT"/>
 		<item value="561" key="DIALOG_X_ORIGIN"/>
+		<item value="380" key="DIALOG_HEIGHT"/>
 		<item value="1|맑은 고딕|9.0|0|WINDOWS|1|-12|0|0|0|400|0|0|0|1|0|0|0|0|맑은 고딕" key="DIALOG_FONT_NAME"/>
 	</section>
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="true" key="wrap"/>
-		<item value="false" key="isRegEx"/>
 		<item value="false" key="casesensitive"/>
+		<item value="false" key="isRegEx"/>
 		<item value="false" key="incremental"/>
 		<item value="false" key="wholeword"/>
-		<item value="streamSender" key="selection"/>
+		<item value="mCameraSender" key="selection"/>
 		<list key="findhistory">
+			<item value="mCameraSender"/>
 			<item value="streamSender"/>
 			<item value="sender"/>
 			<item value="Sender"/>
@@ -22,7 +23,6 @@
 			<item value="addCallBack"/>
 			<item value="doSurfaceChanged"/>
 			<item value="CameraPreview"/>
-			<item value="surfaceCreated"/>
 		</list>
 		<list key="replacehistory">
 		</list>

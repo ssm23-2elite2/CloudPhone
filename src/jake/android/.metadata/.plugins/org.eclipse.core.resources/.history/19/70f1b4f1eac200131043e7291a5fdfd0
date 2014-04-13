@@ -198,7 +198,7 @@ public class CloudPhoneService extends Service implements LocationListener, Serv
 	@Override
 	public void onPreview(byte[] image) {
 		Log.i(LOG, "onPreview :" + image.length);
-		mSocket.SendCameraPreview(image, Util.getRotation(this), image.length);
+		mSocket.sendCameraPreview(image, Util.getRotation(this), image.length);
 	}
 
 	@Override
