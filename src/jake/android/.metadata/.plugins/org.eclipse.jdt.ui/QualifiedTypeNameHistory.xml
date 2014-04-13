@@ -1,28 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <qualifiedTypeNameHistroy>
-<fullyQualifiedTypeName name="com.ssm232.elite.cloudphonetest.R"/>
-<fullyQualifiedTypeName name="android.view.View"/>
-<fullyQualifiedTypeName name="android.view.WindowManager"/>
-<fullyQualifiedTypeName name="android.widget.Spinner"/>
-<fullyQualifiedTypeName name="android.content.Intent"/>
-<fullyQualifiedTypeName name="com.ssm232.elite.cloudphonetest.CloudPhone"/>
-<fullyQualifiedTypeName name="com.ssm232.elite.cloudphonetest.camera.CameraPreviewTestActivity"/>
-<fullyQualifiedTypeName name="android.widget.FrameLayout"/>
-<fullyQualifiedTypeName name="android.view.ViewGroup.LayoutParams"/>
-<fullyQualifiedTypeName name="android.widget.LinearLayout"/>
-<fullyQualifiedTypeName name="android.widget.LinearLayout.LayoutParams"/>
-<fullyQualifiedTypeName name="android.view.Gravity"/>
-<fullyQualifiedTypeName name="android.widget.RelativeLayout"/>
-<fullyQualifiedTypeName name="com.ssm232.elite.cloudphonetest.R.id"/>
-<fullyQualifiedTypeName name="android.hardware.Camera.PreviewCallback"/>
-<fullyQualifiedTypeName name="android.location.GpsStatus"/>
-<fullyQualifiedTypeName name="android.content.Context"/>
 <fullyQualifiedTypeName name="java.io.BufferedWriter"/>
 <fullyQualifiedTypeName name="java.io.ByteArrayOutputStream"/>
 <fullyQualifiedTypeName name="java.io.OutputStream"/>
 <fullyQualifiedTypeName name="com.ssm232.elite.cloudphonetest.camera.CameraPreview.NetworkTask"/>
 <fullyQualifiedTypeName name="java.net.SocketAddress"/>
-<fullyQualifiedTypeName name="android.hardware.Camera"/>
 <fullyQualifiedTypeName name="java.nio.ByteBuffer"/>
 <fullyQualifiedTypeName name="android.app.Activity"/>
 <fullyQualifiedTypeName name="Test"/>
@@ -58,6 +40,24 @@
 <fullyQualifiedTypeName name="android.util.Log"/>
 <fullyQualifiedTypeName name="android.location.LocationManager"/>
 <fullyQualifiedTypeName name="android.location.LocationListener"/>
-<fullyQualifiedTypeName name="org.secmem232.cloudphone.CloudPhoneService"/>
+<fullyQualifiedTypeName name="android.view.SurfaceHolder"/>
+<fullyQualifiedTypeName name="android.hardware.Camera"/>
 <fullyQualifiedTypeName name="org.secmem232.cloudphone.CloudPhoneCameraPreview"/>
+<fullyQualifiedTypeName name="android.graphics.PixelFormat"/>
+<fullyQualifiedTypeName name="android.view.Gravity"/>
+<fullyQualifiedTypeName name="android.view.SurfaceHolder.Callback"/>
+<fullyQualifiedTypeName name="org.secmem232.cloudphone.CameraPreview.LayoutMode"/>
+<fullyQualifiedTypeName name="android.view.SurfaceView"/>
+<fullyQualifiedTypeName name="org.secmem232.cloudphone.CameraIPreviewListener"/>
+<fullyQualifiedTypeName name="org.secmem232.cloudphone.CameraPreview.CameraPreviewListener"/>
+<fullyQualifiedTypeName name="android.app.NotificationManager"/>
+<fullyQualifiedTypeName name="android.content.Context"/>
+<fullyQualifiedTypeName name="android.view.WindowManager"/>
+<fullyQualifiedTypeName name="android.view.WindowManager.LayoutParams"/>
+<fullyQualifiedTypeName name="android.widget.FrameLayout"/>
+<fullyQualifiedTypeName name="android.hardware.Camera.PreviewCallback"/>
+<fullyQualifiedTypeName name="org.secmem232.cloudphone.CameraPreview"/>
+<fullyQualifiedTypeName name="org.secmem232.cloudphone.network.CameraSenderListener"/>
+<fullyQualifiedTypeName name="org.secmem232.cloudphone.util.Util"/>
+<fullyQualifiedTypeName name="org.secmem232.cloudphone.CloudPhoneService"/>
 </qualifiedTypeNameHistroy>

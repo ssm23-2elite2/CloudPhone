@@ -9,8 +9,8 @@ public class PacketHeader {
 	
 	public class OpCode{
 		public static final int INVALID = -1;
-		public static final int JPGINFO_SEND = 1;
-		public static final int JPGDATA_SEND = 2;
+		public static final int INFO_SEND = 1;
+		public static final int DATA_SEND = 2;
 		public static final int SCREEN_SEND_REQUESTED = 3;
 		public static final int SCREEN_STOP_REQUESTED = 4;
 		public static final int SCREEN_ON_STATE_INFO = 5;

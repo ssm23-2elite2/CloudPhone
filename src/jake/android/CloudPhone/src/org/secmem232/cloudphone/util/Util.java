@@ -10,6 +10,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import android.view.Display;
+import android.view.WindowManager;
 
 
 public class Util {
@@ -37,6 +39,12 @@ public class Util {
 				return null;
 			}
 		}
+	}
+	
+	public static int getRotation(Context context){
+		WindowManager wm = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);
+		Display display = wm.getDefaultDisplay();
+		return  display.getRotation();
 	}
 	
 }

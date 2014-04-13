@@ -1,0 +1,5 @@
+package org.secmem232.cloudphone.network;
+
+public interface CameraSenderListener {
+
+}

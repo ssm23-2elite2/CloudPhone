@@ -1,10 +1,14 @@
 package org.secmem232.cloudphone;
 
+import org.secmem232.cloudphone.CameraPreview.CameraPreviewListener;
 import org.secmem232.cloudphone.intent.CloudPhoneIntent;
+import org.secmem232.cloudphone.network.CameraSenderListener;
 import org.secmem232.cloudphone.network.CloudPhoneSocket;
-import org.secmem232.cloudphone.network.ScreenTransmissionListener;
 import org.secmem232.cloudphone.network.ServerConnectionListener;
+import org.secmem232.cloudphone.util.Util;
 
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -19,23 +23,24 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.WindowManager;
+import android.view.WindowManager.LayoutParams;
 import android.widget.FrameLayout;
-import android.widget.FrameLayout.LayoutParams;
 
-public class CloudPhoneService extends Service implements LocationListener, ServerConnectionListener, ScreenTransmissionListener {
-	private final static String LOG = "CloudPhoneService";
+public class CloudPhoneService extends Service implements LocationListener, ServerConnectionListener, CameraSenderListener, CameraPreviewListener {
+	private static final String LOG = "CloudPhoneService";
 	
 	//카메라 관련
 	private LocationManager mLocationManager;
-	private int mCameraId = 0;
-	private CloudPhoneCameraPreview mPreview;
-	private FrameLayout mLayout;
-	private WindowManager.LayoutParams mPreviewLayoutParams;
+	private CameraPreview mPreview;
 	private WindowManager mWindowManager;
-		
+	private NotificationManager mNotificationManager;
+	private int mCameraId = 0;
+	private FrameLayout mLayout;
+	
+	private Intent mGPSIntent;
+	
 	//서비스 상태
 	public enum ServiceState { IDLE, CONNECTING, CONNECTED };
-	
 	private CloudPhoneSocket mSocket;
 	private static ServiceState mState = ServiceState.IDLE;
 	
@@ -95,46 +100,26 @@ public class CloudPhoneService extends Service implements LocationListener, Serv
 	public void onCreate() {
 		super.onCreate();
 		Log.w(LOG, "onCreate");
+		mGPSIntent = new Intent("android.location.GPS_ENABLED_CHANGE");
+		mNotificationManager = (NotificationManager) getSystemService (Context.NOTIFICATION_SERVICE);
+        mWindowManager = (WindowManager) getSystemService (Context.WINDOW_SERVICE);
 		mSocket = new CloudPhoneSocket(this);
-		mSocket.setScreenTransMissionListener(this);
+		mSocket.setCameraSenderListener(this);
 		mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, Integer.MAX_VALUE, Integer.MAX_VALUE, this);	
+		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, Integer.MAX_VALUE, Integer.MAX_VALUE, this);
 	}
 	
-	private void createCameraPreview() {
-		mPreview = new CloudPhoneCameraPreview(this, mCameraId, CameraPreview.LayoutMode.NoBlank, false);
-		LayoutParams previewLayoutParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-		mLayout.addView(mPreview, 0, previewLayoutParams);
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		
+		mGPSIntent.putExtra("enabled", false);
+		sendBroadcast(mGPSIntent);
 	}
 	
 	public ServiceState getConnectionState() {
 		Log.w(LOG, "getConnectionState");
 		return mState;
-	}
-
-	@Override
-	public void onScreenTransferRequested() {
-		Log.w(LOG, "onScreenTransferRequested");
-		Thread mThread = new Thread(){
-			@Override
-			public void run() {
-				
-			}
-		};
-		mThread.setDaemon(true);
-		mThread.start();
-	}
-
-	@Override
-	public void onScreenTransferStopRequested() {
-		Log.w(LOG, "onScreenTransferStopRequested");
-		
-	}
-
-	@Override
-	public void onScreenTransferInterrupted() {
-		Log.w(LOG, "onScreenTransferInterrupted");
-		onScreenTransferStopRequested();
 	}
 
 	@Override
@@ -177,25 +162,60 @@ public class CloudPhoneService extends Service implements LocationListener, Serv
 
 	@Override
 	public void onProviderEnabled(String provider) {
-		createCameraPreview();
-		mPreviewLayoutParams = new WindowManager.LayoutParams(
+		Notification notification = new Notification.Builder(this)
+            .setContentTitle("Background Video Recorder")
+            .setContentText("")
+            .setSmallIcon(R.drawable.ic_launcher)
+            .build();
+        startForeground(3737, notification);
+        
+        mLayout = new FrameLayout(this);
+        mPreview = new CameraPreview(this, 0, CameraPreview.LayoutMode.NoBlank);
+        LayoutParams mLayoutParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+        mLayout.addView(mPreview, 0, mLayoutParams);
+		LayoutParams mPreviewLayoutParams = new WindowManager.LayoutParams(
 				WindowManager.LayoutParams.WRAP_CONTENT,
 				WindowManager.LayoutParams.WRAP_CONTENT,
 				WindowManager.LayoutParams.TYPE_PHONE,//항상 최 상위. 터치 이벤트 받을 수 있음.
 				WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,  //포커스를 가지지 않음
 				PixelFormat.TRANSLUCENT);
+		mPreview.setCameraPreviewListener(this);
 		mPreviewLayoutParams.gravity = Gravity.LEFT | Gravity.TOP;
 		mPreviewLayoutParams.setTitle("");
-		mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
 		mWindowManager.addView(mLayout, mPreviewLayoutParams);
 	}
 
 	@Override
 	public void onProviderDisabled(String provider) {
-		if(mLayout != null) {
+		mNotificationManager.cancel(3737);
+		if(mLayout != null && mPreview != null) {
 			mPreview.stop();
-			((WindowManager) getSystemService(WINDOW_SERVICE)).removeView(mLayout);
+			mWindowManager.removeView(mLayout);
 			mLayout = null;
 		}
+	}
+
+	@Override
+	public void onPreview(byte[] image) {
+		Log.i(LOG, "onPreview :" + image.length);
+		mSocket.SendCameraPreview(image, Util.getRotation(this), image.length);
+	}
+
+	@Override
+	public void onCameraSenderRequested() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onCameraSenderStopRequested() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onCameraSenderInterrupted() {
+		// TODO Auto-generated method stub
+		
 	}
 }
