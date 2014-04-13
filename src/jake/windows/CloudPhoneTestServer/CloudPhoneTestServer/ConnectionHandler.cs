@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace CloudPhoneTestServer
 {
-
     public class ConnectionHandler
     {
         private CloudPhoneForm cloudphoneForm;
-        private int size;
+        private int iTotalSize;
+        private int iRecvSize;
 
         public ConnectionHandler(CloudPhoneForm form)
         {
@@ -28,30 +28,55 @@ namespace CloudPhoneTestServer
 
         public void clientHandler()
         {
+            int iOPCode;
+            int iPacketSize;
+            MemoryStream imageStream = null;
+
             try
             {
                 TcpClient client = threadListener.AcceptTcpClient();
                 NetworkStream ns = client.GetStream();
-                byte[] buffer = new byte[1024];
-
+                
                 while (isRunning)
                 {
                     try
                     {
-                        int totalLength = 0;
-
-                        ns.Read(buffer, 0, buffer.Length);
-                        int fileLength = BitConverter.ToInt32(buffer, 0);
-                        var stream = new MemoryStream();
-                        while(totalLength < fileLength)
+                        byte[] packet = new byte[4096];
+                        int iRecvLen = ns.Read(packet, 0, packet.Length);
+                        if (iRecvLen < 0)
                         {
-                            int receiveLength = ns.Read(buffer, 0, buffer.Length);
-                            stream.Write(buffer, 0, receiveLength);
-                            totalLength += receiveLength;
+                            break;
                         }
 
-                        Image image = Image.FromStream(stream);
-                        cloudphoneForm.Invoke(cloudphoneForm.myDelegate, image);
+                        iOPCode = Util.GetOpCode(packet);
+                        iPacketSize = Util.GetPacketSize(packet);
+
+                        packet = packet.Skip(PacketHeader.LENGTH).ToArray();
+
+                        switch (iOPCode)
+                        {
+                            case OpCode.INFO_SEND:
+                                byte[] bInfoLength = new byte[PacketPayload.INFO_LENGTH];
+                                Buffer.BlockCopy(packet, 1, bInfoLength, 0, PacketPayload.INFO_LENGTH);
+                                bInfoLength.Reverse();
+                                iTotalSize = int.Parse(Encoding.Default.GetString(bInfoLength)); 
+                                iRecvSize = 0;
+                                imageStream = new MemoryStream();
+                                break;
+                            case OpCode.DATA_SEND:
+                                imageStream.Write(packet, 0, iPacketSize - PacketHeader.LENGTH);
+                                iRecvSize += iPacketSize - PacketHeader.LENGTH;
+
+                                if (iRecvSize == iTotalSize)
+                                {
+                                    Image image = Image.FromStream(imageStream);
+                                    cloudphoneForm.Invoke(cloudphoneForm.myDelegate, image);
+
+                                    ns.Read(packet, 0, iPacketSize - PacketHeader.LENGTH);
+                                }
+                                
+                                break;
+                        }                                
                     }
                     catch (Exception e)
                     {

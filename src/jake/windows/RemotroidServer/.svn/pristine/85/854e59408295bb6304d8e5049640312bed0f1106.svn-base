@@ -1,0 +1,457 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ReadMe.txt" />
+    <None Include="res\RemotroidServer.rc2">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\RemotroidServer.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\png1.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\galaxy.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\BACKGROUND.rgn" />
+    <None Include="res\galaxybalck.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\bitmap1.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\galaxybalck11.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\backbutton.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\homebutton.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\menubutton.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\backbutton_click.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\backbutton_over.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\homebutton_down.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\homebutton_over.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\menubutton_click.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\menubutton_over.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\popupdlg.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\bitmap2.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\XBtn.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\XBtn_hover.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\remoteroid_logo_wnd.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\alram.wav">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\XBtn_main.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\XBtn_main_hover.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\traybtn_hover.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\traybtn.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\byYeongHo_00.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\byYeongHo_01.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\byYeongHo_02.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\size.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\background.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\background_garo.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\backbutton_click_garo.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\backbutton_garo.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\backbutton_over_garo.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\homebutton_down_garo.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\homebutton_garo.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\homebutton_over_garo.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\menubutton_click_garo.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\menubutton_garo.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\menubutton_over_garo.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\traybtn_garo.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\traybtn_hover_garo.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\XBtn_main_garo.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\XBtn_main_hover_garo.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\powerbtn.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\powerbtn_click.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\powerbtn_hover.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\volumebtn.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\volumebtn_click.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\volumebtn_hover.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\powerbtn_click_garo.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\powerbtn_garo.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\powerbtn_hover_garo.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\volumebtn_click_garo.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\volumebtn_garo.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\volumebtn_hover_garo.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\explorerbtn_click_garo.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\explorerbtn_garo.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\explorerbtn_hover_garo.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\explorerbtn.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\explorerbtn_click.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\explorerbtn_hover.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="ClassDiagram1.cd" />
+    <None Include="res\test.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\connect_btn.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\connect_btn_hover.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\kakaboback.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\textbox.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\sendbutton.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\sendbutton_hover.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="RemotroidServer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RemotroidServerDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MyClient.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="packetdefine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RecvFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FileSender.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DrawJpg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Screen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MyBitmapBtn.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CMyMemDC.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TextProgressCtrl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VitualEventPacket.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="input.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyCodeGen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PopupDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Splash.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PopupDlgMgr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TrayIcon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AniStatic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ResizingDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ResizingControl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ResizeControlMgr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Web.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Account.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Response.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WebRequest.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DeviceInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MyDeviceMgr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IFileTranceiverListener.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KakaoPopupDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EditTrans.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MyEdit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EditHistory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="INIMgr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="RemotroidServer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RemotroidServerDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MyClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RecvFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Util.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FileSender.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DrawJpg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Screen.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MyBitmapBtn.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TextProgressCtrl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VitualEventPacket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="KeyCodeGen.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PopupDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Splash.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PopupDlgMgr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TrayIcon.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AniStatic.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResizingDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResizingControl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ResizeControlMgr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Web.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Account.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Response.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WebRequest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DeviceInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MyDeviceMgr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="KakaoPopupDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EditTrans.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MyEdit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EditHistory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="INIMgr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="RemotroidServer.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>
