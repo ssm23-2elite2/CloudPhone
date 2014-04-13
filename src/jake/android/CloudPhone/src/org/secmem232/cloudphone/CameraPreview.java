@@ -387,7 +387,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 			
 			if(mCameraPreviewListener != null) {
 				mCameraPreviewListener.onPreview(out.toByteArray());
-				camera.setPreviewCallback(this);
+				//camera.setPreviewCallback(this);
 			}
 		}
 	};
