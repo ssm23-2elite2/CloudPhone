@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <qualifiedTypeNameHistroy>
-<fullyQualifiedTypeName name="java.io.BufferedWriter"/>
 <fullyQualifiedTypeName name="java.io.ByteArrayOutputStream"/>
 <fullyQualifiedTypeName name="java.io.OutputStream"/>
 <fullyQualifiedTypeName name="com.ssm232.elite.cloudphonetest.camera.CameraPreview.NetworkTask"/>
@@ -52,12 +51,13 @@
 <fullyQualifiedTypeName name="org.secmem232.cloudphone.CameraPreview.CameraPreviewListener"/>
 <fullyQualifiedTypeName name="android.app.NotificationManager"/>
 <fullyQualifiedTypeName name="android.content.Context"/>
-<fullyQualifiedTypeName name="android.view.WindowManager"/>
-<fullyQualifiedTypeName name="android.view.WindowManager.LayoutParams"/>
 <fullyQualifiedTypeName name="android.widget.FrameLayout"/>
 <fullyQualifiedTypeName name="android.hardware.Camera.PreviewCallback"/>
 <fullyQualifiedTypeName name="org.secmem232.cloudphone.CameraPreview"/>
 <fullyQualifiedTypeName name="org.secmem232.cloudphone.network.CameraSenderListener"/>
 <fullyQualifiedTypeName name="org.secmem232.cloudphone.util.Util"/>
 <fullyQualifiedTypeName name="org.secmem232.cloudphone.CloudPhoneService"/>
+<fullyQualifiedTypeName name="android.view.View"/>
+<fullyQualifiedTypeName name="android.view.WindowManager"/>
+<fullyQualifiedTypeName name="android.view.WindowManager.LayoutParams"/>
 </qualifiedTypeNameHistroy>

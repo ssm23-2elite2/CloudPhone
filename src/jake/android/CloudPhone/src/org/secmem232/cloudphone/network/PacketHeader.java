@@ -3,9 +3,9 @@ package org.secmem232.cloudphone.network;
 import org.secmem232.cloudphone.util.ConvertUtil;
 
 public class PacketHeader {
-	public static final int LENGTH = 6;
+	public static final int LENGTH = 10;
 	public static final int OPCODE_LENGTH = 2;
-	public static final int PAYLOAD_LENGTH = 4;
+	public static final int PAYLOAD_LENGTH = 8;
 	
 	public class OpCode{
 		public static final int INVALID = -1;
@@ -22,7 +22,7 @@ public class PacketHeader {
 	
 	private static byte[] opCodeBuffer = new byte[OPCODE_LENGTH];
 	private static byte[] packetSizeBuffer = new byte[PAYLOAD_LENGTH];
-	private static byte[] heaerBuffer = new byte[OPCODE_LENGTH+PAYLOAD_LENGTH];
+	private static byte[] heaerBuffer = new byte[OPCODE_LENGTH + PAYLOAD_LENGTH];
 	
 	private PacketHeader(){
 		
@@ -35,7 +35,7 @@ public class PacketHeader {
 	
 	@Override
 	public String toString(){
-		return String.format("%2d%4d", opCode, payloadLength+LENGTH);
+		return String.format("%2d%8d", opCode, payloadLength + LENGTH);
 	}
 	
 	public byte[] asByteArray(){

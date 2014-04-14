@@ -1,17 +1,27 @@
 package org.secmem232.cloudphone.network;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
-public class PacketSender {
-	private OutputStream sendStream;	
+import android.os.StrictMode;
 
-	public PacketSender(OutputStream stream){
-		this.sendStream = stream;		
+public class PacketSender {
+	private OutputStream sendStream;
+	private InputStream recvStream;
+
+	public PacketSender(OutputStream sendStream, InputStream recvStream){
+		this.sendStream = sendStream;
+		this.recvStream = recvStream;
+		
 	}
 
 	public void setOutputStream(OutputStream stream){
 		this.sendStream = stream;
+	}
+	
+	public void setInputStream(InputStream stream) {
+		this.recvStream = stream;
 	}
 
 	public void Send(Packet packet) throws IOException{
@@ -19,6 +29,9 @@ public class PacketSender {
 		int packetSize = packet.getHeader().getPacketLength();
 		synchronized(java.lang.Object.class){
 			sendStream.write(packet.asByteArray(), 0, packetSize);
+
+			StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().permitNetwork().build());
+			recvStream.read();
 		}
 	}
 }
