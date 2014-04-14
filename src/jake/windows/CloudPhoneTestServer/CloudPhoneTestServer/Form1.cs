@@ -52,7 +52,11 @@ namespace CloudPhoneTestServer
             _logi = new logii(logi);
             _logw = new logww(logw);
             _loge = new logee(loge);
-            
+
+            isConnected = true;
+            logi("서버 쓰레드 생성 CloudPhoneTestServer new Thread");
+            serverThread = new Thread(new ThreadStart(ListenerThread));
+            serverThread.Start();
         }
 
         // 종료시 처리

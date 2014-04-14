@@ -39,6 +39,7 @@ namespace CloudPhoneTestServer
                 
                 while (isRunning)
                 {
+                    
                     try
                     {
                         byte[] packet = new byte[4096];
@@ -71,18 +72,16 @@ namespace CloudPhoneTestServer
                                 {
                                     Image image = Image.FromStream(imageStream);
                                     cloudphoneForm.Invoke(cloudphoneForm.myDelegate, image);
-
-                                    ns.Read(packet, 0, iPacketSize - PacketHeader.LENGTH);
                                 }
                                 
                                 break;
-                        }                                
+                        }
                     }
                     catch (Exception e)
                     {
                         cloudphoneForm.Invoke(cloudphoneForm._loge, "clientHandler : " + e.Message);
-                        isRunning = false;
                     }
+                
                 }
                 ns.Close();
                 client.Close();
