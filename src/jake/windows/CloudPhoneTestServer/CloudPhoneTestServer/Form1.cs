@@ -22,8 +22,8 @@ namespace CloudPhoneTestServer
         private TcpListener client;
         private Thread serverThread;
 
-        public delegate void showImage(Image image);
-        public showImage myDelegate;
+        public delegate void showImage(Image image, byte bOrientation);
+        public showImage showImageDelegate;
 
         public delegate void logii(String msg);
         public logii _logi;
@@ -47,8 +47,8 @@ namespace CloudPhoneTestServer
 
             isConnected = false;
             statusBar.Text = "Hello, Jake";
-            myDelegate = new showImage(showImageMethod);
-            
+            showImageDelegate = new showImage(showImageMethod);
+
             _logi = new logii(logi);
             _logw = new logww(logw);
             _loge = new logee(loge);
@@ -79,9 +79,17 @@ namespace CloudPhoneTestServer
         }
 
         // 클라이언트의 요청을 받아서 이미지를 뿌릴 때 수행되는 함수
-        public void showImageMethod(Image image)
+        public void showImageMethod(Image image, byte bOrientation)
         {
             logi("이미지를 보여줍니다. CloudPhoneTestServer.showImageMethod");
+            switch (bOrientation)
+            {
+                case Orientation.VERTICAL:
+                    image = ImageUtil.RotateImage(image, 90);
+                    break;
+                case Orientation.HORIZONTAL:
+                    break;
+            }
             camViewer.Image = image;
             camViewer.Invalidate();
             camViewer.Refresh();
@@ -101,7 +109,7 @@ namespace CloudPhoneTestServer
                 logi("서버 쓰레드 생성 CloudPhoneTestServer new Thread");
                 serverThread = new Thread(new ThreadStart(ListenerThread));
                 serverThread.Start();
-            }            
+            }
         }
 
         // 클라이언트의 연결을 기다리는 Thread
@@ -165,7 +173,7 @@ namespace CloudPhoneTestServer
         {
             String date = System.DateTime.Now.ToString("MM-dd hh:mm:ss ");
             listLog.Items.Add(new ListBoxItem(Color.Green, "정보 : " + date + msg));
-            statusBar.Text = "정보 : " + date + msg; 
+            statusBar.Text = "정보 : " + date + msg;
             logend();
         }
 
@@ -182,7 +190,7 @@ namespace CloudPhoneTestServer
             String date = System.DateTime.Now.ToString("MM-dd hh:mm:ss ");
             listLog.Items.Add(new ListBoxItem(Color.Red, "에러 : " + date + msg));
             statusBar.Text = "에러 : " + date + msg;
-            logend(); 
+            logend();
         }
 
         // listLog의 Log 색상을 다르게 하기 위해 오버라이딩

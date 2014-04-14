@@ -105,7 +105,7 @@
             this.camViewer.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.camViewer.Location = new System.Drawing.Point(36, 43);
             this.camViewer.Name = "camViewer";
-            this.camViewer.Size = new System.Drawing.Size(325, 376);
+            this.camViewer.Size = new System.Drawing.Size(379, 376);
             this.camViewer.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.camViewer.TabIndex = 5;
             this.camViewer.TabStop = false;

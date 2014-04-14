@@ -19,14 +19,20 @@ namespace CloudPhoneTestServer
 
     static class PacketHeader
     {
-        public const int LENGTH = 6;
+        public const int LENGTH = 10;
         public const int OPCODE_LENGTH = 2;
-        public const int PAYLOAD_LENGTH = 4;
+        public const int PAYLOAD_LENGTH = 8;
     }
 
     static class PacketPayload
     {
         public const int INFO_LENGTH = 10;
         public const int ORIENTATION_INFO_LENGTH = 1;
+    }
+
+    static class Orientation
+    {
+        public const byte VERTICAL = 0;
+        public const byte HORIZONTAL = 1;
     }
 }

@@ -13,6 +13,7 @@ namespace CloudPhoneTestServer
     {
         private CloudPhoneForm cloudphoneForm;
         private int iTotalSize;
+        private byte bOrientation;
         private int iRecvSize;
 
         public ConnectionHandler(CloudPhoneForm form)
@@ -42,25 +43,38 @@ namespace CloudPhoneTestServer
                     
                     try
                     {
-                        byte[] packet = new byte[4096];
+                        byte[] packet = new byte[4096 * 10];
                         int iRecvLen = ns.Read(packet, 0, packet.Length);
-                        if (iRecvLen < 0)
+                        if (iRecvLen <= 0)
                         {
                             break;
                         }
 
-                        iOPCode = Util.GetOpCode(packet);
-                        iPacketSize = Util.GetPacketSize(packet);
+                        try
+                        {
+                            iOPCode = Util.GetOpCode(packet);
+                            iPacketSize = Util.GetPacketSize(packet);
+                        }
+                        catch (FormatException e)
+                        {
+                            continue;
+                        }
 
                         packet = packet.Skip(PacketHeader.LENGTH).ToArray();
 
                         switch (iOPCode)
                         {
                             case OpCode.INFO_SEND:
+                                // Orientation
+                                bOrientation = packet[0];
+
+                                // Size
                                 byte[] bInfoLength = new byte[PacketPayload.INFO_LENGTH];
                                 Buffer.BlockCopy(packet, 1, bInfoLength, 0, PacketPayload.INFO_LENGTH);
                                 bInfoLength.Reverse();
-                                iTotalSize = int.Parse(Encoding.Default.GetString(bInfoLength)); 
+                                iTotalSize = int.Parse(Encoding.Default.GetString(bInfoLength));
+                                
+                                bInfoLength = null;
                                 iRecvSize = 0;
                                 imageStream = new MemoryStream();
                                 break;
@@ -71,15 +85,22 @@ namespace CloudPhoneTestServer
                                 if (iRecvSize == iTotalSize)
                                 {
                                     Image image = Image.FromStream(imageStream);
-                                    cloudphoneForm.Invoke(cloudphoneForm.myDelegate, image);
+                                    cloudphoneForm.Invoke(cloudphoneForm.showImageDelegate, image, bOrientation);
+                                    imageStream.SetLength(0);
+                                    imageStream = null;
                                 }
                                 
                                 break;
                         }
+                        //echo 
+                        packet = null;
+                        //GC.Collect();
+                        ns.Write(new byte[1], 0, 1);
                     }
                     catch (Exception e)
                     {
-                        cloudphoneForm.Invoke(cloudphoneForm._loge, "clientHandler : " + e.Message);
+                        cloudphoneForm.Invoke(cloudphoneForm._loge, "clientHandler : " + e.ToString());
+                        break;
                     }
                 
                 }
