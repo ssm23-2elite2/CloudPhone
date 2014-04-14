@@ -47,10 +47,10 @@ public class CloudPhoneSocket {
 			mUDPSocket = new DatagramSocket();
 			
 			// Open outputStream
-			//mSendStream = mSocket.getOutputStream();
+			mSendStream = mSocket.getOutputStream();
 			
 			// Open inputStream
-			//mRecvStream = mSocket.getInputStream();		
+			mRecvStream = mSocket.getInputStream();		
 
 			mCameraSender = new CameraSender(mUDPSocket, mServerAddr, port, mSendStream, mRecvStream);
 

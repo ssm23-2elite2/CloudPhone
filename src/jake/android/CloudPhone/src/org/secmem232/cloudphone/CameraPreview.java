@@ -383,7 +383,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 			rectangle.left = 0;
 			rectangle.right = size.width;
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			image.compressToJpeg(rectangle, 10, out);
+			image.compressToJpeg(rectangle, 50, out);
 			
 			if(mCameraPreviewListener != null) {
 				mCameraPreviewListener.onPreview(out.toByteArray());

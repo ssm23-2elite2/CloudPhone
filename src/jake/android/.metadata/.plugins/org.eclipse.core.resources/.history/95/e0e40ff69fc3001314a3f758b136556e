@@ -29,7 +29,7 @@ import android.widget.Toast;
 @SuppressLint("NewApi")
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
 	private static boolean DEBUGGING = true;
-	private static final String LOG_TAG = "CameraPreviewSample";
+	private static final String LOG_TAG = "CameraPreview";
 	private static final String CAMERA_PARAM_ORIENTATION = "orientation";
 	private static final String CAMERA_PARAM_LANDSCAPE = "landscape";
 	private static final String CAMERA_PARAM_PORTRAIT = "portrait";
@@ -48,6 +48,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 	
 	private PreviewReadyCallback mPreviewReadyCallback = null;
 	private CameraPreviewListener mCameraPreviewListener = null;
+	
 	private final String LOG = "CameraPreview";
 	public static enum LayoutMode {
 		FitToParent, // Scale to the size that no side is larger than the parent
@@ -103,10 +104,12 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 	public void surfaceCreated(SurfaceHolder holder) {
 		Log.w(LOG, "surfaceCreated");
 		try {
+			mCamera.setPreviewDisplay(holder);
 			mCamera.setPreviewCallback(mPreviewCallBack);
 			mCamera.setOneShotPreviewCallback(mPreviewCallBack);
-			mCamera.setPreviewDisplay(mHolder);
-		} catch (IOException e) {
+			mCamera.startPreview();
+		} catch (Exception e) {
+			mCamera.setPreviewCallback(null);
 			mCamera.release();
 			mCamera = null;
 		}
@@ -114,13 +117,14 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
 	@Override
 	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+		Log.w(LOG, "surfaceChanged");
 		mSurfaceChangedCallDepth++;
 		doSurfaceChanged(width, height);
 		mSurfaceChangedCallDepth--;
 	}
 
 	private void doSurfaceChanged(int width, int height) {
-		Log.e(LOG, "doSurfaceChanged");
+		Log.i(LOG, "doSurfaceChanged");
 		mCamera.stopPreview();
 
 		Camera.Parameters cameraParams = mCamera.getParameters();
@@ -148,6 +152,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 		mSurfaceConfiguring = false;
 
 		try {
+			mCamera.setPreviewCallback(mPreviewCallBack);
+			mCamera.setOneShotPreviewCallback(mPreviewCallBack);
+			
 			mCamera.startPreview();
 		} catch (Exception e) {
 			Log.w(LOG_TAG, "Failed to start preview: " + e.getMessage());
@@ -264,7 +271,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 			}
 		}
 
-		WindowManager.LayoutParams layoutParams = (WindowManager.LayoutParams)this.getLayoutParams();
+		FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams)this.getLayoutParams();
 
 		int layoutHeight = (int) (tmpLayoutHeight * fact);
 		int layoutWidth = (int) (tmpLayoutWidth * fact);
@@ -277,7 +284,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 		if ((layoutWidth != this.getWidth()) || (layoutHeight != this.getHeight())) {
 			layoutParams.height = layoutHeight;
 			layoutParams.width = layoutWidth;
-			
+			if (mCenterPosX >= 0) {
+				layoutParams.topMargin = mCenterPosY - (layoutHeight / 2);
+				layoutParams.leftMargin = mCenterPosX - (layoutWidth / 2);
+			}
 			this.setLayoutParams(layoutParams); // this will trigger another surfaceChanged invocation.
 			layoutChanged = true;
 		} else {
@@ -347,6 +357,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 			return;
 		}
 		mCamera.stopPreview();
+		mCamera.setPreviewCallback(null);
 		mCamera.release();
 		mCamera = null;
 	}
@@ -355,13 +366,13 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 		return (mContext.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT);
 	}
 
+	
 	private Camera.PreviewCallback mPreviewCallBack = new PreviewCallback() {
 		@Override
 		public void onPreviewFrame(byte[] data, Camera camera) {
 			Log.w(LOG, "onPreviewFrame");
-			/**
-			 * Yuv to JPEG
-			 */
+			// Yuv to JPEG
+			
 			Camera.Parameters parameters = camera.getParameters();
 			Size size = parameters.getPreviewSize();
 			YuvImage image = new YuvImage(data, ImageFormat.NV21,
@@ -372,14 +383,15 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 			rectangle.left = 0;
 			rectangle.right = size.width;
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			image.compressToJpeg(rectangle, 50, out);
+			image.compressToJpeg(rectangle, 10, out);
 			
-			//out.toByteArray();
-			if(null != mCameraPreviewListener) {
+			if(mCameraPreviewListener != null) {
 				mCameraPreviewListener.onPreview(out.toByteArray());
+				camera.setPreviewCallback(this);
 			}
 		}
 	};
+	
 	public Camera.Size getPreviewSize() {
 		return mPreviewSize;
 	}

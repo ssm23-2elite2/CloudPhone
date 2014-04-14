@@ -13,8 +13,6 @@ public class PacketSender {
 	private int port;
 	private DatagramSocket socket;
 	private InetAddress serverAddr;
-	private OutputStream sendStream;
-	private InputStream recvStream;
 
 	public PacketSender(DatagramSocket socket, InetAddress serverAddr, int port, OutputStream sendStream, InputStream recvStream){
 		this.socket = socket;

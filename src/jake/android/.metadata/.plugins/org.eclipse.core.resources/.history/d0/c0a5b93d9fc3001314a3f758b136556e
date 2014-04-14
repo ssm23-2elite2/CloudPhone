@@ -28,8 +28,7 @@ public class CameraSender extends PacketSender {
 		int transmittedSize = 0;		
 
 		sizeInfo[0] = (byte)orientation;
-		ConvertUtil.itoa(totalSize, sizeInfo, 1);
-		int length = INFOLENGTH + ORIENTATION_INFO_LENGTH;
+		int length = ConvertUtil.itoa(totalSize, sizeInfo, 1) + ORIENTATION_INFO_LENGTH;
 
 		Packet packet = new Packet(OpCode.INFO_SEND, sizeInfo, length);
 

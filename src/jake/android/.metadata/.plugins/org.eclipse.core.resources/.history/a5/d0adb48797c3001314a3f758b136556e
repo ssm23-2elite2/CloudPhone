@@ -22,6 +22,7 @@ public class PacketSender {
 		this.port = port;
 		this.sendStream = sendStream;
 		this.recvStream = recvStream;
+		StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().permitNetwork().build());
 	}
 
 	public void setOutputStream(OutputStream stream){
@@ -36,7 +37,6 @@ public class PacketSender {
 		//get packet size for transmission
 		int packetSize = packet.getHeader().getPacketLength();
 		synchronized(java.lang.Object.class){
-			StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().permitNetwork().build());
 			DatagramPacket data = new DatagramPacket(packet.asByteArray(), packetSize, serverAddr, port);
 			socket.send(data);
 			/*

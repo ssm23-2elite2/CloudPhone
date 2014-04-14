@@ -3,8 +3,6 @@ package org.secmem232.cloudphone.network;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
@@ -15,9 +13,6 @@ public class CloudPhoneSocket {
 	private Socket mSocket;
 	private OutputStream mSendStream;
 	private InputStream mRecvStream;
-	
-	private DatagramSocket mUDPSocket;
-	private InetAddress mServerAddr;
 
 	private CameraSenderListener mCameraSenderListener;
 	private ServerConnectionListener mServerConnectionListener;
@@ -41,18 +36,15 @@ public class CloudPhoneSocket {
 		Log.w(LOG, "connect");
 		try{
 			mSocket = new Socket();
-			//mSocket.connect(new InetSocketAddress(ip, port), 2000); // Set timeout to 2 seconds
+			mSocket.connect(new InetSocketAddress(ip, port), 2000); // Set timeout to 2 seconds
 
-			mServerAddr = InetAddress.getByName(ip);
-			mUDPSocket = new DatagramSocket();
-			
 			// Open outputStream
-			//mSendStream = mSocket.getOutputStream();
+			mSendStream = mSocket.getOutputStream();
 			
 			// Open inputStream
-			//mRecvStream = mSocket.getInputStream();		
+			mRecvStream = mSocket.getInputStream();		
 
-			mCameraSender = new CameraSender(mUDPSocket, mServerAddr, port, mSendStream, mRecvStream);
+			mCameraSender = new CameraSender(mSendStream, mRecvStream);
 
 			// Create and start packet receiver
 			//mPacketReceiver = new PacketReceiver(mRecvStream);
