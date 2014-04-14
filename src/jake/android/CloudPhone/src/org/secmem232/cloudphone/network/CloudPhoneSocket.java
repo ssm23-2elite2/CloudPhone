@@ -6,12 +6,9 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
-import org.secmem232.cloudphone.network.PacketHeader.OpCode;
-
 import android.util.Log;
 
-
-public class CloudPhoneSocket implements PacketListener {
+public class CloudPhoneSocket {
 	private final static String LOG = "CloudPhoneSocket";
 	private Socket mSocket;
 	private OutputStream mSendStream;
@@ -19,7 +16,6 @@ public class CloudPhoneSocket implements PacketListener {
 
 	private CameraSenderListener mCameraSenderListener;
 	private ServerConnectionListener mServerConnectionListener;
-	private PacketReceiver mPacketReceiver;	
 	private CameraSender mCameraSender;
 
 	public CloudPhoneSocket(ServerConnectionListener listener){
@@ -44,15 +40,16 @@ public class CloudPhoneSocket implements PacketListener {
 
 			// Open outputStream
 			mSendStream = mSocket.getOutputStream();
-			mCameraSender = new CameraSender(mSendStream);
-
+			
 			// Open inputStream
 			mRecvStream = mSocket.getInputStream();		
 
+			mCameraSender = new CameraSender(mSendStream, mRecvStream);
+
 			// Create and start packet receiver
-			mPacketReceiver = new PacketReceiver(mRecvStream);
-			mPacketReceiver.setPacketListener(this);
-			mPacketReceiver.start();	
+			//mPacketReceiver = new PacketReceiver(mRecvStream);
+			//mPacketReceiver.setPacketListener(this);
+			//mPacketReceiver.start();	
 
 			mServerConnectionListener.onServerConnected(ip);
 
@@ -81,8 +78,7 @@ public class CloudPhoneSocket implements PacketListener {
 			if(mSocket != null){
 				try{				
 					mRecvStream.close();
-					mSendStream.close();
-					mPacketReceiver = null;				
+					mSendStream.close();		
 					mSocket.close();		
 					mSocket = null;
 				} catch(IOException e) {
@@ -101,7 +97,6 @@ public class CloudPhoneSocket implements PacketListener {
 				try{
 					mRecvStream.close();
 					mSendStream.close();
-					mPacketReceiver = null;
 					mSocket.close();
 					mSocket = null;
 
@@ -112,6 +107,7 @@ public class CloudPhoneSocket implements PacketListener {
 		}
 	}
 
+	/*
 	@Override
 	public void onPacketReceived(Packet packet) {
 		switch(packet.getOpcode()){		
@@ -122,8 +118,9 @@ public class CloudPhoneSocket implements PacketListener {
 			Log.w(LOG, "onPacketReceived.SCREEN_STOP_REQUESTED");
 			break;
 		}
-	}
+	}*/
 
+	/*
 	@Override
 	public void onInterrupt() {
 		Log.w(LOG, "onInterrupt");
@@ -143,5 +140,5 @@ public class CloudPhoneSocket implements PacketListener {
 				}
 			}
 		}
-	}
+	}*/
 }

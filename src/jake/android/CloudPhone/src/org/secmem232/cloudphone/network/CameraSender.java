@@ -1,6 +1,7 @@
 package org.secmem232.cloudphone.network;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.secmem232.cloudphone.network.PacketHeader.OpCode;
@@ -16,8 +17,8 @@ public class CameraSender extends PacketSender {
 	private byte[] sendBuffer = new byte[MAXDATASIZE];
 	private byte[] sizeInfo = new byte[INFOLENGTH];
 
-	public CameraSender(OutputStream out){
-		super(out);		
+	public CameraSender(OutputStream out, InputStream in) {
+		super(out, in);
 	}
 
 	public void SendCameraPreview(byte[] image, int orientation, int size) throws IOException{

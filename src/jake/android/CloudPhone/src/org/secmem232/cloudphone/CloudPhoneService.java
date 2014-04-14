@@ -22,6 +22,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.View;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
 import android.widget.FrameLayout;
@@ -197,7 +198,6 @@ public class CloudPhoneService extends Service implements LocationListener, Serv
 
 	@Override
 	public void onPreview(byte[] image) {
-		Log.i(LOG, "onPreview :" + image.length);
 		mSocket.SendCameraPreview(image, Util.getRotation(this), image.length);
 	}
 
