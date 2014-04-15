@@ -32,6 +32,7 @@ namespace Server
                 TcpClient client = threadListener.AcceptTcpClient();
                 NetworkStream ns = client.GetStream();
                 byte[] buffer = new byte[1024];
+                int receiveLength = 0;
 
                 while (isRunning)
                 {
@@ -44,10 +45,18 @@ namespace Server
                         var stream = new MemoryStream();
                         while (totalLength < fileLength)
                         {
-                            int receiveLength = ns.Read(buffer, 0, buffer.Length);
+                            receiveLength = ns.Read(buffer, 0, buffer.Length);
                             stream.Write(buffer, 0, receiveLength);
                             totalLength += receiveLength;
                         }
+
+                        String receive = Encoding.UTF8.GetString(buffer, 0, totalLength);
+                        
+                        /*
+                         *  receive받은 String으로 Unpacking함 
+                         */
+                        UnPackingMessage(receive);
+
 
                     }
                     catch (Exception e)
@@ -65,6 +74,103 @@ namespace Server
                 cloudPhoneWindow.Invoke(cloudPhoneWindow._logMSG, "error", "clientHandler : " + e.Message);
                 isRunning = false;
             }
+        }
+
+
+        // Client로 값 전달
+        private void SendData()
+        {
+
+
+        }
+
+        // Client로부터 값 받음
+        private void ReceiveData()
+        {
+
+
+        }
+
+        // Client로부터 온 메시지 Unpack
+        private void UnPackingMessage(String str)
+        {
+            String[] strings = str.Split('/');
+
+            // Unpacking해서 메시지 헤더에 따라서 돌린다.
+            // 메시지 구조  :  ClientNum / Type / Size / Data
+            // ACTION_DOWN, ACTION_MOVE, ACTION_UP, ACTION_POINTER_DOWN,
+            // ACTION_POINTER_UP, KEYCODE_HOME, KEYCODE_VOLUME_DOWN, KEYCODE_VOLUME_UP, KEYCODE_POWER, GPS, GYRO, BATTERY
+                        
+            //switch (strings[1])
+            //{
+            //    case "0": // ACTION_DOWN
+
+            //        break;
+
+            //    case "1": // ACTION_MOVE
+
+            //        break;
+
+            //    case "2": // ACTION_UP
+
+            //        break;
+
+            //    case "3": // ACTION_POINTER_DOWN
+
+            //        break;
+
+            //    case "4": // ACTION_POINTER_UP
+
+            //        break;
+
+            //    case "5": // KEYCODE_HOME
+
+            //        break;
+
+            //    case "6": // KEYCODE_VOLUME_DOWN
+
+            //        break;
+
+            //    case "7": // KEYCODE_VOLUME_UP
+
+            //        break;
+
+            //    case "8": // KEYCODE_POWER
+
+            //        break;
+
+            //    case "9": // GPS
+
+            //        break;
+
+            //    case "10": // GYRO
+
+            //        break;
+
+            //    case "11": // BATTERY
+
+            //        break;
+
+            //    default:
+
+            //        break;
+            //}
+
+
+        }
+
+        // Client로 보낼 메시지를 Pack한다.
+        private String PackingMessage(params String[] strings)
+        {
+            String result = "";
+
+            foreach (String msg in strings)
+            {
+                result += msg;
+                result += '/';
+            }
+
+            return result;
         }
     }
 }
