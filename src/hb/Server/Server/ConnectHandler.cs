@@ -79,24 +79,18 @@ namespace Server
 
 
         // Client로 값 전달
-        private void SendData()
+        private void SendData(String msg)
         {
 
         }
 
-        // Client로부터 값 받음
-        private void ReceiveData()
-        {
-
-
-        }
         // Client로부터 온 메시지 Unpack
         private void UnPackingMessage(String str)
         {
             String[] strings = str.Split('/');
 
             // Unpacking해서 메시지 헤더에 따라서 돌린다.
-            // 메시지 구조  :  Type / Size / Data
+            // 메시지 구조  :  Type / Size / Data ( Data는 '쉼표'로 구분 ',')
             // ACTION_DOWN, ACTION_MOVE, ACTION_UP, ACTION_POINTER_DOWN,
             // ACTION_POINTER_UP, KEYCODE_HOME, KEYCODE_VOLUME_DOWN, KEYCODE_VOLUME_UP, KEYCODE_POWER, GPS, GYRO, BATTERY
 
@@ -106,8 +100,10 @@ namespace Server
                     cloudPhoneWindow.ClientLogin(strings[2]);
                     break;
 
-                case "1": // AVD Select MSG
+                case "1": // AVD MSG ( 생성 / 삭제 / 실행 / 종료 ) 
 
+                    cloudPhoneWindow.DecideAVDMsg(strings[2]);
+                    
                     break;
 
                 case "2": // ACTION
@@ -133,7 +129,6 @@ namespace Server
                 case "7": // Client LogOut
                     cloudPhoneWindow.ClientLogout(strings[2]);
                     break;
-                    
                 default:
 
                     break;

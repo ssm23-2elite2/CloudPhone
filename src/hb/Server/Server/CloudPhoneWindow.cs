@@ -35,7 +35,9 @@ namespace Server
         private ArrayList clientThreadList = new ArrayList();
         private ArrayList clientIDList = new ArrayList();
 
-
+        private Process proc_cmd;
+        private ProcessStartInfo startInfo;
+        
         public CloudPhoneWindow()
         {
             InitializeComponent();
@@ -61,6 +63,19 @@ namespace Server
             notifyIcon.ContextMenuStrip = trayMenuStrip;
 
             _logMSG = new logMSGd(logMSG);
+
+            proc_cmd = new Process();
+            startInfo = new ProcessStartInfo();
+
+            startInfo.FileName = "cmd.exe";
+            startInfo.UseShellExecute = false;
+            startInfo.RedirectStandardInput = true;
+            startInfo.RedirectStandardOutput = true;
+            startInfo.RedirectStandardError = true;
+
+            proc_cmd.EnableRaisingEvents = false;
+            proc_cmd.StartInfo = startInfo;
+
         }
 
 
@@ -198,8 +213,6 @@ namespace Server
              *  센서 값 검사하는(받아서 쏘아주는) 쓰레드 시작
              */
 
-
-
         }
 
         // Client Login Process
@@ -236,48 +249,100 @@ namespace Server
 
         }
 
+        // AVD Method ,  avdmsg[] = { { clientNum } , {executeMSG } , {intData or strData} } -> strData는 좀 더 정확하게 수정요망
+        public void DecideAVDMsg(String AVDMsg)
+        {
+            String[] avdmsg = AVDMsg.Split(',');
+            int toNum = Convert.ToInt32(avdmsg[0]);
+
+            if (avdmsg[1] == "start")
+            {
+                StartAVD(toNum);
+            }
+            
+            else if (avdmsg[1] == "exit")
+            {
+                ExitAVD(toNum);
+            }
+
+            else if (avdmsg[1] == "create")
+            {
+                CreateAVD(toNum, avdmsg[2]);
+            }
+
+            else if (avdmsg[1] == "remove")
+            {
+                RemoveAVD(toNum, avdmsg[2]);
+            }
+        }
+
         // AVD 시작
         public void StartAVD(int ClientNum)
         {
-
+            String cmd_string = "";
+            
+            ControlCMD(cmd_string);
         }
 
         // AVD 종료
-        public void ExitAVD(int ExitCode) 
+        public void ExitAVD(int ClientNum) 
         {
+            String cmd_string = "";
 
-
+            ControlCMD(cmd_string);
         }
 
         // AVD 생성
-        public void CreateAVD(int ClientNum, int Version) 
+        public void CreateAVD(int ClientNum, String Version) 
         {
-
-
+            String cmd_string = "";
+            
+            ControlCMD(cmd_string);
         }
 
         // AVD 삭제
-        public void RemoveAVD(int ClientNum, int Version) 
+        public void RemoveAVD(int ClientNum, String Version) 
         {
+            String cmd_string = "";
 
+            ControlCMD(cmd_string);
 
         }
 
-        // ADB를 통해 AVD로 명령어 전달(센서값)
-        public void CmdToAVD(String SensorType, String str) 
+        // ADB를 통해 AVD로 명령어 전달(센서값) , str -> SensorValue
+        public void SensorValueToAVD(String SensorType, String str)
         {
+            String cmd_string = "";
 
+            ControlCMD(cmd_string);
 
         }
 
-        // Client가 등록되었는지 확인해주는 함수
-        public bool isRegistration(int clientNum)
+
+        public void ControlCMD(String cmd_Msg)
         {
+            String ret, ret_buf;
 
+            try
+            {
+                // CMD에 입력
+                proc_cmd.Start();
+                proc_cmd.StandardInput.Write(cmd_Msg + Environment.NewLine);
+                proc_cmd.StandardInput.Close();
 
-            return true;
+                ret = proc_cmd.StandardOutput.ReadToEnd();
+                ret_buf = ret.Substring(ret.IndexOf(cmd_Msg) + cmd_Msg.Length);
+                logMSG("info", "ControlCMD Return String : " + ret_buf);
+            }
+
+            catch (Exception e)
+            {
+                logMSG("error", "ControlCMD Error : " + e.Message);
+            }
 
         }
+
+
 
         // LogEnd
         private void logEnd()
