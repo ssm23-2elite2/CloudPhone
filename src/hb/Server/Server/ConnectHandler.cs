@@ -24,7 +24,6 @@ namespace Server
             isRunning = true;
             cloudPhoneWindow = c;
             cloudPhoneWindow.Invoke(cloudPhoneWindow._logMSG, "info", "클라이언트 생성, ConnectHandler");
-
         }
 
         public void clientHandler()
@@ -57,8 +56,8 @@ namespace Server
                         /*
                          *  receive받은 String으로 Unpacking함 
                          */
-                        UnPackingMessage(receive);
 
+                        UnPackingMessage(receive);
 
                     }
                     catch (Exception e)
@@ -91,67 +90,50 @@ namespace Server
 
 
         }
-
-        // Client Login Process
-        private bool ClientLogin()
-        {
-            
-
-            return true;
-        }
-
-        // Client Logout Process
-        private bool ClientLogout()
-        {
-
-            return true;
-        }
-
         // Client로부터 온 메시지 Unpack
         private void UnPackingMessage(String str)
         {
             String[] strings = str.Split('/');
 
             // Unpacking해서 메시지 헤더에 따라서 돌린다.
-            // 메시지 구조  :  ClientID / Type / Size / Data
+            // 메시지 구조  :  Type / Size / Data
             // ACTION_DOWN, ACTION_MOVE, ACTION_UP, ACTION_POINTER_DOWN,
             // ACTION_POINTER_UP, KEYCODE_HOME, KEYCODE_VOLUME_DOWN, KEYCODE_VOLUME_UP, KEYCODE_POWER, GPS, GYRO, BATTERY
 
-
-            switch (strings[1])
+            switch (strings[0])
             {
-                case "0": // Login
+                case "0": // Login 메시지가 들어오면, 있는 ID인지 검사하도록  CloudPhoneWindow에 있는 CheckClientID를 실행시킨다.
+                    cloudPhoneWindow.ClientLogin(strings[2]);
+                    break;
+
+                case "1": // AVD Select MSG
+
+                    break;
+
+                case "2": // ACTION
+
+                    break;
+
+                case "3": // KEYCODE VALUE
+
+                    break;
+
+                case "4": // GPS VALUE
+
+                    break;
+
+                case "5": // GYRO VALUE
+
+                    break;
+
+                case "6": // BATTERY VALUE
+
+                    break;
+
+                case "7": // Client LogOut
+                    cloudPhoneWindow.ClientLogout(strings[2]);
+                    break;
                     
-                    break;
-
-                case "1": // ACTION
-
-                    break;
-
-                case "2": // KEYCODE VALUE
-
-                    break;
-
-                case "3": // GPS VALUE
-
-                    break;
-
-                case "4": // GYRO VALUE
-
-                    break;
-
-                case "5": // BATTERY VALUE
-
-                    break;
-
-                case "6": // KEYCODE_HOME
-
-                    break;
-
-                case "7": // KEYCODE_VOLUME_DOWN
-
-                    break;
-
                 default:
 
                     break;

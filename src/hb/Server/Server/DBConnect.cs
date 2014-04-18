@@ -28,7 +28,7 @@ namespace Server
                 _connect.ConnectionString = _connectStr;
                 _connect.Open();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 cloudPhoneWindow.Invoke(cloudPhoneWindow._logMSG, "error", "DB OPEN ERR : " + e.Message);
             }
@@ -41,7 +41,7 @@ namespace Server
                 _connect.Dispose();
                 _connect.Close();
             }
-            
+
         }
 
         public bool CheckClientID(String clientID)
@@ -50,19 +50,28 @@ namespace Server
             String query = "select count(cp_client) from client_ID where ID ='" + clientID + "'";
             MySqlCommand cmd = new MySqlCommand(query, _connect);
             MySqlDataReader dr = cmd.ExecuteReader();
-            while (dr.Read())
+            try
             {
-                list.Add(dr.GetString(0));
-            }
+                while (dr.Read())
+                {
+                    list.Add(dr.GetString(0));
+                }
 
-            if (list.Count() == 1)
-            {
-                cloudPhoneWindow.Invoke(cloudPhoneWindow._logMSG, "info", "클라이언트ID 존재");
-                return true;
+                if (list.Count() == 1)
+                {
+                    cloudPhoneWindow.Invoke(cloudPhoneWindow._logMSG, "info", "클라이언트ID 존재. DBConnect 클래스 - CheckClientID");
+                    return true;
+                }
+                else
+                {
+                    cloudPhoneWindow.Invoke(cloudPhoneWindow._logMSG, "info", "클라이언트ID 없음 , DB에 자동 등록시킨다. DBConnect 클래스 - CheckClientID"); // Insert 자동으로 시킨다 일단.
+                    InsertClientID(clientID);
+                    return true;
+                }
             }
-            else
+            catch (Exception e)
             {
-                cloudPhoneWindow.Invoke(cloudPhoneWindow._logMSG, "info", "클라이언트ID 없음");
+                cloudPhoneWindow.Invoke(cloudPhoneWindow._logMSG, "error", "CheckClientID 오류 : " + e.Message + ". DBConnect 클래스 - CheckClientID");
                 return false;
             }
         }

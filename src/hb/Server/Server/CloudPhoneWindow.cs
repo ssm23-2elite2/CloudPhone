@@ -26,12 +26,14 @@ namespace Server
         private bool isConnected;
         private TcpListener client;
         private Thread serverThread;
+        private ConnectHandler con;
+        private DBConnect db;
 
         public delegate void logMSGd(String msgType, String msg);
         public logMSGd _logMSG;
-
-
-        private ArrayList clientList = new ArrayList();
+        
+        private ArrayList clientThreadList = new ArrayList();
+        private ArrayList clientIDList = new ArrayList();
 
 
         public CloudPhoneWindow()
@@ -147,15 +149,15 @@ namespace Server
                     {
                         Thread.Sleep(100);
                     }
-                    logMSG("클라이언트의 요청 발견... CloudPhoneTestServer.ListenerThread", "info");
-                    ConnectHandler con = new ConnectHandler(this);
-
-                    logMSG("클라이언트 통신용 쓰레드 생성 CloudPhoneTestServer new ConnectionHandler", "info");
+                    logMSG("info", "클라이언트의 요청 발견... CloudPhoneTestServer.ListenerThread");
+                    con = new ConnectHandler(this);
+                    db = new DBConnect(this);
+                    logMSG("info", "클라이언트 통신용 쓰레드 생성 CloudPhoneTestServer new ConnectionHandler");
                     
                     con.threadListener = this.client;
                     Thread newThread = new Thread(new ThreadStart(con.clientHandler));
                     newThread.Start();
-                    clientList.Add(newThread);
+                    clientThreadList.Add(newThread);
                     StartThreading();
                 }
             }
@@ -176,7 +178,8 @@ namespace Server
                 serverThread.Abort();
                 serverThread = null;
                 logMSG("info", "서버 OFF, CloudPhoneWindow.btn_stop_Click");
-                //EndThreading();
+                
+                EndThreading(); // 검사하던 쓰레드들도 다 종료
             }
             else
             {
@@ -191,57 +194,84 @@ namespace Server
 
             /*
              *  쓰레드 시작
-             *  디비랑 연동되어 정보가 디비에 없으면 새로 추가시킨다(등록).
-             *  디비에 있는 정보에 해당하는 AVD가 없으면 실행해준다.
              *  Client에 화면 전송해주는 쓰레드 시작
              *  센서 값 검사하는(받아서 쏘아주는) 쓰레드 시작
              */
 
+
+
+        }
+
+        // Client Login Process
+        public bool ClientLogin(String clientID)
+        {
+            clientIDList.Add(clientID);
+            return  db.CheckClientID(clientID);
+        }
+
+        // Client Logout Process
+        public void ClientLogout(String clientID)
+        {
+            int index = clientIDList.IndexOf(clientID);
+
+            // index를 이용하여 Thread를 받아서 쓰레드 종료시키고, 그에 관련된 쓰레드들도 다 종료시킨다.(센서값)
+            IEnumerator e = clientThreadList.GetEnumerator();
+
+            for (int i = 0; i < index; i++)
+            {
+                e.MoveNext();
+            }
+
+            Thread obj = (Thread)e.Current;
+            obj.Abort();
+            clientThreadList.RemoveAt(index);
+            clientIDList.RemoveAt(index);
+
         }
 
         // 검사 쓰레드 종료
-        private void EndThreading()
+        public void EndThreading()
         {
 
 
         }
 
         // AVD 시작
-        private void StartAVD(int ClientNum)
+        public void StartAVD(int ClientNum)
         {
 
         }
 
         // AVD 종료
-        private void ExitAVD(int ExitCode) 
+        public void ExitAVD(int ExitCode) 
         {
 
 
         }
 
         // AVD 생성
-        private void CreateAVD(int ClientNum, int Version) 
+        public void CreateAVD(int ClientNum, int Version) 
         {
 
 
         }
 
         // AVD 삭제
-        private void RemoveAVD(int ClientNum, int Version) 
+        public void RemoveAVD(int ClientNum, int Version) 
         {
 
 
         }
 
         // ADB를 통해 AVD로 명령어 전달(센서값)
-        private void CmdToAVD(String SensorType, String str) 
+        public void CmdToAVD(String SensorType, String str) 
         {
 
 
         }
 
         // Client가 등록되었는지 확인해주는 함수
-        private bool isRegistration(int clientNum)
+        public bool isRegistration(int clientNum)
         {
 
 
