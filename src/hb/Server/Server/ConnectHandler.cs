@@ -7,6 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using MySql.Data.MySqlClient;
+using MySql.Data.Types;
 
 namespace Server
 {
@@ -81,7 +83,6 @@ namespace Server
         private void SendData()
         {
 
-
         }
 
         // Client로부터 값 받음
@@ -91,70 +92,70 @@ namespace Server
 
         }
 
+        // Client Login Process
+        private bool ClientLogin()
+        {
+            
+
+            return true;
+        }
+
+        // Client Logout Process
+        private bool ClientLogout()
+        {
+
+            return true;
+        }
+
         // Client로부터 온 메시지 Unpack
         private void UnPackingMessage(String str)
         {
             String[] strings = str.Split('/');
 
             // Unpacking해서 메시지 헤더에 따라서 돌린다.
-            // 메시지 구조  :  ClientNum / Type / Size / Data
+            // 메시지 구조  :  ClientID / Type / Size / Data
             // ACTION_DOWN, ACTION_MOVE, ACTION_UP, ACTION_POINTER_DOWN,
             // ACTION_POINTER_UP, KEYCODE_HOME, KEYCODE_VOLUME_DOWN, KEYCODE_VOLUME_UP, KEYCODE_POWER, GPS, GYRO, BATTERY
-                        
-            //switch (strings[1])
-            //{
-            //    case "0": // ACTION_DOWN
 
-            //        break;
 
-            //    case "1": // ACTION_MOVE
+            switch (strings[1])
+            {
+                case "0": // Login
+                    
+                    break;
 
-            //        break;
+                case "1": // ACTION
 
-            //    case "2": // ACTION_UP
+                    break;
 
-            //        break;
+                case "2": // KEYCODE VALUE
 
-            //    case "3": // ACTION_POINTER_DOWN
+                    break;
 
-            //        break;
+                case "3": // GPS VALUE
 
-            //    case "4": // ACTION_POINTER_UP
+                    break;
 
-            //        break;
+                case "4": // GYRO VALUE
 
-            //    case "5": // KEYCODE_HOME
+                    break;
 
-            //        break;
+                case "5": // BATTERY VALUE
 
-            //    case "6": // KEYCODE_VOLUME_DOWN
+                    break;
 
-            //        break;
+                case "6": // KEYCODE_HOME
 
-            //    case "7": // KEYCODE_VOLUME_UP
+                    break;
 
-            //        break;
+                case "7": // KEYCODE_VOLUME_DOWN
 
-            //    case "8": // KEYCODE_POWER
+                    break;
 
-            //        break;
+                default:
 
-            //    case "9": // GPS
-
-            //        break;
-
-            //    case "10": // GYRO
-
-            //        break;
-
-            //    case "11": // BATTERY
-
-            //        break;
-
-            //    default:
-
-            //        break;
-            //}
+                    break;
+            }
 
 
         }

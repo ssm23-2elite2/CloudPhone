@@ -13,6 +13,10 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Diagnostics;
 
+
+using MySql.Data;
+using MySql.Data.MySqlClient;
+
 namespace Server
 {
 
@@ -128,7 +132,6 @@ namespace Server
 
         public void ListenerThread()
         {
-
             try
             {
                 IPHostEntry ipHost = Dns.Resolve("211.189.20.131");
@@ -244,21 +247,6 @@ namespace Server
 
             return true;
 
-        }
-
-        // Client Login Process
-        private bool ClientLogin() 
-        {
-
-
-            return true;
-        }
-
-        // Client Logout Process
-        private bool ClientLogout() 
-        {
-
-            return true;
         }
 
         // LogEnd
