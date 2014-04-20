@@ -22,9 +22,10 @@ namespace Server
         byte[] data = new byte[4096];
 
         public bool isRunning { get; set; }
-        public TcpListener threadListener;
-        NetworkStream ns;
-        TcpClient client;
+        //public TcpListener threadListener;
+        //NetworkStream ns;
+        //TcpClient client;
+
         //public IPEndPoint udpSender;
         //public UdpClient udpClient;
         //public String endIP;
@@ -45,8 +46,8 @@ namespace Server
             //udpClient = new UdpClient(ipep);
             try
             {
-                client = threadListener.AcceptTcpClient();
-                ns = client.GetStream();
+                //client = threadListener.AcceptTcpClient();
+                //ns = client.GetStream();
 
                 while (isRunning)
                 {
@@ -73,7 +74,8 @@ namespace Server
 
                         while ((i = fs.Read(data, 0, 4096)) > 0)
                         {
-                            ns.Write(data, 0, i);
+                            // ns.Write(data, 0, i); // TCP
+
                         }
 
                         cloudPhoneWindow.Invoke(cloudPhoneWindow._logMSG, "info", "파일 전송 끝");
@@ -88,8 +90,8 @@ namespace Server
                     }
 
                 }
-                ns.Close();
-                client.Close();
+                //ns.Close();
+                //client.Close();
             }
             catch (Exception e)
             {

@@ -189,9 +189,8 @@ namespace Server
                     newThread.Start();
                     clientThreadList.Add(newThread);
 
-                    //// TCP로 메시지를 받았으면 바로 BackGroundThread 실행(UDP)
+                    // TCP로 메시지를 받았으면 바로 BackGroundThread 실행(UDP)
                     
-
                     //String ip = con.ip;
                     //logMSG("info", "받은 IP : " + ip);
 
@@ -202,12 +201,6 @@ namespace Server
                     //udpThread.Start();
                     //clientUDPThreadList.Add(udpThread);
                     //Thread.Sleep(300);
-
-
-
-
-
-
 
                 }
             }
