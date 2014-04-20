@@ -32,17 +32,17 @@
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-Destroy a wave object.
+		Destroy a wave object.
 
-Arguments:
+	Arguments:
 
-None
+		None
 
-Return Value:
+	Return Value:
 
-None
+		None
 
 --*/
 CWaveObject::~CWaveObject ()
@@ -57,33 +57,33 @@ CWaveObject::~CWaveObject ()
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-Given that BlockPosition points to the offset of the start of a RIFF block,
-continue parsing the specified file until a block with the header of
-BlockHeader is found.  Return the position of the block data and the size
-of the block.
+		Given that BlockPosition points to the offset of the start of a RIFF block,
+		continue parsing the specified file until a block with the header of
+		BlockHeader is found.  Return the position of the block data and the size
+		of the block.
 
-Arguments:
+	Arguments:
 
-FileHandle -
-Handle to the file to parse
+		FileHandle -
+			Handle to the file to parse
 
-BlockHeader -
-The block header to scan for
+		BlockHeader -
+			The block header to scan for
 
-BlockPosition -
-INPUT : Points to the block header to start at
-OUTPUT: If successful, points to the block data for the sought block
-If unsuccessful, unchanged
+		BlockPosition -
+			INPUT : Points to the block header to start at
+			OUTPUT: If successful, points to the block data for the sought block
+			If unsuccessful, unchanged
 
-BlockSize -
-On output, if successful -- the size of the sought block will be
-placed here
+		BlockSize -
+			On output, if successful -- the size of the sought block will be
+			placed here
 
-Return Value:
+	Return Value:
 
-Success / Failure of the search
+		Success / Failure of the search
 
 --*/
 
@@ -145,24 +145,24 @@ NTSTATUS CWaveObject::ParseForBlock ( IN HANDLE FileHandle, IN ULONG BlockHeader
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-Parse the wave file and read the data into an internally allocated
-buffer.  This prepares to synthesize audio data from the wave
-object.
+		Parse the wave file and read the data into an internally allocated
+		buffer.  This prepares to synthesize audio data from the wave
+		object.
 
-Arguments:
+	Arguments:
 
-None
+		None
 
-Return Value:
+	Return Value:
 
-Success / Failure
+		Success / Failure
 
-If the wave is unrecognized, unparsable, or insufficient memory
-exists to allocate the internal buffer, an error code will
-be returned and the object will be incapable of synthesizing
-audio data based on the wave.
+	If the wave is unrecognized, unparsable, or insufficient memory
+	exists to allocate the internal buffer, an error code will
+	be returned and the object will be incapable of synthesizing
+	audio data based on the wave.
 
 --*/
 NTSTATUS CWaveObject:: ParseAndRead ()
@@ -223,7 +223,6 @@ NTSTATUS CWaveObject:: ParseAndRead ()
         // Ensure that this is a RIFF file and it's a WAVE.
         //
         if (NT_SUCCESS (Status)) {
-
             if (RiffWaveHeader [0] != 'FFIR' ||
                 RiffWaveHeader [2] != 'EVAW') {
                 Status = STATUS_INVALID_PARAMETER;
@@ -284,10 +283,7 @@ NTSTATUS CWaveObject:: ParseAndRead ()
     //
     // Perform a slight validation.
     //
-    if (NT_SUCCESS (Status) && 
-        (DataBlockSize == 0 || 
-        (DataBlockSize & (m_WaveFormat.nBlockAlign - 1)))) {
-
+    if (NT_SUCCESS (Status) && (DataBlockSize == 0 || (DataBlockSize & (m_WaveFormat.nBlockAlign - 1)))) {
         Status = STATUS_INVALID_PARAMETER;
     }
 
@@ -295,9 +291,7 @@ NTSTATUS CWaveObject:: ParseAndRead ()
     // If we're okay so far, allocate memory for the wave data.
     //
     if (NT_SUCCESS (Status)) {
-        m_WaveData = reinterpret_cast <PUCHAR> (
-            ExAllocatePoolWithTag (NonPagedPool, DataBlockSize, AVSSMP_POOLTAG)
-            );
+        m_WaveData = reinterpret_cast <PUCHAR> ( ExAllocatePoolWithTag (NonPagedPool, DataBlockSize, AVSSMP_POOLTAG) );
 
         if (!m_WaveData) {
             Status = STATUS_INSUFFICIENT_RESOURCES;
@@ -344,33 +338,28 @@ NTSTATUS CWaveObject:: ParseAndRead ()
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-Fill out the extended portion of the audio data range at DataRange.  This
-includes the channel, bps, and frequency fields.
+		Fill out the extended portion of the audio data range at DataRange.  This
+		includes the channel, bps, and frequency fields.
 
-Arguments:
+	Arguments:
 
-DataRange -
-The data range to fill out
+		DataRange -
+			The data range to fill out
 
-Return Value:
+	Return Value:
 
-None
+		None
 
 --*/
 void CWaveObject::WriteRange ( OUT PKSDATARANGE_AUDIO DataRange )
 {
-
     PAGED_CODE();
 
     DataRange -> MaximumChannels = m_WaveFormat.nChannels;
-    DataRange -> MinimumBitsPerSample =
-        DataRange -> MaximumBitsPerSample = 
-        m_WaveFormat.wBitsPerSample;
-    DataRange -> MinimumSampleFrequency =
-        DataRange -> MaximumSampleFrequency =
-        m_WaveFormat.nSamplesPerSec;
+    DataRange -> MinimumBitsPerSample = DataRange -> MaximumBitsPerSample = m_WaveFormat.wBitsPerSample;
+    DataRange -> MinimumSampleFrequency = DataRange -> MaximumSampleFrequency = m_WaveFormat.nSamplesPerSec;
 
 
 }
@@ -400,48 +389,39 @@ The amount of time to skip ahead.
 void CWaveObject::SkipFixed ( IN LONGLONG TimeDelta )
 {
     if (TimeDelta > 0)  {
-
         //
         // Compute the number of bytes of audio data necessary to move the 
         // stream forward TimeDelta time.  Remember that TimeDelta is in 
         // units of 100nS.
         //
-        ULONG Samples = (ULONG)(
-            (m_WaveFormat.nSamplesPerSec * TimeDelta) / 10000000
-            );
-    
-        ULONG Bytes = Samples * (m_WaveFormat.wBitsPerSample / 8) *
-            m_WaveFormat.nChannels;
-    
+        ULONG Samples = (ULONG)( (m_WaveFormat.nSamplesPerSec * TimeDelta) / 10000000 );
+        ULONG Bytes = Samples * (m_WaveFormat.wBitsPerSample / 8) * m_WaveFormat.nChannels;
         m_WavePointer = (m_WavePointer + Bytes) % m_WaveSize;
-    
         m_SynthesisTime += TimeDelta;
-
     }
-
 }
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-Copy wave data from our wave block in order to synthesize forward in time
-TimeDelta (in 100nS units).
+		Copy wave data from our wave block in order to synthesize forward in time
+		TimeDelta (in 100nS units).
 
-Arguments:
+	Arguments:
 
-TimeDelta -
-The amount of time to move the stream (in 100nS increments)
+		TimeDelta -
+			The amount of time to move the stream (in 100nS increments)
 
-Buffer -
-The buffer to synthesize into
+		Buffer -
+			The buffer to synthesize into
 
-BufferSize -
-The size of the buffer
+		BufferSize -
+			The size of the buffer
 
-Return Value:
+	Return Value:
 
-Number of bytes synthesized.
+		Number of bytes synthesized.
 
 --*/
 ULONG CWaveObject::SynthesizeFixed ( IN LONGLONG TimeDelta, IN PVOID Buffer, IN ULONG BufferSize )
@@ -457,12 +437,9 @@ ULONG CWaveObject::SynthesizeFixed ( IN LONGLONG TimeDelta, IN PVOID Buffer, IN 
     // Compute the number of bytes of audio data necessary to move the stream
     // forward TimeDelta time.  Remember that TimeDelta is in units of 100nS.
     //
-    ULONG Samples = (ULONG)(
-        (m_WaveFormat.nSamplesPerSec * TimeDelta) / 10000000
-        );
+    ULONG Samples = (ULONG)( (m_WaveFormat.nSamplesPerSec * TimeDelta) / 10000000 );
 
-    ULONG Bytes = Samples * (m_WaveFormat.wBitsPerSample / 8) *
-        m_WaveFormat.nChannels;
+    ULONG Bytes = Samples * (m_WaveFormat.wBitsPerSample / 8) * m_WaveFormat.nChannels;
 
     //
     // Now that we have a specified number of bytes, we determine how many
@@ -482,11 +459,7 @@ ULONG CWaveObject::SynthesizeFixed ( IN LONGLONG TimeDelta, IN PVOID Buffer, IN 
         ULONG ChunkCount = m_WaveSize - m_WavePointer;
         if (ChunkCount > BytesRemaining) ChunkCount = BytesRemaining;
 
-        RtlCopyMemory (
-            DataCopy,
-            m_WaveData + m_WavePointer,
-            ChunkCount
-            );
+        RtlCopyMemory ( DataCopy, m_WaveData + m_WavePointer, ChunkCount );
 
         m_WavePointer += ChunkCount;
         if (m_WavePointer >= m_WaveSize) m_WavePointer -= m_WaveSize;
@@ -509,26 +482,26 @@ ULONG CWaveObject::SynthesizeFixed ( IN LONGLONG TimeDelta, IN PVOID Buffer, IN 
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-Copy wave data from our wave block in order to synthesize the stream
-up to the specified stream time.  If the buffers are not large enough,
-this will fall behind on synthesis.
+		Copy wave data from our wave block in order to synthesize the stream
+		up to the specified stream time.  If the buffers are not large enough,
+		this will fall behind on synthesis.
 
-Arguments:
+	Arguments:
 
-StreamTime -
-The time to synthesize up to
+		StreamTime -
+			The time to synthesize up to
 
-Buffer -
-The buffer to copy synthesized wave data into
+		Buffer -
+			The buffer to copy synthesized wave data into
 
-BufferSize -
-The size of the buffer
+		BufferSize -
+			The size of the buffer
 
-Return Value:
+	Return Value:
 
-The number of bytes used.
+		The number of bytes used.
 
 --*/
 ULONG CWaveObject::SynthesizeTo ( IN LONGLONG StreamTime, IN PVOID Buffer, IN ULONG BufferSize )

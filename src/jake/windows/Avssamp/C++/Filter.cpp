@@ -30,19 +30,19 @@ void TimerRoutine ( IN PKDPC Dpc, IN PVOID This, IN PVOID SystemArg1, IN PVOID S
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-This is the constructor for the capture filter.  It initializes all the
-structures necessary to kick off timer DPC's for capture.
+		This is the constructor for the capture filter.  It initializes all the
+		structures necessary to kick off timer DPC's for capture.
 
-Arguments:
+	Arguments:
 
-Filter -
-The AVStream filter being created.
+		Filter -
+			The AVStream filter being created.
 
-Return Value:
+	Return Value:
 
-None
+		None
 
 --*/
 CCaptureFilter::CCaptureFilter(IN PKSFILTER Filter) : m_Filter(Filter)
@@ -63,58 +63,47 @@ CCaptureFilter::CCaptureFilter(IN PKSFILTER Filter) : m_Filter(Filter)
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-This is the creation dispatch for the capture filter.  It creates
-the CCaptureFilter object, associates it with the AVStream filter
-object, and bag the CCaptureFilter for later cleanup.
+		This is the creation dispatch for the capture filter.  It creates
+		the CCaptureFilter object, associates it with the AVStream filter
+		object, and bag the CCaptureFilter for later cleanup.
 
-Arguments:
+	Arguments:
 
-Filter -
-The AVStream filter being created
+		Filter -
+			The AVStream filter being created
 
-Irp -
-The creation Irp
+		Irp -
+			The creation Irp
 
-Return Value:
+	Return Value:
 
-Success / failure
+		Success / failure
 
 --*/
 NTSTATUS CCaptureFilter::DispatchCreate ( IN PKSFILTER Filter, IN PIRP Irp )
 {
-
     PAGED_CODE();
-
     NTSTATUS Status = STATUS_SUCCESS;
-
     CCaptureFilter *CapFilter = new (NonPagedPool) CCaptureFilter (Filter);
-
     if (!CapFilter) {
         //
         // Return failure if we couldn't create the filter.
         //
         Status = STATUS_INSUFFICIENT_RESOURCES;
-
     } else {
         //
         // Add the item to the object bag if we we were successful. 
         // Whenever the filter closes, the bag is cleaned up and we will be
         // freed.
         //
-        Status = KsAddItemToObjectBag (
-            Filter -> Bag,
-            reinterpret_cast <PVOID> (CapFilter),
-            reinterpret_cast <PFNKSFREE> (CCaptureFilter::Cleanup)
-            );
-
-        if (!NT_SUCCESS (Status)) {
+        Status = KsAddItemToObjectBag ( Filter -> Bag, reinterpret_cast <PVOID> (CapFilter), reinterpret_cast <PFNKSFREE> (CCaptureFilter::Cleanup) );
+		if (!NT_SUCCESS (Status)) {
             delete CapFilter;
         } else {
             Filter -> Context = reinterpret_cast <PVOID> (CapFilter);
         }
-
     }
 
     //
@@ -124,16 +113,12 @@ NTSTATUS CCaptureFilter::DispatchCreate ( IN PKSFILTER Filter, IN PIRP Irp )
     //
     if (NT_SUCCESS (Status)) {
 
-        CapFilter -> m_WaveObject =  
-            new (NonPagedPool, 'evaW') CWaveObject (
-                L"\\DosDevices\\c:\\avssamp.wav"
-                );
+        CapFilter -> m_WaveObject =   new (NonPagedPool, 'evaW') CWaveObject ( L"\\DosDevices\\c:\\avssamp.wav" );
 
         if (!CapFilter -> m_WaveObject) {
             Status = STATUS_INSUFFICIENT_RESOURCES;
         } else {
             Status = CapFilter -> m_WaveObject -> ParseAndRead ();
-
             //
             // If the file cannot be found, don't fail to create the filter.
             // This simply means that audio cannot be synthesized.
@@ -144,21 +129,14 @@ NTSTATUS CCaptureFilter::DispatchCreate ( IN PKSFILTER Filter, IN PIRP Irp )
                 CapFilter -> m_WaveObject = NULL;
                 Status = STATUS_SUCCESS;
             }
-            
         }
-
     }
 
     if (NT_SUCCESS (Status) && CapFilter -> m_WaveObject) {
         //
         // Add the wave object to the filter's bag for auto-cleanup.
         //
-        Status = KsAddItemToObjectBag (
-            Filter -> Bag,
-            reinterpret_cast <PVOID> (CapFilter -> m_WaveObject),
-            reinterpret_cast <PFNKSFREE> (CWaveObject::Cleanup)
-            );
-
+        Status = KsAddItemToObjectBag ( Filter -> Bag, reinterpret_cast <PVOID> (CapFilter -> m_WaveObject), reinterpret_cast <PFNKSFREE> (CWaveObject::Cleanup) );
         if (!NT_SUCCESS (Status)) {
             delete CapFilter -> m_WaveObject;
             CapFilter -> m_WaveObject = NULL;
@@ -166,69 +144,46 @@ NTSTATUS CCaptureFilter::DispatchCreate ( IN PKSFILTER Filter, IN PIRP Irp )
             Status = CapFilter -> BindAudioToWaveObject ();
         }
     }
-
     return Status;
-
 }
 
 /*************************************************/
 
-NTSTATUS
-CCaptureFilter::
-BindAudioToWaveObject (
-    )
-
 /*++
 
-Routine Description:
+	Routine Description:
 
-    Create an audio pin directly bound to m_WaveObject (aka: it only exposes
-    the format (channels, frequency, etc...) that m_WaveObject represents.
-    This will actually create a pin on the filter dynamically.
+		Create an audio pin directly bound to m_WaveObject (aka: it only exposes
+		the format (channels, frequency, etc...) that m_WaveObject represents.
+		This will actually create a pin on the filter dynamically.
 
-Arguments:
+	Arguments:
 
-    None
+		None
 
-Return Value:
+	Return Value:
 
-    Success / Failure
+		Success / Failure
 
 --*/
-
+NTSTATUS CCaptureFilter::BindAudioToWaveObject ()
 {
-
     PAGED_CODE();
-
     NT_ASSERT (m_WaveObject);
-
     NTSTATUS Status = STATUS_SUCCESS;
-
     //
     // Build a pin descriptor from the template.  This descriptor is
     // temporary scratch space because the call to AVStream to create the
     // pin will actually duplicate the descriptor.
     //
     KSPIN_DESCRIPTOR_EX PinDescriptor = AudioPinDescriptorTemplate;
-
     //
     // The data range must be dynamically created since we're basing it
     // on dynamic reading of a wave file!
     //
-    PKSDATARANGE_AUDIO DataRangeAudio = 
-        reinterpret_cast <PKSDATARANGE_AUDIO> (
-            ExAllocatePoolWithTag (PagedPool, sizeof (KSDATARANGE_AUDIO), AVSSMP_POOLTAG)
-            );
-
-    PKSDATARANGE_AUDIO *DataRanges =
-        reinterpret_cast <PKSDATARANGE_AUDIO *> (
-            ExAllocatePoolWithTag (PagedPool, sizeof (PKSDATARANGE_AUDIO), AVSSMP_POOLTAG)
-            );
-
-    PKSALLOCATOR_FRAMING_EX Framing =
-        reinterpret_cast <PKSALLOCATOR_FRAMING_EX> (
-            ExAllocatePoolWithTag (PagedPool, sizeof (KSALLOCATOR_FRAMING_EX), AVSSMP_POOLTAG)
-            );
+    PKSDATARANGE_AUDIO DataRangeAudio = reinterpret_cast <PKSDATARANGE_AUDIO> ( ExAllocatePoolWithTag (PagedPool, sizeof (KSDATARANGE_AUDIO), AVSSMP_POOLTAG) );
+    PKSDATARANGE_AUDIO *DataRanges = reinterpret_cast <PKSDATARANGE_AUDIO *> ( ExAllocatePoolWithTag (PagedPool, sizeof (PKSDATARANGE_AUDIO), AVSSMP_POOLTAG) );
+    PKSALLOCATOR_FRAMING_EX Framing = reinterpret_cast <PKSALLOCATOR_FRAMING_EX> ( ExAllocatePoolWithTag (PagedPool, sizeof (KSALLOCATOR_FRAMING_EX), AVSSMP_POOLTAG) );
 
     if (DataRangeAudio && DataRanges && Framing) {
         DataRangeAudio -> DataRange.FormatSize = sizeof (KSDATARANGE_AUDIO);
@@ -237,13 +192,10 @@ Return Value:
         DataRangeAudio -> DataRange.Reserved = 0;
         DataRangeAudio -> DataRange.MajorFormat = KSDATAFORMAT_TYPE_AUDIO;
         DataRangeAudio -> DataRange.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
-        DataRangeAudio -> DataRange.Specifier = 
-            KSDATAFORMAT_SPECIFIER_WAVEFORMATEX;
+        DataRangeAudio -> DataRange.Specifier = KSDATAFORMAT_SPECIFIER_WAVEFORMATEX;
 
         m_WaveObject -> WriteRange (DataRangeAudio);
-
         *DataRanges = DataRangeAudio;
-
     } else {        
         if (DataRangeAudio) {
             ExFreePool (DataRangeAudio);        
@@ -265,47 +217,28 @@ Return Value:
         // Bag the newly created range information in the filter's bag since
         // this will be alive for the lifetime of the filter.
         //
-        Status = KsAddItemToObjectBag (
-            m_Filter -> Bag,
-            DataRangeAudio,
-            NULL
-            );
-
-        if (!NT_SUCCESS (Status)) {
+        Status = KsAddItemToObjectBag ( m_Filter -> Bag, DataRangeAudio, NULL );
+		if (!NT_SUCCESS (Status)) {
             ExFreePool (DataRangeAudio);
             ExFreePool (DataRanges);
             ExFreePool (Framing);
         }
-
     }
 
     if (NT_SUCCESS (Status)) {
-
-        Status = KsAddItemToObjectBag (
-            m_Filter -> Bag,
-            DataRanges,
-            NULL
-            );
-
-        if (!NT_SUCCESS (Status)) {
+		Status = KsAddItemToObjectBag ( m_Filter -> Bag, DataRanges, NULL );
+		if (!NT_SUCCESS (Status)) {
             ExFreePool (DataRanges);
             ExFreePool (Framing);
         }
-
     }
 
     if (NT_SUCCESS (Status)) {
-        
-        Status = KsAddItemToObjectBag (
-            m_Filter -> Bag,
-            Framing,
-            NULL
-            );
+        Status = KsAddItemToObjectBag ( m_Filter -> Bag, Framing, NULL );
 
         if (!NT_SUCCESS (Status)) {
             ExFreePool (Framing);
         }
-
     }
 
     if (NT_SUCCESS (Status)) {
@@ -329,69 +262,50 @@ Return Value:
                 DataRangeAudio -> MaximumBitsPerSample *
                 DataRangeAudio -> MaximumChannels) + 29) / 30;
 
-        Framing -> FramingItem [0].PhysicalRange.Stepping = 
-            Framing -> FramingItem [0].FramingRange.Range.Stepping =
-            0;
+        Framing -> FramingItem [0].PhysicalRange.Stepping = Framing -> FramingItem [0].FramingRange.Range.Stepping = 0;
 
         PinDescriptor.AllocatorFraming = Framing;
 
         PinDescriptor.PinDescriptor.DataRangesCount = 1;
-        PinDescriptor.PinDescriptor.DataRanges = 
-            reinterpret_cast <const PKSDATARANGE *> (DataRanges);
+        PinDescriptor.PinDescriptor.DataRanges = reinterpret_cast <const PKSDATARANGE *> (DataRanges);
 
         //
         // Create the actual pin.  We need to save the pin id returned.  It
         // is how we refer to the audio pin in the future.
         //
-        Status = KsFilterCreatePinFactory (
-            m_Filter, 
-            &PinDescriptor, 
-            &m_AudioPinId
-            );
-
+        Status = KsFilterCreatePinFactory ( m_Filter, &PinDescriptor, &m_AudioPinId );
     }
-
-    return Status;
-
+	return Status;
 }
 
 
 /*************************************************/
 
-
-void
-CCaptureFilter::
-StartDPC (
-    IN LONGLONG TimerInterval
-    )
-
 /*++
 
-Routine Description:
+	Routine Description:
 
-    This routine starts the timer DPC running at a specified interval.  The 
-    specified interval is the amount of time between triggering frame captures.
-    Once this routine returns, the timer DPC should be running and attempting
-    to trigger processing on the capture filter as a whole.
+		This routine starts the timer DPC running at a specified interval.  The
+		specified interval is the amount of time between triggering frame captures.
+		Once this routine returns, the timer DPC should be running and attempting
+		to trigger processing on the capture filter as a whole.
 
-Arguments:
+	Arguments:
 
-    TimerInterval -
-        The amount of time between timer DPC's.  This is the amount of delay
-        between one frame and the next.  Since the DPC is driven off the 
-        video capture pin, this should be an amount of time specified by
-        the video info header.
+		TimerInterval -
+			The amount of time between timer DPC's.  This is the amount of delay
+			between one frame and the next.  Since the DPC is driven off the
+			video capture pin, this should be an amount of time specified by
+			the video info header.
 
-Return Value:
+	Return Value:
 
-    None
+		None
 
---*/
-
+--*/
+void CCaptureFilter::StartDPC ( IN LONGLONG TimerInterval )
 {
-
     PAGED_CODE();
-
     //
     // Initialize any variables used by the timer DPC.
     //
@@ -404,53 +318,34 @@ Return Value:
     //
     LARGE_INTEGER NextTime;
     NextTime.QuadPart = m_StartTime.QuadPart + m_TimerInterval;
-
     KeSetTimer (&m_Timer, NextTime, &m_TimerDpc);
-
 }
 
 /*************************************************/
 
-
-void
-CCaptureFilter::
-StopDPC (
-    )
-
 /*++
 
-Routine Description:
+	Routine Description:
 
-    Stop the timer DPC from firing.  After this routine returns, there is
-    a guarantee that no more timer DPC's will fire and no more processing
-    attempts will occur.  Note that this routine does block.
+		Stop the timer DPC from firing.  After this routine returns, there is
+		a guarantee that no more timer DPC's will fire and no more processing
+		attempts will occur.  Note that this routine does block.
 
-Arguments:
+	Arguments:
 
-    None
+		None
 
-Return Value:
+	Return Value:
 
-    None
+		None
 
---*/
-
+--*/
+void CCaptureFilter::StopDPC ()
 {
-
     PAGED_CODE();
-
     m_StoppingDPC = TRUE;
-
-    KeWaitForSingleObject (
-        &m_StopDPCEvent,
-        Suspended,
-        KernelMode,
-        FALSE,
-        NULL
-        );
-
+    KeWaitForSingleObject ( &m_StopDPCEvent, Suspended, KernelMode, FALSE, NULL );
     NT_ASSERT (m_StoppingDPC == FALSE);
-
 }
 
 /**************************************************************************
@@ -463,72 +358,57 @@ Return Value:
 #pragma code_seg()
 #endif // ALLOC_PRAGMA
 
-
-LONGLONG
-CCaptureFilter::
-GetTimerInterval (
-    )
-
 /*++
 
-Routine Description:
+	Routine Description:
 
-    Return the timer interval being used to fire DPC's.
+		Return the timer interval being used to fire DPC's.
 
-Arguments:
+	Arguments:
 
-    None
+		None
 
-Return Value:
+	Return Value:
 
-    The timer interval being used to fire DPC's.
+		The timer interval being used to fire DPC's.
 
 --*/
-
+LONGLONG CCaptureFilter::GetTimerInterval ()
 {
-
     return m_TimerInterval;
-
 }
 
 /*************************************************/
 
-
-NTSTATUS
-CCaptureFilter::
-Process (
-    IN PKSPROCESSPIN_INDEXENTRY ProcessPinsIndex
-    )
-
 /*++
 
-Routine Description:
+	Routine Description:
 
-    This is the processing function for the capture filter.  It is responsible
-    for copying synthesized image data into the image buffers.  The timer DPC
-    will attempt to trigger processing (and hence indirectly call this routine)
-    to trigger a capture.
+		This is the processing function for the capture filter.  It is responsible
+		for copying synthesized image data into the image buffers.  The timer DPC
+		will attempt to trigger processing (and hence indirectly call this routine)
+		to trigger a capture.
 
-Arguments:
+	Arguments:
 
-    ProcessPinsIndex -
-        Contains a pointer to an array of process pin index entries.  This
-        array is indexed by pin ID.  An index entry indicates the number
-        of pin instances for the corresponding filter type and points to the
-        first corresponding process pin structure in the ProcessPins array.
-        This allows the process pin structure to be quickly accessed by pin ID
-        when the number of instances per type is not known in advance.
+		ProcessPinsIndex -
+			Contains a pointer to an array of process pin index entries.  This
+			array is indexed by pin ID.  An index entry indicates the number
+			of pin instances for the corresponding filter type and points to the
+			first corresponding process pin structure in the ProcessPins array.
+			This allows the process pin structure to be quickly accessed by pin ID
+			when the number of instances per type is not known in advance.
 
-Return Value:
+	Return Value:
 
-    Indication of whether more processing should be done if frames are
-    available.  A value of STATUS_PENDING indicates that processing should not
-    continue even if frames are available on all required queues. 
-    STATUS_SUCCESS indicates processing should continue if frames are available
-    on all required queues.
+		Indication of whether more processing should be done if frames are
+		available.  A value of STATUS_PENDING indicates that processing should not
+		continue even if frames are available on all required queues. 
+		STATUS_SUCCESS indicates processing should continue if frames are available
+		on all required queues.
 
---*/
-
+--*/
+NTSTATUS CCaptureFilter:: Process ( IN PKSPROCESSPIN_INDEXENTRY ProcessPinsIndex )
 {
 
     //
@@ -617,31 +497,25 @@ Return Value:
 
 /*************************************************/
 
-
-void
-CCaptureFilter::
-TimerDpc (
-    )
-
 /*++
 
-Routine Description:
+	Routine Description:
 
-    This is the timer function for our timer (bridged to from TimerRoutine
-    in the context of the appropriate CCaptureFilter).  It is called every
-    1/Nth of a second as specified in StartDpc() to trigger capture of a video
-    frame.
+		This is the timer function for our timer (bridged to from TimerRoutine
+		in the context of the appropriate CCaptureFilter).  It is called every
+		1/Nth of a second as specified in StartDpc() to trigger capture of a video
+		frame.
 
-Arguments:
+	Arguments:
 
-    None
+		None
 
-Return Value:
+	Return Value:
 
-    None
+		None
 
---*/
-
+--*/
+void CCaptureFilter::TimerDpc ()
 {
 
     //
@@ -697,21 +571,14 @@ GUID g_PINNAME_VIDEO_CAPTURE = {STATIC_PINNAME_VIDEO_CAPTURE};
 //
 // The list of category GUIDs for the capture filter.
 //
-const
-GUID
-CaptureFilterCategories [CAPTURE_FILTER_CATEGORIES_COUNT] = {
-    STATICGUIDOF (KSCATEGORY_VIDEO),
-    STATICGUIDOF (KSCATEGORY_CAPTURE)
-};
+const GUID CaptureFilterCategories [CAPTURE_FILTER_CATEGORIES_COUNT] = { STATICGUIDOF (KSCATEGORY_VIDEO), STATICGUIDOF (KSCATEGORY_CAPTURE) };
 
 //
 // CaptureFilterPinDescriptors:
 //
 // The list of pin descriptors on the capture filter.  
 //
-const 
-KSPIN_DESCRIPTOR_EX
-CaptureFilterPinDescriptors [CAPTURE_FILTER_PIN_COUNT] = {
+const KSPIN_DESCRIPTOR_EX CaptureFilterPinDescriptors [CAPTURE_FILTER_PIN_COUNT] = {
     //
     // Video Capture Pin
     //
@@ -748,9 +615,7 @@ CaptureFilterPinDescriptors [CAPTURE_FILTER_PIN_COUNT] = {
 // This is the dispatch table for the capture filter.  It provides notification
 // of creation, closure, processing, and resets.
 //
-const 
-KSFILTER_DISPATCH
-CaptureFilterDispatch = {
+const KSFILTER_DISPATCH CaptureFilterDispatch = {
     CCaptureFilter::DispatchCreate,         // Filter Create
     NULL,                                   // Filter Close
     CCaptureFilter::DispatchProcess,        // Filter Process
@@ -765,9 +630,7 @@ CaptureFilterDispatch = {
 // be some topological relationships here because there would be input 
 // pins from crossbars and the like.
 //
-const 
-KSFILTER_DESCRIPTOR 
-CaptureFilterDescriptor = {
+const KSFILTER_DESCRIPTOR CaptureFilterDescriptor = {
     &CaptureFilterDispatch,                 // Dispatch Table
     NULL,                                   // Automation Table
     KSFILTER_DESCRIPTOR_VERSION,            // Version

@@ -371,23 +371,23 @@ NTSTATUS CAudioCapturePin::DispatchSetFormat ( IN PKSPIN Pin, IN PKSDATAFORMAT O
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-Called to synthesize a frame of audio data from the wave object.
+		Called to synthesize a frame of audio data from the wave object.
 
-Arguments:
+	Arguments:
 
-ProcessPin -
-The process pin from the filter's process pins index
+		ProcessPin -
+			The process pin from the filter's process pins index
 
-Tick -
-The tick counter from the filter (the number of DPC's that have
-happened since the DPC timer started).  Note that the DPC timer
-starts at pause and capture starts at run.
+			Tick -
+			The tick counter from the filter (the number of DPC's that have
+			happened since the DPC timer started).  Note that the DPC timer
+			starts at pause and capture starts at run.
 
-Return Value:
+	Return Value:
 
-Success / Failure
+		Success / Failure
 
 --*/
 NTSTATUS CAudioCapturePin::CaptureFrame ( IN PKSPROCESSPIN ProcessPin, IN ULONG Tick )

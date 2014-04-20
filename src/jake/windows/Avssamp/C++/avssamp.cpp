@@ -33,27 +33,18 @@ extern "C"
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-Driver entry point.  Pass off control to the AVStream initialization
-function (KsInitializeDriver) and return the status code from it.
+		Driver entry point.  Pass off control to the AVStream initialization
+		function (KsInitializeDriver) and return the status code from it.
 
-Arguments:
-
-DriverObject -
-The WDM driver object for our driver
-
-RegistryPath -
-The registry path for our registry info
-
-Return Value:
-
-As from KsInitializeDriver
+		Driver entry는 드라이버의 진입점이며, 
+		AVStream 초기화 함수인 KsInitializeDriver에게 Control를 전달하여 
+		WDM 드라이버 객체를 생성하고 레지스트리 정보의 경로를 설정하는 역할을 한다.
 
 --*/
 NTSTATUS DriverEntry ( IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING RegistryPath )
 {
-
     //
     // Simply pass the device descriptor and parameters off to AVStream
     // to initialize us.  This will cause filter factories to be set up

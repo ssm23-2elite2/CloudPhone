@@ -976,24 +976,24 @@ NTSTATUS CVideoCapturePin::Stop ( IN KSSTATE FromState )
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-This routine is called from the filter processing function to capture
-a frame for the video capture pin.  The process pin to capture to is
-passed.
+		This routine is called from the filter processing function to capture
+		a frame for the video capture pin.  The process pin to capture to is
+		passed.
 
-Arguments:
+	Arguments:
 
-ProcessPin -
-The process pin associated with this pin.
+		ProcessPin -
+			The process pin associated with this pin.
 
-Tick -
-The tick count on the filter.  This is the number of timer DPC's that
-have fired since the timer DPC started.
+		Tick -
+			The tick count on the filter.  This is the number of timer DPC's that
+			have fired since the timer DPC started.
 
-Return Value:
+	Return Value:
 
-STATUS_SUCCESS
+		STATUS_SUCCESS
 
 --*/
 NTSTATUS CVideoCapturePin::CaptureFrame(IN PKSPROCESSPIN ProcessPin, IN ULONG Tick)

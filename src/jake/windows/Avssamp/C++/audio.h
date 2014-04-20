@@ -89,6 +89,4 @@ public:
     // STATUS_NO_MATCH is returned.
     //
     static NTSTATUS IntersectHandler ( IN PKSFILTER Filter, IN PIRP Irp, IN PKSP_PIN PinInstance, IN PKSDATARANGE CallerDataRange, IN PKSDATARANGE DescriptorDataRange, IN ULONG BufferSize, OUT PVOID Data OPTIONAL, OUT PULONG DataSize );
-        
-
 };

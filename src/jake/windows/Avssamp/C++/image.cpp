@@ -408,41 +408,41 @@ void CImageSynthesizer:: Fill ( IN ULONG X_TopLeft, IN ULONG Y_TopLeft, IN ULONG
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-Overlay text onto the synthesized image.  Clip to fit the image
-if the overlay does not fit.  The image buffer used is the set
-synthesis buffer.
+		Overlay text onto the synthesized image.  Clip to fit the image
+		if the overlay does not fit.  The image buffer used is the set
+		synthesis buffer.
 
-Arguments:
+	Arguments:
 
-LocX -
-The X location on the image to begin the overlay.  This MUST
-be inside the image.  POSITION_CENTER may be used to indicate
-horizontal centering.
+		LocX -
+			The X location on the image to begin the overlay.  This MUST
+			be inside the image.  POSITION_CENTER may be used to indicate
+			horizontal centering.
 
-LocY -
-The Y location on the image to begin the overlay.  This MUST
-be inside the image.  POSITION_CENTER may be used to indicate
-vertical centering.
+		LocY -
+			The Y location on the image to begin the overlay.  This MUST
+			be inside the image.  POSITION_CENTER may be used to indicate
+			vertical centering.
 
-Scaling -
-Normally, the overlay is done in 8x8 font.  A scaling of
-2 indicates 16x16, 3 indicates 24x24 and so forth.
+		Scaling -
+			Normally, the overlay is done in 8x8 font.  A scaling of
+			2 indicates 16x16, 3 indicates 24x24 and so forth.
 
-Text -
-A character string containing the information to overlay
+		Text -
+			A character string containing the information to overlay
 
-BgColor -
-The background color of the overlay window.  For transparency,
-indicate TRANSPARENT here.
+		BgColor -
+			The background color of the overlay window.  For transparency,
+			indicate TRANSPARENT here.
 
-FgColor -
-The foreground color for the text overlay.
+		FgColor -
+			The foreground color for the text overlay.
 
-Return Value:
+	Return Value:
 
-None
+		None
 
 --*/
 void CImageSynthesizer::OverlayText ( _In_ ULONG LocX, _In_ ULONG LocY, _In_ ULONG Scaling, _In_ LPSTR Text, _In_ COLOR BgColor, _In_ COLOR FgColor )

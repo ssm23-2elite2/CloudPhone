@@ -50,13 +50,9 @@ None
 --*/
 CCapturePin::CCapturePin ( IN PKSPIN Pin ) : m_Pin (Pin), m_State (KSSTATE_STOP)
 {
-
     PAGED_CODE();
-
     PKSFILTER ParentFilter = KsPinGetParentFilter (Pin);
-
     m_ParentFilter = reinterpret_cast <CCaptureFilter *> ( ParentFilter -> Context );
-
 }
 
 /*************************************************/
@@ -86,11 +82,8 @@ Success / Failure of state transition.
 --*/
 NTSTATUS CCapturePin::SetState ( IN KSSTATE ToState, IN KSSTATE FromState )
 {
-
     PAGED_CODE();
-
     NTSTATUS Status = STATUS_SUCCESS;
-
     switch (ToState) {
         case KSSTATE_STOP:
             //
@@ -98,7 +91,6 @@ NTSTATUS CCapturePin::SetState ( IN KSSTATE ToState, IN KSSTATE FromState )
             //
             m_DroppedFrames = 0;
             m_FrameNumber = 0;
-
             //
             // On a transition to stop, the clock will be released.
             //
@@ -106,10 +98,8 @@ NTSTATUS CCapturePin::SetState ( IN KSSTATE ToState, IN KSSTATE FromState )
                 m_Clock -> Release ();
                 m_Clock = NULL;
             }
-
             Status = Stop (FromState);
             break;
-
         case KSSTATE_ACQUIRE:
             //
             // On a transition to acqiure (from stop), the pin queries for
@@ -117,29 +107,19 @@ NTSTATUS CCapturePin::SetState ( IN KSSTATE ToState, IN KSSTATE FromState )
             // transition to pause.
             //
             if (FromState == KSSTATE_STOP) {
-
-                Status = KsPinGetReferenceClockInterface (
-                    m_Pin,
-                    &m_Clock
-                    );
-
+                Status = KsPinGetReferenceClockInterface ( m_Pin, &m_Clock );
                 if (!NT_SUCCESS (Status)) {
                     m_Clock = NULL;
                 }
-
             }
-
             Status = Acquire (FromState);
             break;
-
         case KSSTATE_PAUSE:
             Status = Pause (FromState);
             break;
-
         case KSSTATE_RUN:
             Status = Run (FromState);
             break;
-
     }
 
     if (NT_SUCCESS (Status)) {
@@ -184,22 +164,22 @@ ULONG CCapturePin::QueryFrameDrop()
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-Stash the number of dropped frames on each pin in this pin to allow
-this data to be incorporated into any synthesis.
+		Stash the number of dropped frames on each pin in this pin to allow
+		this data to be incorporated into any synthesis.
 
-Arguments:
+	Arguments:
 
-VidDrop -
-Number of video frames that have been dropped
+		VidDrop -
+			Number of video frames that have been dropped
 
-AudDrop -
-Number of audio frames that have been dropped
+		AudDrop -
+			Number of audio frames that have been dropped
 
-Return Value:
+	Return Value:
 
-None
+		None
 
 --*/
 void CCapturePin::NotifyDrops ( IN ULONG VidDrop, IN ULONG AudDrop )
