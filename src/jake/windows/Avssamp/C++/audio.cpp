@@ -1,23 +1,3 @@
-/**************************************************************************
-
-    AVStream Filter-Centric Sample
-
-    Copyright (c) 1999 - 2001, Microsoft Corporation
-
-    File:
-
-        audio.cpp
-
-    Abstract:
-
-        This file contains the audio capture pin implementation.
-
-    History:
-
-        created 6/28/01
-
-**************************************************************************/
-
 #include "avssamp.h"
 
 /**************************************************************************
@@ -30,35 +10,28 @@
 #pragma code_seg("PAGE")
 #endif // ALLOC_PRAGMA
 
-
-NTSTATUS
-CAudioCapturePin::
-DispatchCreate (
-    IN PKSPIN Pin,
-    IN PIRP Irp
-    )
 
 /*++
 
 Routine Description:
 
-    Create a new audio capture pin.  This is the creation dispatch for
-    the audio capture pin.
+Create a new audio capture pin.  This is the creation dispatch for
+the audio capture pin.
 
 Arguments:
 
-    Pin -
-        The pin being created
+Pin -
+The pin being created
 
-    Irp -
-        The creation Irp
+Irp -
+The creation Irp
 
 Return Value:
 
-    Success / Failure
+Success / Failure
 
 --*/
-
+NTSTATUS CAudioCapturePin::DispatchCreate ( IN PKSPIN Pin, IN PIRP Irp )
 {
 
     PAGED_CODE();
@@ -93,44 +66,33 @@ Return Value:
         }
 
     }
-
     return Status;
-
 }
 
 /*************************************************/
-
-
-NTSTATUS
-CAudioCapturePin::
-Acquire (
-    IN KSSTATE FromState
-    )
 
 /*++
 
 Routine Description:
 
-    Called when the pin transitions into acquire, this gets and releases
-    our hold on the wave object we use to synthesize audio streams.
+Called when the pin transitions into acquire, this gets and releases
+our hold on the wave object we use to synthesize audio streams.
 
 Arguments:
 
-    FromState -
-        The state the pin is transitioning away from
+FromState -
+The state the pin is transitioning away from
 
 Return Value:
 
-    Success / Failure
+Success / Failure
 
 --*/
 
+NTSTATUS CAudioCapturePin:: Acquire ( IN KSSTATE FromState )
 {
-
     PAGED_CODE();
-
     NTSTATUS Status = STATUS_SUCCESS;
-
     if (FromState == KSSTATE_STOP) {
         //
         // On the transition into acquire from stop, get ahold of the
@@ -147,96 +109,76 @@ Return Value:
         } else {
             m_WaveObject -> Reset ();
         }
-
     } else {
         //
         // Ensure we hold no reference on the wave object.
         //
         m_WaveObject = NULL;
-
     }
-
     return Status;
-            
 }
 
 /*************************************************/
 
-
-NTSTATUS
-CAudioCapturePin::
-IntersectHandler (
-    IN PKSFILTER Filter,
-    IN PIRP Irp,
-    IN PKSP_PIN PinInstance,
-    IN PKSDATARANGE CallerDataRange,
-    IN PKSDATARANGE DescriptorDataRange,
-    IN ULONG BufferSize,
-    OUT PVOID Data OPTIONAL,
-    OUT PULONG DataSize
-    )
 
 /*++
 
 Routine Description:
 
-    The intersect handler for the audio capture pin.  This is really quite
-    simple because the audio pin only exposes the number of channels,
-    sampling frequency, etc...  that the wave file it is synthesizing from
-    contains.
+The intersect handler for the audio capture pin.  This is really quite
+simple because the audio pin only exposes the number of channels,
+sampling frequency, etc...  that the wave file it is synthesizing from
+contains.
 
 Arguments:
 
-    Filter -
-        Contains a void pointer to the  filter structure.
+Filter -
+Contains a void pointer to the  filter structure.
 
-    Irp -
-        Contains a pointer to the data intersection property request.
+Irp -
+Contains a pointer to the data intersection property request.
 
-    PinInstance -
-        Contains a pointer to a structure indicating the pin in question.
+PinInstance -
+Contains a pointer to a structure indicating the pin in question.
 
-    CallerDataRange -
-        Contains a pointer to one of the data ranges supplied by the client
-        in the data intersection request.  The format type, subtype and
-        specifier are compatible with the DescriptorDataRange.
+CallerDataRange -
+Contains a pointer to one of the data ranges supplied by the client
+in the data intersection request.  The format type, subtype and
+specifier are compatible with the DescriptorDataRange.
 
-    DescriptorDataRange -
-        Contains a pointer to one of the data ranges from the pin descriptor
-        for the pin in question.  The format type, subtype and specifier are
-        compatible with the CallerDataRange.
+DescriptorDataRange -
+Contains a pointer to one of the data ranges from the pin descriptor
+for the pin in question.  The format type, subtype and specifier are
+compatible with the CallerDataRange.
 
-    BufferSize -
-        Contains the size in bytes of the buffer pointed to by the Data
-        argument.  For size queries, this value will be zero.
+BufferSize -
+Contains the size in bytes of the buffer pointed to by the Data
+argument.  For size queries, this value will be zero.
 
-    Data -
-        Optionally contains a pointer to the buffer to contain the data 
-        format structure representing the best format in the intersection 
-        of the two data ranges.  For size queries, this pointer will be 
-        NULL.
+Data -
+Optionally contains a pointer to the buffer to contain the data
+format structure representing the best format in the intersection
+of the two data ranges.  For size queries, this pointer will be
+NULL.
 
-    DataSize -
-        Contains a pointer to the location at which to deposit the size 
-        of the data format.  This information is supplied by the function 
-        when the format is actually delivered and in response to size 
-        queries.
+DataSize -
+Contains a pointer to the location at which to deposit the size
+of the data format.  This information is supplied by the function
+when the format is actually delivered and in response to size
+queries.
 
 Return Value:
 
-    STATUS_SUCCESS if there is an intersection and it fits in the supplied
-    buffer, STATUS_BUFFER_OVERFLOW for successful size queries, 
-    STATUS_NO_MATCH if the intersection is empty, or 
-    STATUS_BUFFER_TOO_SMALL if the supplied buffer is too small.
+STATUS_SUCCESS if there is an intersection and it fits in the supplied
+buffer, STATUS_BUFFER_OVERFLOW for successful size queries,
+STATUS_NO_MATCH if the intersection is empty, or
+STATUS_BUFFER_TOO_SMALL if the supplied buffer is too small.
 
 --*/
-
-
+NTSTATUS CAudioCapturePin:: IntersectHandler ( IN PKSFILTER Filter, IN PIRP Irp, IN PKSP_PIN PinInstance, IN PKSDATARANGE CallerDataRange, IN PKSDATARANGE DescriptorDataRange, IN ULONG BufferSize, OUT PVOID Data OPTIONAL, OUT PULONG DataSize )
 {
-    
     PAGED_CODE();
-
-    //
+//
     // Verify that the inpassed range is valid size. 
     //
     if (CallerDataRange -> FormatSize < sizeof (KSDATARANGE_AUDIO)) {
@@ -249,11 +191,9 @@ Return Value:
     // KSDATARANGE_AUDIO.  This is due to the fact that AVStream will have
     // prematched the GUIDs for us.
     //
-    PKSDATARANGE_AUDIO CallerAudioRange =
-        reinterpret_cast <PKSDATARANGE_AUDIO> (CallerDataRange);
+    PKSDATARANGE_AUDIO CallerAudioRange = reinterpret_cast <PKSDATARANGE_AUDIO> (CallerDataRange);
 
-    PKSDATARANGE_AUDIO DescriptorAudioRange =
-        reinterpret_cast <PKSDATARANGE_AUDIO> (DescriptorDataRange);
+    PKSDATARANGE_AUDIO DescriptorAudioRange = reinterpret_cast <PKSDATARANGE_AUDIO> (DescriptorDataRange);
 
     //
     // We are returning a KSDATAFORMAT_WAVEFORMATEX.  Specify such if a size
@@ -291,40 +231,25 @@ Return Value:
         //
         *DataSize = sizeof (KSDATAFORMAT_WAVEFORMATEX);
         return STATUS_NO_MATCH;
-
     }
 
     //
     // Build the format.
     //
-    PKSDATAFORMAT_WAVEFORMATEX WaveFormat =
-        reinterpret_cast <PKSDATAFORMAT_WAVEFORMATEX> (Data);
+    PKSDATAFORMAT_WAVEFORMATEX WaveFormat = reinterpret_cast <PKSDATAFORMAT_WAVEFORMATEX> (Data);
 
-    RtlCopyMemory (
-        &WaveFormat -> DataFormat,
-        &DescriptorAudioRange -> DataRange,
-        sizeof (KSDATAFORMAT)
-        );
+    RtlCopyMemory ( &WaveFormat -> DataFormat, &DescriptorAudioRange -> DataRange, sizeof (KSDATAFORMAT) );
 
     WaveFormat -> WaveFormatEx.wFormatTag = WAVE_FORMAT_PCM;
-    WaveFormat -> WaveFormatEx.nChannels = 
-        (WORD)DescriptorAudioRange -> MaximumChannels;
-    WaveFormat -> WaveFormatEx.nSamplesPerSec =
-        DescriptorAudioRange -> MaximumSampleFrequency;
-    WaveFormat -> WaveFormatEx.wBitsPerSample =
-        (WORD)DescriptorAudioRange -> MaximumBitsPerSample;
-    WaveFormat -> WaveFormatEx.nBlockAlign =
-        (WaveFormat -> WaveFormatEx.wBitsPerSample / 8) *
-        WaveFormat -> WaveFormatEx.nChannels;
-    WaveFormat -> WaveFormatEx.nAvgBytesPerSec =
-        WaveFormat -> WaveFormatEx.nBlockAlign *
-        WaveFormat -> WaveFormatEx.nSamplesPerSec;
+    WaveFormat -> WaveFormatEx.nChannels =  (WORD)DescriptorAudioRange -> MaximumChannels;
+    WaveFormat -> WaveFormatEx.nSamplesPerSec = DescriptorAudioRange -> MaximumSampleFrequency;
+    WaveFormat -> WaveFormatEx.wBitsPerSample = (WORD)DescriptorAudioRange -> MaximumBitsPerSample;
+    WaveFormat -> WaveFormatEx.nBlockAlign = (WaveFormat -> WaveFormatEx.wBitsPerSample / 8) * WaveFormat -> WaveFormatEx.nChannels;
+    WaveFormat -> WaveFormatEx.nAvgBytesPerSec = WaveFormat -> WaveFormatEx.nBlockAlign * WaveFormat -> WaveFormatEx.nSamplesPerSec;
     WaveFormat -> WaveFormatEx.cbSize = 0;
-    WaveFormat -> DataFormat.SampleSize = 
-        WaveFormat -> WaveFormatEx.nBlockAlign;
+    WaveFormat -> DataFormat.SampleSize = WaveFormat -> WaveFormatEx.nBlockAlign;
     
-    WaveFormat -> DataFormat.FormatSize = 
-    *DataSize = sizeof (KSDATAFORMAT_WAVEFORMATEX);
+    WaveFormat -> DataFormat.FormatSize = *DataSize = sizeof (KSDATAFORMAT_WAVEFORMATEX);
 
     return STATUS_SUCCESS;
 
@@ -332,74 +257,62 @@ Return Value:
 
 /*************************************************/
 
-
-NTSTATUS
-CAudioCapturePin::
-DispatchSetFormat (
-    IN PKSPIN Pin,
-    IN PKSDATAFORMAT OldFormat OPTIONAL,
-    IN PKSMULTIPLE_ITEM OldAttributeList OPTIONAL,
-    IN const KSDATARANGE *DataRange,
-    IN const KSATTRIBUTE_LIST *AttributeRange OPTIONAL
-    )
-
 /*++
 
 Routine Description:
 
-    This is the set data format dispatch for the capture pin.  It is called
-    in two circumstances.
+This is the set data format dispatch for the capture pin.  It is called
+in two circumstances.
 
-        1: before Pin's creation dispatch has been made to verify that
-           Pin -> ConnectionFormat is an acceptable format for the range
-           DataRange.  In this case OldFormat is NULL.
+1: before Pin's creation dispatch has been made to verify that
+Pin -> ConnectionFormat is an acceptable format for the range
+DataRange.  In this case OldFormat is NULL.
 
-        2: after Pin's creation dispatch has been made and an initial format
-           selected in order to change the format for the pin.  In this case,
-           OldFormat will not be NULL.
+2: after Pin's creation dispatch has been made and an initial format
+selected in order to change the format for the pin.  In this case,
+OldFormat will not be NULL.
 
-    Validate that the format is acceptible and perform the actions necessary
-    to change format if appropriate.
+Validate that the format is acceptible and perform the actions necessary
+to change format if appropriate.
 
 Arguments:
 
-    Pin -
-        The pin this format is being set on.  The format itself will be in
-        Pin -> ConnectionFormat.
+Pin -
+The pin this format is being set on.  The format itself will be in
+Pin -> ConnectionFormat.
 
-    OldFormat -
-        The previous format used on this pin.  If this is NULL, it is an
-        indication that Pin's creation dispatch has not yet been made and
-        that this is a request to validate the initial format and not to
-        change formats.
+OldFormat -
+The previous format used on this pin.  If this is NULL, it is an
+indication that Pin's creation dispatch has not yet been made and
+that this is a request to validate the initial format and not to
+change formats.
 
-    OldAttributeList -
-        The old attribute list for the prior format
+OldAttributeList -
+The old attribute list for the prior format
 
-    DataRange -
-        A range out of our list of data ranges which was determined to be
-        at least a partial match for Pin -> ConnectionFormat.  If the format
-        there is unacceptable for the range, STATUS_NO_MATCH should be
-        returned.
+DataRange -
+A range out of our list of data ranges which was determined to be
+at least a partial match for Pin -> ConnectionFormat.  If the format
+there is unacceptable for the range, STATUS_NO_MATCH should be
+returned.
 
-    AttributeRange -
-        The attribute range
+AttributeRange -
+The attribute range
 
 Return Value:
 
-    Success / Failure
+Success / Failure
 
-        STATUS_SUCCESS -
-            The format is acceptable / the format has been changed
+STATUS_SUCCESS -
+The format is acceptable / the format has been changed
 
-        STATUS_NO_MATCH -
-            The format is not-acceptable / the format has not been changed
+STATUS_NO_MATCH -
+The format is not-acceptable / the format has not been changed
 
 --*/
-
+NTSTATUS CAudioCapturePin::DispatchSetFormat ( IN PKSPIN Pin, IN PKSDATAFORMAT OldFormat OPTIONAL, IN PKSMULTIPLE_ITEM OldAttributeList OPTIONAL, IN const KSDATARANGE *DataRange, IN const KSATTRIBUTE_LIST *AttributeRange OPTIONAL )
 {
-
-    PAGED_CODE();
+	PAGED_CODE();
 
     //
     // This pin does not accept any format changes.  It is fixed format based
@@ -411,22 +324,16 @@ Return Value:
     //
     NT_ASSERT (!OldFormat);
 
-    const KSDATARANGE_AUDIO *DataRangeAudio =
-        reinterpret_cast <const KSDATARANGE_AUDIO *> (DataRange);
+    const KSDATARANGE_AUDIO *DataRangeAudio = reinterpret_cast <const KSDATARANGE_AUDIO *> (DataRange);
 
     //
     // Verify the format is the right size.
     //
-    if (Pin -> ConnectionFormat -> FormatSize <
-        sizeof (KSDATAFORMAT_WAVEFORMATEX)) {
-
+    if (Pin -> ConnectionFormat -> FormatSize < sizeof (KSDATAFORMAT_WAVEFORMATEX)) {
         return STATUS_NO_MATCH;
     }
 
-    PKSDATAFORMAT_WAVEFORMATEX WaveFormat =
-        reinterpret_cast <PKSDATAFORMAT_WAVEFORMATEX> (
-            Pin -> ConnectionFormat
-            );
+    PKSDATAFORMAT_WAVEFORMATEX WaveFormat = reinterpret_cast <PKSDATAFORMAT_WAVEFORMATEX> ( Pin -> ConnectionFormat );
 
     //
     // This is not an intersection, but rather a direct comparison due to
@@ -442,7 +349,6 @@ Return Value:
             DataRangeAudio -> MaximumBitsPerSample) {
 
         return STATUS_NO_MATCH;
-
     }
 
     //
@@ -463,38 +369,29 @@ Return Value:
 #pragma code_seg()
 #endif // ALLOC_PRAGMA
 
-
-NTSTATUS
-CAudioCapturePin::
-CaptureFrame (
-    IN PKSPROCESSPIN ProcessPin,
-    IN ULONG Tick
-    )
-
 /*++
 
 Routine Description:
 
-    Called to synthesize a frame of audio data from the wave object.
+Called to synthesize a frame of audio data from the wave object.
 
 Arguments:
 
-    ProcessPin -
-        The process pin from the filter's process pins index
+ProcessPin -
+The process pin from the filter's process pins index
 
-    Tick -
-        The tick counter from the filter (the number of DPC's that have 
-        happened since the DPC timer started).  Note that the DPC timer
-        starts at pause and capture starts at run.
+Tick -
+The tick counter from the filter (the number of DPC's that have
+happened since the DPC timer started).  Note that the DPC timer
+starts at pause and capture starts at run.
 
 Return Value:
 
-    Success / Failure
+Success / Failure
 
 --*/
-
+NTSTATUS CAudioCapturePin::CaptureFrame ( IN PKSPROCESSPIN ProcessPin, IN ULONG Tick )
 {
-
     NT_ASSERT (ProcessPin -> Pin == m_Pin);
 
     //
@@ -521,11 +418,7 @@ Return Value:
         //
         // Synthesize a fixed amount of audio data based on the timer interval.
         //
-        ULONG BytesUsed = m_WaveObject -> SynthesizeFixed (
-            TimerInterval,
-            ProcessPin -> Data,
-            ProcessPin -> BytesAvailable
-            );
+        ULONG BytesUsed = m_WaveObject -> SynthesizeFixed ( TimerInterval, ProcessPin -> Data, ProcessPin -> BytesAvailable );
     
         ProcessPin -> BytesUsed = BytesUsed;
         ProcessPin -> Terminate = TRUE;
@@ -534,14 +427,11 @@ Return Value:
         // Time stamp the packet if there is a clock assigned.
         //
         if (m_Clock) {
-            PKSSTREAM_HEADER StreamHeader = 
-                ProcessPin -> StreamPointer -> StreamHeader;
+            PKSSTREAM_HEADER StreamHeader = ProcessPin -> StreamPointer -> StreamHeader;
 
             StreamHeader -> PresentationTime.Time = m_Clock -> GetTime ();
-            StreamHeader -> PresentationTime.Numerator =
-                StreamHeader -> PresentationTime.Denominator = 1;
-            StreamHeader -> OptionsFlags |=
-                KSSTREAM_HEADER_OPTIONSF_TIMEVALID;
+            StreamHeader -> PresentationTime.Numerator = StreamHeader -> PresentationTime.Denominator = 1;
+            StreamHeader -> OptionsFlags |= KSSTREAM_HEADER_OPTIONSF_TIMEVALID;
         }
 
     } else {
@@ -553,9 +443,7 @@ Return Value:
         //
         m_WaveObject -> SkipFixed (TimerInterval);
     }
-    
     return STATUS_SUCCESS;
-
 }
 
 /**************************************************************************
@@ -570,9 +458,7 @@ Return Value:
 // This is the dispatch table for the capture pin.  It provides notifications
 // about creation, closure, processing, data formats, etc...
 //
-const
-KSPIN_DISPATCH
-AudioCapturePinDispatch = {
+const KSPIN_DISPATCH AudioCapturePinDispatch = {
     CAudioCapturePin::DispatchCreate,       // Pin Create
     NULL,                                   // Pin Close
     NULL,                                   // Pin Process
@@ -611,8 +497,7 @@ DECLARE_SIMPLE_FRAMING_EX (
 // STATIC_PINNAME_VIDEO_CAPTURE for the video capture pin, but a custom name
 // as defined in avssamp.inf for the audio capture pin.
 //
-GUID g_PINNAME_AUDIO_CAPTURE = 
-    {0xba1184b9, 0x1fe6, 0x488a, 0xae, 0x78, 0x6e, 0x99, 0x7b, 0x2, 0xca, 0xea};
+GUID g_PINNAME_AUDIO_CAPTURE = {0xba1184b9, 0x1fe6, 0x488a, 0xae, 0x78, 0x6e, 0x99, 0x7b, 0x2, 0xca, 0xea};
 
 //
 // AudioPinDescriptorTemplate:
@@ -621,9 +506,7 @@ GUID g_PINNAME_AUDIO_CAPTURE =
 // is created dynamically -- if and only if c:\avssamp.wav exists and is
 // a valid and readable wave file.
 //
-const
-KSPIN_DESCRIPTOR_EX
-AudioPinDescriptorTemplate = {
+const KSPIN_DESCRIPTOR_EX AudioPinDescriptorTemplate = {
     //
     // Audio Capture Pin
     //

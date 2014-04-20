@@ -97,11 +97,7 @@ public:
     // Place a pixel at the specified image cursor and move right
     // by one pixel.  No bounds checking...  wrap around occurs.
     //
-    virtual void
-    PutPixel (
-        PUCHAR *ImageLocation,
-        COLOR Color
-        ) = 0;
+    virtual void PutPixel ( PUCHAR *ImageLocation, COLOR Color ) = 0;
 
     //
     // PutPixel():
@@ -112,10 +108,7 @@ public:
     // If the derived class doesn't provide an implementation, provide
     // one.
     //
-    virtual void
-    PutPixel (
-        COLOR Color
-        )
+    virtual void PutPixel ( COLOR Color )
     {
         PutPixel (&m_Cursor, Color);
     }
@@ -125,14 +118,7 @@ public:
     //
     // Fill an area of the image with a specific color.
     //
-    virtual void
-    Fill (
-        IN ULONG X_TopLeft,
-        IN ULONG Y_TopLeft,
-        IN ULONG X_BottomRight,
-        IN ULONG Y_BottomRight,
-        IN COLOR Color
-        );
+    virtual void Fill ( IN ULONG X_TopLeft, IN ULONG Y_TopLeft, IN ULONG X_BottomRight, IN ULONG Y_BottomRight, IN COLOR Color );
 
     //
     // GetImageLocation():
@@ -141,22 +127,14 @@ public:
     // This also sets the synthesizer's default cursor to the position
     // LocX, LocY.
     //
-    virtual PUCHAR
-    GetImageLocation (  
-        ULONG LocX,
-        ULONG LocY
-        ) = 0;
+    virtual PUCHAR GetImageLocation ( ULONG LocX, ULONG LocY ) = 0;
 
     //
     // SetImageSize():
     //
     // Set the image size of the synthesis buffer.
     //
-    void
-    SetImageSize (
-        ULONG Width,
-        ULONG Height
-        )
+    void SetImageSize ( ULONG Width, ULONG Height )
     {
         m_Width = Width;
         m_Height = Height;
@@ -167,10 +145,7 @@ public:
     //
     // Set the buffer the synthesizer generates images to.
     //
-    void
-    SetBuffer (
-        PUCHAR SynthesisBuffer
-        )
+    void SetBuffer ( PUCHAR SynthesisBuffer )
     {
         m_SynthesisBuffer = SynthesisBuffer;
     }
@@ -180,30 +155,19 @@ public:
     //
     // Synthesize EIA-189-A standard color bars.
     //
-    void
-    SynthesizeBars (
-        );
+    void SynthesizeBars ();
 
     //
     // OverlayText():
     //
     // Overlay a text string onto the image.
     //
-    void
-    OverlayText (
-        _In_ ULONG LocX,
-        _In_ ULONG LocY,
-        _In_ ULONG Scaling,
-        _In_ LPSTR Text,
-        _In_ COLOR BgColor,
-        _In_ COLOR FgColor
-        );
+    void OverlayText ( _In_ ULONG LocX, _In_ ULONG LocY, _In_ ULONG Scaling, _In_ LPSTR Text, _In_ COLOR BgColor, _In_ COLOR FgColor );
 
     //
     // DEFAULT CONSTRUCTOR
     //
-    CImageSynthesizer (
-        ) :
+    CImageSynthesizer () :
         m_Width (0),
         m_Height (0),
         m_SynthesisBuffer (NULL)
@@ -213,10 +177,7 @@ public:
     //
     // CONSTRUCTOR:
     //
-    CImageSynthesizer (
-        ULONG Width,
-        ULONG Height
-        ) :
+    CImageSynthesizer ( ULONG Width, ULONG Height ) :
         m_Width (Width),
         m_Height (Height),
         m_SynthesisBuffer (NULL)
@@ -226,9 +187,7 @@ public:
     //
     // DESTRUCTOR:
     //
-    virtual
-    ~CImageSynthesizer (
-        )
+    virtual ~CImageSynthesizer ()
     {
     }
 
@@ -258,11 +217,7 @@ public:
     // Place a pixel at a specific cursor location.  *ImageLocation must
     // reside within the synthesis buffer.
     //
-    virtual void
-    PutPixel (
-        PUCHAR *ImageLocation,
-        COLOR Color
-        )
+    virtual void PutPixel ( PUCHAR *ImageLocation, COLOR Color )
     {
         if (Color != TRANSPARENT) {
             *(*ImageLocation)++ = Colors [(ULONG)Color][0];
@@ -279,10 +234,7 @@ public:
     // Place a pixel at the default cursor location.  The cursor location
     // must be set via GetImageLocation(x, y).
     // 
-    virtual void
-    PutPixel (
-        COLOR Color
-        )
+    virtual void PutPixel ( COLOR Color )
     {
         if (Color != TRANSPARENT) {
             *m_Cursor++ = Colors [(ULONG)Color][0];
@@ -293,11 +245,7 @@ public:
         }
     }
 
-    virtual PUCHAR
-    GetImageLocation (
-        ULONG LocX,
-        ULONG LocY
-        )
+    virtual PUCHAR GetImageLocation ( ULONG LocX, ULONG LocY )
     {
         if (m_FlipVertical) {
             return (m_Cursor = 
@@ -314,32 +262,21 @@ public:
     //
     // DEFAULT CONSTRUCTOR:
     //
-    CRGB24Synthesizer (
-        BOOLEAN FlipVertical
-        ) :
-        m_FlipVertical (FlipVertical)
+    CRGB24Synthesizer ( BOOLEAN FlipVertical ) : m_FlipVertical (FlipVertical)
     {
     }
 
     //
     // CONSTRUCTOR:
     //
-    CRGB24Synthesizer (
-        BOOLEAN FlipVertical,
-        ULONG Width,
-        ULONG Height
-        ) :
-        CImageSynthesizer (Width, Height),
-        m_FlipVertical (FlipVertical)
+    CRGB24Synthesizer ( BOOLEAN FlipVertical, ULONG Width, ULONG Height ) : CImageSynthesizer (Width, Height), m_FlipVertical (FlipVertical)
     {
     }
 
     //
     // DESTRUCTOR:
     //
-    virtual
-    ~CRGB24Synthesizer (
-        )
+    virtual ~CRGB24Synthesizer ()
     {
     }
 
@@ -369,11 +306,7 @@ public:
     // Place a pixel at a specific cursor location.  *ImageLocation must
     // reside within the synthesis buffer.
     //
-    virtual void
-    PutPixel (
-        PUCHAR *ImageLocation,
-        COLOR Color
-        )
+    virtual void PutPixel ( PUCHAR *ImageLocation, COLOR Color )
     {
 
         BOOLEAN Parity = (((*ImageLocation - m_SynthesisBuffer) & 0x2) != 0);
@@ -407,11 +340,7 @@ public:
     // Place a pixel at the default cursor location.  The cursor location
     // must be set via GetImageLocation(x, y).
     //
-    virtual void
-    PutPixel (
-        COLOR Color
-        )
-
+    virtual void PutPixel ( COLOR Color )
     {
 
         if (Color != TRANSPARENT) {
@@ -430,11 +359,7 @@ public:
 
     }
 
-    virtual PUCHAR
-    GetImageLocation (
-        ULONG LocX,
-        ULONG LocY
-        )
+    virtual PUCHAR GetImageLocation ( ULONG LocX, ULONG LocY )
     {
     
         m_Cursor = m_SynthesisBuffer + ((LocX + LocY * m_Width) << 1);
@@ -447,28 +372,21 @@ public:
     //
     // DEFAULT CONSTRUCTOR:
     //
-    CYUVSynthesizer (
-        ) 
+    CYUVSynthesizer () 
     {
     }
 
     //
     // CONSTRUCTOR:
     //
-    CYUVSynthesizer (
-        ULONG Width,
-        ULONG Height
-        ) :
-        CImageSynthesizer (Width, Height)
+    CYUVSynthesizer ( ULONG Width, ULONG Height ) : CImageSynthesizer (Width, Height)
     {
     }
 
     //
     // DESTRUCTOR:
     //
-    virtual
-    ~CYUVSynthesizer (
-        )
+    virtual ~CYUVSynthesizer ()
     {
     }
 

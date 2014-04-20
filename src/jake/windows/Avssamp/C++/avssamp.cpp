@@ -30,33 +30,28 @@
 extern "C" DRIVER_INITIALIZE DriverEntry;
 
 extern "C"
-NTSTATUS
-DriverEntry (
-    IN PDRIVER_OBJECT DriverObject,
-    IN PUNICODE_STRING RegistryPath
-    )
 
 /*++
 
 Routine Description:
 
-    Driver entry point.  Pass off control to the AVStream initialization
-    function (KsInitializeDriver) and return the status code from it.
+Driver entry point.  Pass off control to the AVStream initialization
+function (KsInitializeDriver) and return the status code from it.
 
 Arguments:
 
-    DriverObject -
-        The WDM driver object for our driver
+DriverObject -
+The WDM driver object for our driver
 
-    RegistryPath -
-        The registry path for our registry info
+RegistryPath -
+The registry path for our registry info
 
 Return Value:
 
-    As from KsInitializeDriver
+As from KsInitializeDriver
 
 --*/
-
+NTSTATUS DriverEntry ( IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING RegistryPath )
 {
 
     //
@@ -65,12 +60,7 @@ Return Value:
     // at add & start.  Everything is done based on the descriptors passed
     // here.
     //
-    return
-        KsInitializeDriver (
-            DriverObject,
-            RegistryPath,
-            &CaptureDeviceDescriptor
-            );
+    return KsInitializeDriver ( DriverObject, RegistryPath, &CaptureDeviceDescriptor );
 
 }
 
@@ -99,9 +89,7 @@ DEFINE_KSFILTER_DESCRIPTOR_TABLE (FilterDescriptors) {
 // can be created dynamically and the factories created via
 // KsCreateFilterFactory as well.
 //
-const
-KSDEVICE_DESCRIPTOR
-CaptureDeviceDescriptor = {
+const KSDEVICE_DESCRIPTOR CaptureDeviceDescriptor = {
     //
     // Since this is a software sample (filter-centric filters usually are
     // software kinds of transforms), we really don't care about device level

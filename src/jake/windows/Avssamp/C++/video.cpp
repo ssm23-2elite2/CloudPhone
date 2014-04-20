@@ -824,37 +824,29 @@ Return Value:
 
 /*************************************************/
 
-
-NTSTATUS
-CVideoCapturePin::
-Acquire (
-    IN KSSTATE FromState
-    )
-
 /*++
 
 Routine Description:
 
-    This is called from the base class when the video capture pin transitions
-    into the acquire state (from either Stop or Pause).  The state the pin
-    transitioned from is passed in.
+This is called from the base class when the video capture pin transitions
+into the acquire state (from either Stop or Pause).  The state the pin
+transitioned from is passed in.
 
-    During this phase, the video capture pin creates the image synthesizer
-    and initializes it.
+During this phase, the video capture pin creates the image synthesizer
+and initializes it.
 
 Arguments:
 
-    FromState -
-        The state transitioning from (KSSTATE_STOP or KSSTATE_PAUSE)
+FromState -
+The state transitioning from (KSSTATE_STOP or KSSTATE_PAUSE)
 
 Return Value:
 
-    Success / Failure
+Success / Failure
 
---*/
-
+--*/
+NTSTATUS CVideoCapturePin::Acquire ( IN KSSTATE FromState )
 {
-
     PAGED_CODE();
 
     NT_ASSERT (m_VideoInfoHeader);
@@ -862,15 +854,7 @@ Return Value:
     NTSTATUS Status = STATUS_SUCCESS;
 
     if (FromState == KSSTATE_STOP) {
-
-        m_SynthesisBuffer = reinterpret_cast <PUCHAR> (
-            ExAllocatePoolWithTag (
-                NonPagedPool, 
-                m_VideoInfoHeader -> bmiHeader.biSizeImage,
-                AVSSMP_POOLTAG
-                )
-            );
-
+        m_SynthesisBuffer = reinterpret_cast <PUCHAR> ( ExAllocatePoolWithTag ( NonPagedPool, m_VideoInfoHeader -> bmiHeader.biSizeImage, AVSSMP_POOLTAG ) );
         if (!m_SynthesisBuffer) {
             Status = STATUS_INSUFFICIENT_RESOURCES;
         } else {
@@ -878,9 +862,7 @@ Return Value:
             // Determine the necessary type of image synthesizer to create 
             // based on the format that has been set on this pin.
             //
-            if (m_VideoInfoHeader -> bmiHeader.biBitCount == 24 &&
-                m_VideoInfoHeader -> bmiHeader.biCompression == KS_BI_RGB) {
-        
+            if (m_VideoInfoHeader -> bmiHeader.biBitCount == 24 && m_VideoInfoHeader -> bmiHeader.biCompression == KS_BI_RGB) {
                 //
                 // If we're RGB24, create a new RGB24 synth.  RGB24 surfaces
                 // can be in either orientation.  The origin is lower left if
@@ -893,18 +875,11 @@ Return Value:
                         ABS (m_VideoInfoHeader -> bmiHeader.biHeight)
                         );
         
-            } else
-            if (m_VideoInfoHeader -> bmiHeader.biBitCount == 16 &&
-                m_VideoInfoHeader -> bmiHeader.biCompression == FOURCC_YUV422) {
-        
+            } else if (m_VideoInfoHeader -> bmiHeader.biBitCount == 16 && m_VideoInfoHeader -> bmiHeader.biCompression == FOURCC_YUV422) {
                 //
                 // If we're UYVY, create the YUV synth.
                 //
-                m_ImageSynth = new (NonPagedPool, 'YysI') CYUVSynthesizer (
-                    m_VideoInfoHeader -> bmiHeader.biWidth,
-                    m_VideoInfoHeader -> bmiHeader.biHeight
-                    );
-        
+                m_ImageSynth = new (NonPagedPool, 'YysI') CYUVSynthesizer ( m_VideoInfoHeader -> bmiHeader.biWidth, m_VideoInfoHeader -> bmiHeader.biHeight );
             } else
                 //
                 // We don't synthesize anything but RGB 24 and UYVY.
@@ -920,13 +895,8 @@ Return Value:
         //
         // Bag the image synthesizer.
         //
-        if (NT_SUCCESS (Status)) {
-            
-            Status = KsAddItemToObjectBag (
-                m_Pin -> Bag,
-                m_ImageSynth,
-                reinterpret_cast <PFNKSFREE> (CVideoCapturePin::CleanupSynth)
-                );
+        if (NT_SUCCESS (Status)) {            
+            Status = KsAddItemToObjectBag ( m_Pin -> Bag, m_ImageSynth, reinterpret_cast <PFNKSFREE> (CVideoCapturePin::CleanupSynth) );
     
         }
 
@@ -939,49 +909,39 @@ Return Value:
         }
 
     } else {
-
         //
         // The only other state we can come from is pause.  If we're in a
         // downward state transition below pause, tell the filter to stop the
         // capture DPC.
         //
         m_ParentFilter -> StopDPC ();
-
     }
-
     return Status;
 
 }
 
 /*************************************************/
 
-
-NTSTATUS
-CVideoCapturePin::
-Stop (
-    IN KSSTATE FromState
-    )
-
 /*++
 
 Routine Description:
 
-    Called when the video capture pin transitions from acquire to stop.
-    This function will clean up the image synth and any data structures
-    that we need to clean up on stop.
+Called when the video capture pin transitions from acquire to stop.
+This function will clean up the image synth and any data structures
+that we need to clean up on stop.
 
 Arguments:
 
-    FromState -
-        The state the pin is transitioning away from.  This should
-        always be KSSTATE_ACQUIRE for this call.
+FromState -
+The state the pin is transitioning away from.  This should
+always be KSSTATE_ACQUIRE for this call.
 
 Return Value:
 
-    STATUS_SUCCESS
+STATUS_SUCCESS
 
---*/
-
+--*/
+NTSTATUS CVideoCapturePin::Stop ( IN KSSTATE FromState )
 {
     PAGED_CODE();
 
@@ -990,11 +950,7 @@ Return Value:
     //
     // Remove the image synthesizer from the object bag and free it.
     //
-    KsRemoveItemFromObjectBag (
-        m_Pin -> Bag,
-        m_ImageSynth,
-        TRUE
-        );
+    KsRemoveItemFromObjectBag ( m_Pin -> Bag, m_ImageSynth, TRUE );
 
     m_ImageSynth = NULL;
 
@@ -1018,36 +974,29 @@ Return Value:
 #endif // ALLOC_PRAGMA
 
 
-NTSTATUS
-CVideoCapturePin::
-CaptureFrame (
-    IN PKSPROCESSPIN ProcessPin,
-    IN ULONG Tick
-    )
-
 /*++
 
 Routine Description:
 
-    This routine is called from the filter processing function to capture
-    a frame for the video capture pin.  The process pin to capture to is
-    passed.
+This routine is called from the filter processing function to capture
+a frame for the video capture pin.  The process pin to capture to is
+passed.
 
 Arguments:
 
-    ProcessPin -
-        The process pin associated with this pin.
+ProcessPin -
+The process pin associated with this pin.
 
-    Tick -
-        The tick count on the filter.  This is the number of timer DPC's that
-        have fired since the timer DPC started.
+Tick -
+The tick count on the filter.  This is the number of timer DPC's that
+have fired since the timer DPC started.
 
 Return Value:
 
-    STATUS_SUCCESS
+STATUS_SUCCESS
 
 --*/
-
+NTSTATUS CVideoCapturePin::CaptureFrame(IN PKSPROCESSPIN ProcessPin, IN ULONG Tick)
 {
 
     NT_ASSERT (ProcessPin -> Pin == m_Pin);
@@ -1071,14 +1020,12 @@ Return Value:
         // Because we adjusted the allocator framing, each frame should be
         // sufficient to trigger capture of the appropriate buffer size.
         //
-        NT_ASSERT (ProcessPin -> BytesAvailable >= 
-            m_VideoInfoHeader -> bmiHeader.biSizeImage);
+        NT_ASSERT (ProcessPin -> BytesAvailable >= m_VideoInfoHeader -> bmiHeader.biSizeImage);
 
         //
         // If we get an invalid buffer, kick it out.
         //
-        if (ProcessPin -> BytesAvailable < 
-            m_VideoInfoHeader -> bmiHeader.biSizeImage) {
+        if (ProcessPin -> BytesAvailable < m_VideoInfoHeader -> bmiHeader.biSizeImage) {
 
             ProcessPin -> BytesUsed = 0;
             ProcessPin -> Terminate = TRUE;
@@ -1094,18 +1041,13 @@ Return Value:
         //
         // Overlay some activity onto the bars.
         //
-        ULONG DropLength = (Tick * 2) % 
-            (ABS (m_VideoInfoHeader -> bmiHeader.biHeight));
+        ULONG DropLength = (Tick * 2) % (ABS (m_VideoInfoHeader -> bmiHeader.biHeight));
     
         //
         // Create a drop flowing down DropLength lines from the top of the 
         // image.
         //
-        m_ImageSynth -> Fill (
-            0, 0, 
-            m_VideoInfoHeader -> bmiHeader.biWidth - 1, DropLength, 
-            GREEN
-            );
+        m_ImageSynth -> Fill ( 0, 0, m_VideoInfoHeader -> bmiHeader.biWidth - 1, DropLength, GREEN );
 
         //
         // Overlay the dropped frame count over the image.
@@ -1114,14 +1056,7 @@ Return Value:
         Text[0] = '\0';
         RtlStringCbPrintfA(Text, sizeof(Text), "Video Skipped: %ld", m_DroppedFrames);
 
-        m_ImageSynth -> OverlayText (
-            10,
-            10,
-            1,
-            Text,
-            TRANSPARENT,
-            BLUE
-            );
+        m_ImageSynth -> OverlayText ( 10, 10, 1, Text, TRANSPARENT, BLUE );
 
         //
         // This is used to indicate that there is no audio pin.
@@ -1129,31 +1064,19 @@ Return Value:
         if (m_NotifyAudDrop != (ULONG)-1) {
             RtlStringCbPrintfA(Text, sizeof(Text), "Audio Skipped: %ld", m_NotifyAudDrop);
 
-            m_ImageSynth -> OverlayText (
-                10,
-                20,
-                1,
-                Text,
-                TRANSPARENT,
-                BLUE
-                );
+            m_ImageSynth -> OverlayText ( 10, 20, 1, Text, TRANSPARENT, BLUE );
         }
 
         //
         // Copy the synthesized image into the buffer.
         //
-        RtlCopyMemory (
-            ProcessPin -> Data,
-            m_SynthesisBuffer,
-            m_VideoInfoHeader -> bmiHeader.biSizeImage
-            );
+        RtlCopyMemory ( ProcessPin -> Data, m_SynthesisBuffer, m_VideoInfoHeader -> bmiHeader.biSizeImage );
         
         ProcessPin -> BytesUsed = m_VideoInfoHeader -> bmiHeader.biSizeImage;
         ProcessPin -> Terminate = TRUE;
 
 
-        PKSSTREAM_HEADER StreamHeader = 
-            ProcessPin -> StreamPointer -> StreamHeader;
+        PKSSTREAM_HEADER StreamHeader = ProcessPin -> StreamPointer -> StreamHeader;
 
         //
         // If there is a clock assigned to the pin, time stamp the sample.
@@ -1163,17 +1086,14 @@ Return Value:
             StreamHeader -> PresentationTime.Time = GetTime ();
             StreamHeader -> Duration = m_VideoInfoHeader -> AvgTimePerFrame;
 
-            StreamHeader -> OptionsFlags =
-                KSSTREAM_HEADER_OPTIONSF_TIMEVALID |
-                KSSTREAM_HEADER_OPTIONSF_DURATIONVALID;
+            StreamHeader -> OptionsFlags = KSSTREAM_HEADER_OPTIONSF_TIMEVALID | KSSTREAM_HEADER_OPTIONSF_DURATIONVALID;
 
         }
 
         //
         // Update the extended header info.
         //
-        NT_ASSERT (StreamHeader -> Size >= sizeof (KSSTREAM_HEADER) +
-            sizeof (KS_FRAME_INFO));
+        NT_ASSERT (StreamHeader -> Size >= sizeof (KSSTREAM_HEADER) + sizeof (KS_FRAME_INFO));
 
         //
         // Double check the Stream Header size.  AVStream makes no guarantee
@@ -1181,19 +1101,14 @@ Return Value:
         // will get that size.  If the proper data type handlers are not 
         // installed, the stream header will be of default size.
         //
-        if (StreamHeader -> Size >= sizeof (KSSTREAM_HEADER) +
-            sizeof (KS_FRAME_INFO)) {
+        if (StreamHeader -> Size >= sizeof (KSSTREAM_HEADER) + sizeof (KS_FRAME_INFO)) {
 
-            PKS_FRAME_INFO FrameInfo = reinterpret_cast <PKS_FRAME_INFO> (
-                StreamHeader + 1
-                );
+            PKS_FRAME_INFO FrameInfo = reinterpret_cast <PKS_FRAME_INFO> ( StreamHeader + 1 );
     
             FrameInfo -> ExtendedHeaderSize = sizeof (KS_FRAME_INFO);
             FrameInfo -> PictureNumber = (LONGLONG)m_FrameNumber;
             FrameInfo -> DropCount = (LONGLONG)m_DroppedFrames;
-
         }
-    
     } else {
         m_DroppedFrames++;
     }
@@ -1216,9 +1131,7 @@ Return Value:
 //
 // This is the data range description of the RGB24 capture format we support.
 //
-const 
-KS_DATARANGE_VIDEO 
-FormatRGB24Bpp_Capture = {
+const KS_DATARANGE_VIDEO FormatRGB24Bpp_Capture = {
 
     //
     // KSDATARANGE
@@ -1304,9 +1217,7 @@ FormatRGB24Bpp_Capture = {
 //
 // This is the data range description of the UYVY format we support.
 //
-const 
-KS_DATARANGE_VIDEO 
-FormatUYU2_Capture = {
+const KS_DATARANGE_VIDEO FormatUYU2_Capture = {
 
     //
     // KSDATARANGE
@@ -1386,9 +1297,7 @@ FormatUYU2_Capture = {
 // This is the dispatch table for the capture pin.  It provides notifications
 // about creation, closure, processing, data formats, etc...
 //
-const
-KSPIN_DISPATCH
-VideoCapturePinDispatch = {
+const KSPIN_DISPATCH VideoCapturePinDispatch = {
     CVideoCapturePin::DispatchCreate,       // Pin Create
     NULL,                                   // Pin Close
     NULL,                                   // Pin Process
@@ -1424,10 +1333,5 @@ DECLARE_SIMPLE_FRAMING_EX (
 // This is the list of data ranges supported on the capture pin.  We support
 // two: one RGB24, and one UYVY.
 //
-const 
-PKSDATARANGE 
-VideoCapturePinDataRanges [CAPTURE_PIN_DATA_RANGE_COUNT] = {
-    (PKSDATARANGE) &FormatRGB24Bpp_Capture,
-    (PKSDATARANGE) &FormatUYU2_Capture
-    };
+const PKSDATARANGE VideoCapturePinDataRanges [CAPTURE_PIN_DATA_RANGE_COUNT] = { (PKSDATARANGE) &FormatRGB24Bpp_Capture, (PKSDATARANGE) &FormatUYU2_Capture };
 

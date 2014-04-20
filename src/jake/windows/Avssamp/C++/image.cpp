@@ -299,8 +299,7 @@ UCHAR g_FontData [256][8] = {
 // Standard definition of EIA-189-A color bars.  The actual color definitions
 // are either in CRGB24Synthesizer or CYUVSynthesizer.
 //
-const COLOR g_ColorBars[] = 
-    {WHITE, YELLOW, CYAN, GREEN, MAGENTA, RED, BLUE, BLACK};
+const COLOR g_ColorBars[] = {WHITE, YELLOW, CYAN, GREEN, MAGENTA, RED, BLUE, BLACK};
 
 const UCHAR CRGB24Synthesizer::Colors [MAX_COLOR][3] = {
     {0, 0, 0},          // BLACK
@@ -336,29 +335,23 @@ const UCHAR CYUVSynthesizer::Colors [MAX_COLOR][3] = {
 #pragma code_seg()
 #endif // ALLOC_PRAGMA
 
-
-void
-CImageSynthesizer::
-SynthesizeBars (
-    )
-
 /*++
 
 Routine Description:
 
-    Synthesize EIA-189-A standard color bars onto the Image.  The image
-    in question is the current synthesis buffer.
+Synthesize EIA-189-A standard color bars onto the Image.  The image
+in question is the current synthesis buffer.
 
 Arguments:
 
-    None
+None
 
 Return Value:
 
-    None
+None
 
---*/
-
+--*/
+void CImageSynthesizer::SynthesizeBars ()
 {
     ULONG ColorCount = SIZEOF_ARRAY (g_ColorBars);
 
@@ -380,30 +373,15 @@ Return Value:
     // Copy the synthesized line to all subsequent lines.
     //
     for (ULONG line = 1; line < m_Height; line++) {
-
-        GetImageLocation (0, line);
-
-        RtlCopyMemory (
-            m_Cursor,
-            ImageStart,
-            ImageEnd - ImageStart
-            );
+		GetImageLocation (0, line);
+		RtlCopyMemory ( m_Cursor, ImageStart, ImageEnd - ImageStart );
     }
 }
 
 /*************************************************/
 
 
-void
-CImageSynthesizer::
-Fill (
-    IN ULONG X_TopLeft,
-    IN ULONG Y_TopLeft,
-    IN ULONG X_BottomRight,
-    IN ULONG Y_BottomRight,
-    IN COLOR Color
-    )
-
+void CImageSynthesizer:: Fill ( IN ULONG X_TopLeft, IN ULONG Y_TopLeft, IN ULONG X_BottomRight, IN ULONG Y_BottomRight, IN COLOR Color )
 {
 
     //
@@ -421,77 +399,55 @@ Fill (
     // end location.
     //
     for (ULONG y = Y_TopLeft + 1; y <= Y_BottomRight; y++) {
-
         GetImageLocation (X_TopLeft, y);
-
-        RtlCopyMemory (
-            m_Cursor,
-            ImageStart,
-            ImageEnd - ImageStart
-            );
-
+        RtlCopyMemory ( m_Cursor, ImageStart, ImageEnd - ImageStart );
     }
-
 }
 
 /*************************************************/
-
-
-void 
-CImageSynthesizer::
-OverlayText (
-    _In_ ULONG LocX,
-    _In_ ULONG LocY,
-    _In_ ULONG Scaling,
-    _In_ LPSTR Text,
-    _In_ COLOR BgColor,
-    _In_ COLOR FgColor
-    )
 
 /*++
 
 Routine Description:
 
-    Overlay text onto the synthesized image.  Clip to fit the image
-    if the overlay does not fit.  The image buffer used is the set
-    synthesis buffer.
+Overlay text onto the synthesized image.  Clip to fit the image
+if the overlay does not fit.  The image buffer used is the set
+synthesis buffer.
 
 Arguments:
 
-    LocX -
-        The X location on the image to begin the overlay.  This MUST
-        be inside the image.  POSITION_CENTER may be used to indicate
-        horizontal centering.
+LocX -
+The X location on the image to begin the overlay.  This MUST
+be inside the image.  POSITION_CENTER may be used to indicate
+horizontal centering.
 
-    LocY -
-        The Y location on the image to begin the overlay.  This MUST
-        be inside the image.  POSITION_CENTER may be used to indicate
-        vertical centering.
+LocY -
+The Y location on the image to begin the overlay.  This MUST
+be inside the image.  POSITION_CENTER may be used to indicate
+vertical centering.
 
-    Scaling -
-        Normally, the overlay is done in 8x8 font.  A scaling of
-        2 indicates 16x16, 3 indicates 24x24 and so forth.
+Scaling -
+Normally, the overlay is done in 8x8 font.  A scaling of
+2 indicates 16x16, 3 indicates 24x24 and so forth.
 
-    Text -
-        A character string containing the information to overlay
+Text -
+A character string containing the information to overlay
 
-    BgColor -
-        The background color of the overlay window.  For transparency,
-        indicate TRANSPARENT here.
+BgColor -
+The background color of the overlay window.  For transparency,
+indicate TRANSPARENT here.
 
-    FgColor -
-        The foreground color for the text overlay.
+FgColor -
+The foreground color for the text overlay.
 
 Return Value:
 
-    None
+None
 
---*/
-
+--*/
+void CImageSynthesizer::OverlayText ( _In_ ULONG LocX, _In_ ULONG LocY, _In_ ULONG Scaling, _In_ LPSTR Text, _In_ COLOR BgColor, _In_ COLOR FgColor )
 {
-
-    NT_ASSERT ((LocX <= m_Width || LocX == POSITION_CENTER) &&
-            (LocY <= m_Height || LocY == POSITION_CENTER));
+    NT_ASSERT ((LocX <= m_Width || LocX == POSITION_CENTER) && (LocY <= m_Height || LocY == POSITION_CENTER));
 
     ULONG StrLen = 0;
     CHAR* CurChar;
@@ -643,5 +599,4 @@ Return Value:
             PutPixel (BgColor);
         }
     }
-
 }

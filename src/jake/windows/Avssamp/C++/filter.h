@@ -1,30 +1,3 @@
-/**************************************************************************
-
-    AVStream Filter-Centric Sample
-
-    Copyright (c) 1999 - 2001, Microsoft Corporation
-
-    File:
-
-        filter.h
-
-    Abstract:
-
-        This file contails the filter level header for the filter-centric
-        capture filter.
-
-    History:
-
-        created 5/31/01
-
-**************************************************************************/
-
-/**************************************************************************
-
-    DEFINES
-
-**************************************************************************/
-
 //
 // VIDEO_PIN_ID:
 //
@@ -104,10 +77,7 @@ private:
     // copying synthesized data into image buffers.  The DispatchProcess()
     // function bridges to this routine in the context of the CCaptureFilter.
     //
-    NTSTATUS
-    Process (
-        IN PKSPROCESSPIN_INDEXENTRY ProcessPinsIndex
-        );
+    NTSTATUS Process ( IN PKSPROCESSPIN_INDEXENTRY ProcessPinsIndex );
 
 
     //
@@ -116,9 +86,7 @@ private:
     // This function call binds the audio stream exposed by the filter to
     // the wave object m_WaveObject. 
     //
-    NTSTATUS
-    BindAudioToWaveObject (
-        );
+    NTSTATUS BindAudioToWaveObject ();
 
     //
     // Cleanup():
@@ -127,11 +95,7 @@ private:
     // one would cause ExFreePool to be used.  This is not good for C++
     // constructed objects.  We simply delete the object here.
     //
-    static
-    void
-    Cleanup (
-        IN CCaptureFilter *CapFilter
-        )
+    static void Cleanup ( IN CCaptureFilter *CapFilter )
     {
         delete CapFilter;
     }
@@ -145,17 +109,14 @@ public:
     // have zeroed the memory, do not bother initializing any NULL or 0
     // fields.  Only initialize non-NULL, non-0 fields.
     //
-    CCaptureFilter (
-        IN PKSFILTER Filter
-        );
+    CCaptureFilter ( IN PKSFILTER Filter );
 
     //
     // ~CCaptureFilter():
     //
     // The capture filter destructor.
     //
-    ~CCaptureFilter (
-        )
+    ~CCaptureFilter ()
     {
     }
 
@@ -164,10 +125,7 @@ public:
     //
     // This is called in order to start the timer DPC running. 
     //
-    void
-    StartDPC (
-        IN LONGLONG TimerInterval
-        );
+    void StartDPC ( IN LONGLONG TimerInterval );
 
     //
     // StopDPC():
@@ -175,18 +133,14 @@ public:
     // This is called in order to stop the timer DPC running.  The function
     // will not return until it guarantees that no more timer DPC's fire.
     //
-    void
-    StopDPC (
-        );
+    void StopDPC ();
 
     //
     // GetWaveObject():
     //
     // Returns the wave object that has been opened for the filter.
     //
-    CWaveObject *
-    GetWaveObject (
-        )
+    CWaveObject * GetWaveObject ()
     {
         return m_WaveObject;
     }
@@ -196,9 +150,7 @@ public:
     //
     // Returns the timer interval we're using to generate DPC's.
     //
-    LONGLONG
-    GetTimerInterval (
-        );
+    LONGLONG GetTimerInterval ();
 
     /*************************************************
 
@@ -213,12 +165,7 @@ public:
     // creates the CCaptureFilter object, associates it with the AVStream
     // object, and bags it for easy cleanup later.
     //
-    static
-    NTSTATUS
-    DispatchCreate (
-        IN PKSFILTER Filter,
-        IN PIRP Irp
-        );
+    static NTSTATUS DispatchCreate ( IN PKSFILTER Filter, IN PIRP Irp );
 
     //
     // DispatchProcess():
@@ -226,12 +173,7 @@ public:
     // This is the filter process dispatch for the capture filter.  It merely
     // bridges to Process() in the context of the CCaptureFilter.
     //
-    static
-    NTSTATUS
-    DispatchProcess (
-        IN PKSFILTER Filter,
-        IN PKSPROCESSPIN_INDEXENTRY ProcessPinsIndex
-        )
+    static NTSTATUS DispatchProcess ( IN PKSFILTER Filter, IN PKSPROCESSPIN_INDEXENTRY ProcessPinsIndex )
     {
         return
             (reinterpret_cast <CCaptureFilter *> (Filter -> Context)) ->
@@ -245,9 +187,7 @@ public:
     // The timer dpc routine.  This is bridged to from TimerRoutine in the
     // context of the appropriate CCaptureFilter.
     //
-    void
-    TimerDpc (
-        );
+    void TimerDpc ();
             
 };
 

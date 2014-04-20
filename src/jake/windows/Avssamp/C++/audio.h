@@ -1,23 +1,3 @@
-/**************************************************************************
-
-    AVStream Filter-Centric Sample
-
-    Copyright (c) 1999 - 2001, Microsoft Corporation
-
-    File:
-
-        audio.h
-
-    Abstract:
-
-        This file contains the audio capture pin header.
-
-    History:
-
-        created 6/28/01
-
-**************************************************************************/
-
 class CAudioCapturePin :
     public CCapturePin
 
@@ -37,9 +17,7 @@ public:
     //
     // Construct a new audio capture pin.
     //
-    CAudioCapturePin (
-        IN PKSPIN Pin
-        ) : CCapturePin (Pin)
+    CAudioCapturePin ( IN PKSPIN Pin ) : CCapturePin (Pin)
     {
     }
 
@@ -48,8 +26,7 @@ public:
     //
     // Destruct an audio capture pin.
     //
-    ~CAudioCapturePin (
-        )
+    ~CAudioCapturePin ()
     {
     }
 
@@ -60,11 +37,7 @@ public:
     // state (from either stop or pause).  This routine will get ahold of
     // the wave object from the filter.
     //
-    virtual
-    NTSTATUS
-    Acquire (
-        IN KSSTATE FromState
-        );
+    virtual NTSTATUS Acquire ( IN KSSTATE FromState );
 
     //
     // CaptureFrame():
@@ -75,12 +48,7 @@ public:
     // "synthesized" audio data from the wave object in order to reach
     // the position.
     //
-    virtual
-    NTSTATUS
-    CaptureFrame (
-        IN PKSPROCESSPIN ProcessPin,
-        IN ULONG Tick
-        );
+    virtual NTSTATUS CaptureFrame ( IN PKSPROCESSPIN ProcessPin, IN ULONG Tick );
 
     /*************************************************
 
@@ -96,12 +64,7 @@ public:
     // object and bags the class object for automatic cleanup when the
     // pin is closed.
     //
-    static
-    NTSTATUS
-    DispatchCreate (
-        IN PKSPIN Pin,
-        IN PIRP Irp
-        );
+    static NTSTATUS DispatchCreate ( IN PKSPIN Pin, IN PIRP Irp );
 
     //
     // DispatchSetFormat():
@@ -115,15 +78,7 @@ public:
     // call and not a format change.  Even fixed format pins get this call
     // once.
     //
-    static
-    NTSTATUS
-    DispatchSetFormat (
-        IN PKSPIN Pin,
-        IN PKSDATAFORMAT OldFormat OPTIONAL,
-        IN PKSMULTIPLE_ITEM OldAttributeList OPTIONAL,
-        IN const KSDATARANGE *DataRange,
-        IN const KSATTRIBUTE_LIST *AttributeRange OPTIONAL
-        );
+    static NTSTATUS DispatchSetFormat ( IN PKSPIN Pin, IN PKSDATAFORMAT OldFormat OPTIONAL, IN PKSMULTIPLE_ITEM OldAttributeList OPTIONAL, IN const KSDATARANGE *DataRange, IN const KSATTRIBUTE_LIST *AttributeRange OPTIONAL );
 
     //
     // IntersectHandler():
@@ -133,18 +88,7 @@ public:
     // one local and one possibly foreign.  If there is no compatible format,
     // STATUS_NO_MATCH is returned.
     //
-    static
-    NTSTATUS
-    IntersectHandler (
-        IN PKSFILTER Filter,
-        IN PIRP Irp,
-        IN PKSP_PIN PinInstance,
-        IN PKSDATARANGE CallerDataRange,
-        IN PKSDATARANGE DescriptorDataRange,
-        IN ULONG BufferSize,
-        OUT PVOID Data OPTIONAL,
-        OUT PULONG DataSize
-        );
+    static NTSTATUS IntersectHandler ( IN PKSFILTER Filter, IN PIRP Irp, IN PKSP_PIN PinInstance, IN PKSDATARANGE CallerDataRange, IN PKSDATARANGE DescriptorDataRange, IN ULONG BufferSize, OUT PVOID Data OPTIONAL, OUT PULONG DataSize );
         
 
 };

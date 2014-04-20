@@ -30,80 +30,64 @@
 #pragma code_seg("PAGE")
 #endif // ALLOC_PRAGMA
 
-
-CWaveObject::
-~CWaveObject (
-    )
-
 /*++
 
 Routine Description:
 
-    Destroy a wave object.
+Destroy a wave object.
 
 Arguments:
 
-    None
+None
 
 Return Value:
 
-    None
+None
 
 --*/
-
+CWaveObject::~CWaveObject ()
 {
     PAGED_CODE();
-
     if (m_WaveData) {
         ExFreePool (m_WaveData);
     }
-
 }
 
 /*************************************************/
 
-
-NTSTATUS
-CWaveObject::
-ParseForBlock (
-    IN HANDLE FileHandle,
-    IN ULONG BlockHeader,
-    IN OUT PLARGE_INTEGER BlockPosition,
-    OUT PULONG BlockSize
-    )
-
 /*++
 
 Routine Description:
 
-    Given that BlockPosition points to the offset of the start of a RIFF block,
-    continue parsing the specified file until a block with the header of
-    BlockHeader is found.  Return the position of the block data and the size
-    of the block.
+Given that BlockPosition points to the offset of the start of a RIFF block,
+continue parsing the specified file until a block with the header of
+BlockHeader is found.  Return the position of the block data and the size
+of the block.
 
 Arguments:
 
-    FileHandle -
-        Handle to the file to parse
+FileHandle -
+Handle to the file to parse
 
-    BlockHeader -
-        The block header to scan for
+BlockHeader -
+The block header to scan for
 
-    BlockPosition -
-        INPUT : Points to the block header to start at
-        OUTPUT: If successful, points to the block data for the sought block
-                If unsuccessful, unchanged
+BlockPosition -
+INPUT : Points to the block header to start at
+OUTPUT: If successful, points to the block data for the sought block
+If unsuccessful, unchanged
 
-    BlockSize -
-        On output, if successful -- the size of the sought block will be 
-        placed here
+BlockSize -
+On output, if successful -- the size of the sought block will be
+placed here
 
 Return Value:
 
-    Success / Failure of the search
+Success / Failure of the search
 
 --*/
 
+NTSTATUS CWaveObject::ParseForBlock ( IN HANDLE FileHandle, IN ULONG BlockHeader, IN OUT PLARGE_INTEGER BlockPosition, OUT PULONG BlockSize )
 {
 
     PAGED_CODE();
@@ -159,37 +143,30 @@ Return Value:
 
 /*************************************************/
 
-
-NTSTATUS
-CWaveObject::
-ParseAndRead (
-    )
-
 /*++
 
 Routine Description:
 
-    Parse the wave file and read the data into an internally allocated
-    buffer.  This prepares to synthesize audio data from the wave
-    object.
+Parse the wave file and read the data into an internally allocated
+buffer.  This prepares to synthesize audio data from the wave
+object.
 
 Arguments:
 
-    None
+None
 
 Return Value:
 
-    Success / Failure
+Success / Failure
 
-        If the wave is unrecognized, unparsable, or insufficient memory
-        exists to allocate the internal buffer, an error code will
-        be returned and the object will be incapable of synthesizing
-        audio data based on the wave.
+If the wave is unrecognized, unparsable, or insufficient memory
+exists to allocate the internal buffer, an error code will
+be returned and the object will be incapable of synthesizing
+audio data based on the wave.
 
---*/
-
+--*/
+NTSTATUS CWaveObject:: ParseAndRead ()
 {
-
     PAGED_CODE();
 
     IO_STATUS_BLOCK iosb;
@@ -365,31 +342,24 @@ Return Value:
 
 /*************************************************/
 
-
-void
-CWaveObject::
-WriteRange (
-    OUT PKSDATARANGE_AUDIO DataRange
-    )
-
 /*++
 
 Routine Description:
 
-    Fill out the extended portion of the audio data range at DataRange.  This
-    includes the channel, bps, and frequency fields.
+Fill out the extended portion of the audio data range at DataRange.  This
+includes the channel, bps, and frequency fields.
 
 Arguments:
 
-    DataRange -
-        The data range to fill out
+DataRange -
+The data range to fill out
 
 Return Value:
 
-    None
+None
 
---*/
-
+--*/
+void CWaveObject::WriteRange ( OUT PKSDATARANGE_AUDIO DataRange )
 {
 
     PAGED_CODE();
@@ -415,26 +385,19 @@ Return Value:
 #pragma code_seg()
 #endif // ALLOC_PRAGMA
 
-
-void
-CWaveObject::
-SkipFixed (
-    IN LONGLONG TimeDelta
-    )
-
 /*++
 
 Routine Description:
 
-    Skip ahead a specific time delta within the wave.
+Skip ahead a specific time delta within the wave.
 
 Arguments:
-    
-    TimeDelta -
-        The amount of time to skip ahead.
 
---*/
+TimeDelta -
+The amount of time to skip ahead.
 
+--*/
+void CWaveObject::SkipFixed ( IN LONGLONG TimeDelta )
 {
     if (TimeDelta > 0)  {
 
@@ -458,39 +421,30 @@ Arguments:
 
 }
 
-
-ULONG
-CWaveObject::
-SynthesizeFixed (
-    IN LONGLONG TimeDelta,
-    IN PVOID Buffer,
-    IN ULONG BufferSize
-    )
-
 /*++
 
 Routine Description:
 
-    Copy wave data from our wave block in order to synthesize forward in time
-    TimeDelta (in 100nS units).
+Copy wave data from our wave block in order to synthesize forward in time
+TimeDelta (in 100nS units).
 
 Arguments:
 
-    TimeDelta -
-        The amount of time to move the stream (in 100nS increments)
+TimeDelta -
+The amount of time to move the stream (in 100nS increments)
 
-    Buffer -
-        The buffer to synthesize into
+Buffer -
+The buffer to synthesize into
 
-    BufferSize -
-        The size of the buffer
+BufferSize -
+The size of the buffer
 
 Return Value:
 
-    Number of bytes synthesized.
+Number of bytes synthesized.
 
---*/
-
+--*/
+ULONG CWaveObject::SynthesizeFixed ( IN LONGLONG TimeDelta, IN PVOID Buffer, IN ULONG BufferSize )
 {
 
     //
@@ -553,46 +507,34 @@ Return Value:
 
 }
 
-
-ULONG
-CWaveObject::
-SynthesizeTo (
-    IN LONGLONG StreamTime,
-    IN PVOID Buffer,
-    IN ULONG BufferSize
-    )
-
 /*++
 
 Routine Description:
 
-    Copy wave data from our wave block in order to synthesize the stream
-    up to the specified stream time.  If the buffers are not large enough,
-    this will fall behind on synthesis.
+Copy wave data from our wave block in order to synthesize the stream
+up to the specified stream time.  If the buffers are not large enough,
+this will fall behind on synthesis.
 
 Arguments:
 
-    StreamTime -
-        The time to synthesize up to
+StreamTime -
+The time to synthesize up to
 
-    Buffer -
-        The buffer to copy synthesized wave data into
+Buffer -
+The buffer to copy synthesized wave data into
 
-    BufferSize -
-        The size of the buffer
+BufferSize -
+The size of the buffer
 
 Return Value:
 
-    The number of bytes used.
+The number of bytes used.
 
---*/
-
+--*/
+ULONG CWaveObject::SynthesizeTo ( IN LONGLONG StreamTime, IN PVOID Buffer, IN ULONG BufferSize )
 {
-
     LONGLONG TimeDelta = StreamTime - m_SynthesisTime;
 
     return SynthesizeFixed (TimeDelta, Buffer, BufferSize);
-
-
 }
 

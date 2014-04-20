@@ -89,59 +89,27 @@ extern "C" {
 //
 // filter.cpp externs:
 //
-extern
-const
-KSFILTER_DISPATCH
-CaptureFilterDispatch;
-
-extern
-const
-KSFILTER_DESCRIPTOR
-CaptureFilterDescriptor;
-
-extern
-const
-KSPIN_DESCRIPTOR_EX
-CaptureFilterPinDescriptors [CAPTURE_FILTER_PIN_COUNT];
-
-extern
-const
-GUID
-CaptureFilterCategories [CAPTURE_FILTER_CATEGORIES_COUNT];
+extern const KSFILTER_DISPATCH CaptureFilterDispatch;
+extern const KSFILTER_DESCRIPTOR CaptureFilterDescriptor;
+extern const KSPIN_DESCRIPTOR_EX CaptureFilterPinDescriptors [CAPTURE_FILTER_PIN_COUNT];
+extern const GUID CaptureFilterCategories [CAPTURE_FILTER_CATEGORIES_COUNT];
 
 //
 // video.cpp externs:
 //
-extern
-const
-KSALLOCATOR_FRAMING_EX
-VideoCapturePinAllocatorFraming;
-
-extern
-const
-KSPIN_DISPATCH
-VideoCapturePinDispatch;
-
-extern
-const
-PKSDATARANGE
-VideoCapturePinDataRanges [CAPTURE_PIN_DATA_RANGE_COUNT];
+extern const KSALLOCATOR_FRAMING_EX VideoCapturePinAllocatorFraming;
+extern const KSPIN_DISPATCH VideoCapturePinDispatch;
+extern const PKSDATARANGE VideoCapturePinDataRanges [CAPTURE_PIN_DATA_RANGE_COUNT];
 
 //
 // audio.cpp externs:
 //
-extern
-const
-KSPIN_DESCRIPTOR_EX
-AudioPinDescriptorTemplate;
+extern const KSPIN_DESCRIPTOR_EX AudioPinDescriptorTemplate;
 
 //
 // avssamp.cpp externs:
 //
-extern
-const
-KSDEVICE_DESCRIPTOR
-CaptureDeviceDescriptor;
+extern const  KSDEVICE_DESCRIPTOR CaptureDeviceDescriptor;
 
 /*************************************************
 

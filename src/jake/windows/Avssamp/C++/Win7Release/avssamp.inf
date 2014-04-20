@@ -18,7 +18,7 @@ Class=MEDIA
 ClassGUID={4d36e96c-e325-11ce-bfc1-08002be10318}
 Provider=%Msft%
 CatalogFile=avssamp.cat
-DriverVer=03/31/2014,23.59.9.133
+DriverVer=04/20/2014,13.33.7.45
 
 [SourceDisksNames]
 1000 = %cdname%,,,

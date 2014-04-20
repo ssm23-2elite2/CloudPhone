@@ -1,23 +1,3 @@
-/**************************************************************************
-
-    AVStream Filter-Centric Sample
-
-    Copyright (c) 1999 - 2001, Microsoft Corporation
-
-    File:
-
-        video.h
-
-    Abstract:
-
-        This file contains the video capture pin header.
-
-    History:
-
-        created 6/11/01
-
-**************************************************************************/
-
 class CVideoCapturePin :
     public CCapturePin {
 
@@ -51,9 +31,7 @@ private:
     // in the CVideoCapturePin object.  This is used to determine necessary
     // variables for image synthesis, etc...
     //
-    PKS_VIDEOINFOHEADER
-    CaptureVideoInfoHeader (
-        );
+    PKS_VIDEOINFOHEADER CaptureVideoInfoHeader ();
 
 protected:
 
@@ -64,10 +42,7 @@ public:
     //
     // Construct a new video capture pin.
     //
-    CVideoCapturePin (
-        IN PKSPIN Pin
-        ) :
-        CCapturePin (Pin)
+    CVideoCapturePin ( IN PKSPIN Pin ) : CCapturePin (Pin)
     {
     }
 
@@ -76,9 +51,7 @@ public:
     //
     // Destruct a video capture pin.
     //
-    virtual
-    ~CVideoCapturePin (
-        )
+    virtual ~CVideoCapturePin ()
     {
     }
 
@@ -90,12 +63,7 @@ public:
     // will copy synthesized image data into the frame buffer and complete
     // the frame buffer.
     //
-    virtual
-    NTSTATUS
-    CaptureFrame (
-        IN PKSPROCESSPIN ProcessPin,
-        IN ULONG Tick
-        );
+    virtual NTSTATUS CaptureFrame ( IN PKSPROCESSPIN ProcessPin, IN ULONG Tick );
 
     //
     // Pause():
@@ -105,11 +73,7 @@ public:
     // at the interval demanded by the video info header in the connection
     // format.
     //
-    virtual
-    NTSTATUS
-    Pause (
-        IN KSSTATE FromState
-        );
+    virtual NTSTATUS Pause ( IN KSSTATE FromState );
 
     //
     // Acquire():
@@ -119,11 +83,7 @@ public:
     // synthesizing frame capture data when the pin transitions to the
     // appropriate state.
     //
-    virtual
-    NTSTATUS
-    Acquire (
-        IN KSSTATE FromState
-        );
+    virtual NTSTATUS Acquire ( IN KSSTATE FromState );
 
     //
     // Stop():
@@ -132,11 +92,7 @@ public:
     // This simply destroys the image synthesizer in preparation for creating
     // a new one next acquire.
     //
-    virtual
-    NTSTATUS
-    Stop (
-        IN KSSTATE FromState
-        );
+    virtual NTSTATUS Stop ( IN KSSTATE FromState );
 
     /*************************************************
 
@@ -152,12 +108,7 @@ public:
     // object and bags the class object for automatic cleanup when the
     // pin is closed.
     //
-    static
-    NTSTATUS
-    DispatchCreate (
-        IN PKSPIN Pin,
-        IN PIRP Irp
-        );
+    static NTSTATUS DispatchCreate ( IN PKSPIN Pin, IN PIRP Irp );
 
     //
     // DispatchSetFormat():
@@ -171,15 +122,7 @@ public:
     // call and not a format change.  Even fixed format pins get this call
     // once.
     //
-    static
-    NTSTATUS
-    DispatchSetFormat (
-        IN PKSPIN Pin,
-        IN PKSDATAFORMAT OldFormat OPTIONAL,
-        IN PKSMULTIPLE_ITEM OldAttributeList OPTIONAL,
-        IN const KSDATARANGE *DataRange,
-        IN const KSATTRIBUTE_LIST *AttributeRange OPTIONAL
-        );
+    static NTSTATUS DispatchSetFormat ( IN PKSPIN Pin, IN PKSDATAFORMAT OldFormat OPTIONAL, IN PKSMULTIPLE_ITEM OldAttributeList OPTIONAL, IN const KSDATARANGE *DataRange, IN const KSATTRIBUTE_LIST *AttributeRange OPTIONAL );
 
     //
     // IntersectHandler():
@@ -189,18 +132,7 @@ public:
     // one local and one possibly foreign.  If there is no compatible format,
     // STATUS_NO_MATCH is returned.
     //
-    static
-    NTSTATUS
-    IntersectHandler (
-        IN PKSFILTER Filter,
-        IN PIRP Irp,
-        IN PKSP_PIN PinInstance,
-        IN PKSDATARANGE CallerDataRange,
-        IN PKSDATARANGE DescriptorDataRange,
-        IN ULONG BufferSize,
-        OUT PVOID Data OPTIONAL,
-        OUT PULONG DataSize
-        );
+    static NTSTATUS IntersectHandler ( IN PKSFILTER Filter, IN PIRP Irp, IN PKSP_PIN PinInstance, IN PKSDATARANGE CallerDataRange, IN PKSDATARANGE DescriptorDataRange, IN ULONG BufferSize, OUT PVOID Data OPTIONAL, OUT PULONG DataSize );
 
     //
     // CleanupSynth():
@@ -208,11 +140,7 @@ public:
     // Called when the Image Synthesizer is removed from the object bag
     // to be cleaned up.  We simply delete the image synth.
     //
-    static
-    void
-    CleanupSynth (
-        IN CImageSynthesizer *ImageSynth
-        )
+    static void CleanupSynth ( IN CImageSynthesizer *ImageSynth )
     {
         delete ImageSynth;
     }

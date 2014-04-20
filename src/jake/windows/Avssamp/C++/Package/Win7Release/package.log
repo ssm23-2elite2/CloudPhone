@@ -1,5 +1,5 @@
-﻿Build started 2014-03-31 오후 11:59:12.
-     1>Project "C:\workspace\SSM\CloudPhone\src\jake\windows\Avssamp\C++\Package\package.VcxProj" on node 2 (Build target(s)).
+﻿Build started 2014-04-20 오후 1:33:11.
+     1>Project "C:\workspace\SSM\CloudPhone\src\jake\windows\Avssamp\C++\Package\package.VcxProj" on node 2 (Rebuild target(s)).
      1>Inf2Cat:
          C:\Program Files\Windows Kits\8.1\bin\x86\inf2cat.exe /os:7_x86 /driver:C:\workspace\SSM\CloudPhone\src\jake\windows\Avssamp\C++\Win7Release\package\ 
          ........................
@@ -13,8 +13,8 @@
          
          Catalog generation complete.
          C:\workspace\SSM\CloudPhone\src\jake\windows\Avssamp\C++\Win7Release\package\avssamp.cat
-     1>Done Building Project "C:\workspace\SSM\CloudPhone\src\jake\windows\Avssamp\C++\Package\package.VcxProj" (Build target(s)).
+     1>Done Building Project "C:\workspace\SSM\CloudPhone\src\jake\windows\Avssamp\C++\Package\package.VcxProj" (Rebuild target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:00.90
+Time Elapsed 00:00:00.69

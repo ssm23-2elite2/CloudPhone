@@ -1,24 +1,3 @@
-/**************************************************************************
-
-    AVStream Filter-Centric Sample
-
-    Copyright (c) 1999 - 2001, Microsoft Corporation
-
-    File:
-
-        filter.cpp
-
-    Abstract:
-
-        This file contails the capture filter implementation (including
-        frame synthesis) for the fake capture filter.
-
-    History:
-
-        created 5/31/01
-
-**************************************************************************/
-
 #include "avssamp.h"
 
 //
@@ -28,13 +7,7 @@
 // capture by the filter.
 //
 KDEFERRED_ROUTINE TimerRoutine;
-void
-TimerRoutine (
-    IN PKDPC Dpc,
-    IN PVOID This,
-    IN PVOID SystemArg1,
-    IN PVOID SystemArg2
-    )
+void TimerRoutine ( IN PKDPC Dpc, IN PVOID This, IN PVOID SystemArg1, IN PVOID SystemArg2 )
 {
     CCaptureFilter *pCCaptureFilter = (CCaptureFilter*)This;
     if (pCCaptureFilter)
@@ -55,30 +28,24 @@ TimerRoutine (
 #endif // ALLOC_PRAGMA
 
 
-CCaptureFilter::
-CCaptureFilter (
-    IN PKSFILTER Filter
-    ) :
-    m_Filter (Filter)
-
 /*++
 
 Routine Description:
 
-    This is the constructor for the capture filter.  It initializes all the
-    structures necessary to kick off timer DPC's for capture.
+This is the constructor for the capture filter.  It initializes all the
+structures necessary to kick off timer DPC's for capture.
 
 Arguments:
 
-    Filter -
-        The AVStream filter being created.
+Filter -
+The AVStream filter being created.
 
 Return Value:
 
-    None
+None
 
 --*/
-
+CCaptureFilter::CCaptureFilter(IN PKSFILTER Filter) : m_Filter(Filter)
 {
     PAGED_CODE();
 
@@ -86,54 +53,36 @@ Return Value:
     // Initialize the DPC's, timers, and events necessary to cause a 
     // capture trigger to happen.
     //
-    KeInitializeDpc (
-        &m_TimerDpc,
-        TimerRoutine,
-        this
-        );
-
-    KeInitializeEvent (
-        &m_StopDPCEvent,
-        SynchronizationEvent,
-        FALSE
-        );
-
+    KeInitializeDpc ( &m_TimerDpc, TimerRoutine, this );
+    KeInitializeEvent ( &m_StopDPCEvent, SynchronizationEvent, FALSE );
     KeInitializeTimer (&m_Timer);
 
 }
 
 /*************************************************/
 
-
-NTSTATUS
-CCaptureFilter::
-DispatchCreate (
-    IN PKSFILTER Filter,
-    IN PIRP Irp
-    )
-
 /*++
 
 Routine Description:
 
-    This is the creation dispatch for the capture filter.  It creates
-    the CCaptureFilter object, associates it with the AVStream filter
-    object, and bag the CCaptureFilter for later cleanup.
+This is the creation dispatch for the capture filter.  It creates
+the CCaptureFilter object, associates it with the AVStream filter
+object, and bag the CCaptureFilter for later cleanup.
 
 Arguments:
 
-    Filter -
-        The AVStream filter being created
+Filter -
+The AVStream filter being created
 
-    Irp -
-        The creation Irp
+Irp -
+The creation Irp
 
 Return Value:
-    
-    Success / failure
 
---*/
+Success / failure
 
+--*/
+NTSTATUS CCaptureFilter::DispatchCreate ( IN PKSFILTER Filter, IN PIRP Irp )
 {
 
     PAGED_CODE();

@@ -31,77 +31,60 @@
 #pragma code_seg("PAGE")
 #endif // ALLOC_PRAGMA
 
-
-CCapturePin::
-CCapturePin (
-    IN PKSPIN Pin
-    ) :
-    m_Pin (Pin),
-    m_State (KSSTATE_STOP)
-
 /*++
 
 Routine Description:
 
-    Construct a new capture pin.  Find out the filter associated with this
-    pin and stash a pointer to our parent filter.
+Construct a new capture pin.  Find out the filter associated with this
+pin and stash a pointer to our parent filter.
 
 Arguments:
 
-    Pin -
-        The AVStream pin object being created.
+Pin -
+The AVStream pin object being created.
 
 Return Value:
 
-    None
+None
 
 --*/
-
+CCapturePin::CCapturePin ( IN PKSPIN Pin ) : m_Pin (Pin), m_State (KSSTATE_STOP)
 {
 
     PAGED_CODE();
 
     PKSFILTER ParentFilter = KsPinGetParentFilter (Pin);
 
-    m_ParentFilter = reinterpret_cast <CCaptureFilter *> (
-        ParentFilter -> Context
-        );
+    m_ParentFilter = reinterpret_cast <CCaptureFilter *> ( ParentFilter -> Context );
 
 }
 
 /*************************************************/
 
-
-NTSTATUS
-CCapturePin::
-SetState (
-    IN KSSTATE ToState,
-    IN KSSTATE FromState
-    )
 
 /*++
 
 Routine Description:
 
-    Called when the pin is transitioning state.  This is a bridge from
-    DispatchSetState in the context of the capture pin.  The function itself
-    performs basic clock handling (things that all the derived pins would use)
-    and then calls the appropriate method in the derived class.
+Called when the pin is transitioning state.  This is a bridge from
+DispatchSetState in the context of the capture pin.  The function itself
+performs basic clock handling (things that all the derived pins would use)
+and then calls the appropriate method in the derived class.
 
 Arguments:
 
-    FromState -
-        The state the pin is transitioning away from
+FromState -
+The state the pin is transitioning away from
 
-    ToState -
-        The state the pin is transitioning towards
+ToState -
+The state the pin is transitioning towards
 
 Return Value:
 
-    Success / Failure of state transition.
+Success / Failure of state transition.
 
 --*/
-
+NTSTATUS CCapturePin::SetState ( IN KSSTATE ToState, IN KSSTATE FromState )
 {
 
     PAGED_CODE();
@@ -109,9 +92,7 @@ Return Value:
     NTSTATUS Status = STATUS_SUCCESS;
 
     switch (ToState) {
-        
         case KSSTATE_STOP:
-
             //
             // Reset the dropped frame counter.
             //
@@ -130,7 +111,6 @@ Return Value:
             break;
 
         case KSSTATE_ACQUIRE:
-
             //
             // On a transition to acqiure (from stop), the pin queries for
             // its assigned clock.  This can be done either here or at the
@@ -153,12 +133,10 @@ Return Value:
             break;
 
         case KSSTATE_PAUSE:
-
             Status = Pause (FromState);
             break;
 
         case KSSTATE_RUN:
-
             Status = Run (FromState);
             break;
 
@@ -182,68 +160,50 @@ Return Value:
 #pragma code_seg()
 #endif // ALLOC_PRAGMA
 
-
-ULONG
-CCapturePin::
-QueryFrameDrop (
-    )
-
 /*++
 
 Routine Description:
 
-    Return the number of frames which have been dropped on this pin.
+Return the number of frames which have been dropped on this pin.
 
 Arguments:
 
-    None
+None
 
 Return Value:
 
-    The number of frames which have been dropped on this pin.
+The number of frames which have been dropped on this pin.
 
 --*/
-
+ULONG CCapturePin::QueryFrameDrop()
 {
-
     return m_DroppedFrames;
-
 }
 
 /*************************************************/
 
-
-void
-CCapturePin::
-NotifyDrops (
-    IN ULONG VidDrop,
-    IN ULONG AudDrop
-    )
-
 /*++
 
 Routine Description:
 
-    Stash the number of dropped frames on each pin in this pin to allow
-    this data to be incorporated into any synthesis.
+Stash the number of dropped frames on each pin in this pin to allow
+this data to be incorporated into any synthesis.
 
 Arguments:
 
-    VidDrop -
-        Number of video frames that have been dropped
+VidDrop -
+Number of video frames that have been dropped
 
-    AudDrop -
-        Number of audio frames that have been dropped
+AudDrop -
+Number of audio frames that have been dropped
 
 Return Value:
 
-    None
+None
 
 --*/
-
+void CCapturePin::NotifyDrops ( IN ULONG VidDrop, IN ULONG AudDrop )
 {
-
     m_NotifyVidDrop = VidDrop;
     m_NotifyAudDrop = AudDrop;
-
 }
