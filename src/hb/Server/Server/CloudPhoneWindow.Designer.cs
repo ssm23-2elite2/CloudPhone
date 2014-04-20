@@ -46,7 +46,7 @@
             this.Log_List.ItemHeight = 12;
             this.Log_List.Location = new System.Drawing.Point(48, 25);
             this.Log_List.Name = "Log_List";
-            this.Log_List.Size = new System.Drawing.Size(489, 196);
+            this.Log_List.Size = new System.Drawing.Size(580, 232);
             this.Log_List.TabIndex = 0;
             this.Log_List.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.Log_List_DrawItem);
             // 
@@ -103,7 +103,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(582, 445);
+            this.ClientSize = new System.Drawing.Size(677, 367);
             this.Controls.Add(this.btn_stop);
             this.Controls.Add(this.btn_start);
             this.Controls.Add(this.Log_List);

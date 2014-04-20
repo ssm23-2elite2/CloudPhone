@@ -7,3 +7,6 @@ C:\workspace\SSM\CloudPhone\src\jake\windows\CloudPhoneTestServer\CloudPhoneTest
 C:\workspace\SSM\CloudPhone\src\jake\windows\CloudPhoneTestServer\CloudPhoneTestServer\obj\Debug\CloudPhoneTestServer.exe
 C:\workspace\SSM\CloudPhone\src\jake\windows\CloudPhoneTestServer\CloudPhoneTestServer\obj\Debug\CloudPhoneTestServer.pdb
 C:\workspace\SSM\CloudPhone\src\jake\windows\CloudPhoneTestServer\CloudPhoneTestServer\obj\Debug\CloudPhoneTestServer.csprojResolveAssemblyReference.cache
+C:\Users\Hyunbin\Desktop\Software Membership\창의과제 및 미니프로젝트\CloudPhone\src\jake\windows\CloudPhoneTestServer\CloudPhoneTestServer\bin\Debug\CloudPhoneTestServer.exe.config
+C:\Users\Hyunbin\Desktop\Software Membership\창의과제 및 미니프로젝트\CloudPhone\src\jake\windows\CloudPhoneTestServer\CloudPhoneTestServer\obj\Debug\CloudPhoneTestServer.exe
+C:\Users\Hyunbin\Desktop\Software Membership\창의과제 및 미니프로젝트\CloudPhone\src\jake\windows\CloudPhoneTestServer\CloudPhoneTestServer\obj\Debug\CloudPhoneTestServer.pdb
