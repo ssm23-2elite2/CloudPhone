@@ -43,7 +43,7 @@ private:
     // overlay in software.
     //
     CHardwareSimulation *m_HardwareSimulation;
-    CImageSynthesizer *m_ImageSynth;
+	CImageSynthesizer *m_ImageSynth;
 
     //
     // The number of ISR's that have occurred since capture started.
@@ -80,9 +80,6 @@ private:
     //
     PKS_VIDEOINFOHEADER m_VideoInfoHeader;
 
-    //
-    // Cleanup():
-    //
     // This is the free callback for the bagged capture device.  Not providing
     // one will call ExFreePool, which is not what we want for a constructed
     // C++ object.  This simply deletes the capture device.
@@ -92,17 +89,11 @@ private:
         delete CapDevice;
     }
 
-    //
-    // PnpStart():
-    //
     // This is the Pnp start routine for our simulated hardware.  Note that
     // DispatchStart bridges to here in the context of the CCaptureDevice.
     //
     NTSTATUS PnpStart ( IN PCM_RESOURCE_LIST TranslatedResourceList, IN PCM_RESOURCE_LIST UntranslatedResourceList );
 
-    //
-    // PnpStop():
-    //
     // This is the Pnp stop routine for our simulated hardware.  Note that
     // DispatchStop bridges to here in the context of the CCaptureDevice.
     //
@@ -110,9 +101,6 @@ private:
 
 public:
 
-    //
-    // CCaptureDevice():
-    //
     // The capture device class constructor.  Since everything should have
     // been zero'ed by the new operator, don't bother setting anything to
     // zero or NULL.  Only initialize non-NULL, non-0 fields.
@@ -121,25 +109,17 @@ public:
     {
     }
 
-    //
-    // ~CCaptureDevice():
-    //
     // The capture device destructor.
     //
     ~CCaptureDevice ()
     {
     }
 
-    //
-    // DispatchCreate():
-    //
     // This is the Add Device dispatch for the capture device.  It creates
     // the CCaptureDevice and associates it with the device via the bag.
     //
     static NTSTATUS DispatchCreate ( IN PKSDEVICE Device );
-    //
-    // DispatchPnpStart():
-    //
+
     // This is the Pnp Start dispatch for the capture device.  It simply
     // bridges to PnpStart() in the context of the CCaptureDevice.
     //
@@ -148,9 +128,6 @@ public:
         return (reinterpret_cast <CCaptureDevice *> (Device -> Context)) -> PnpStart ( TranslatedResourceList, UntranslatedResourceList );
     }
 
-    //
-    // DispatchPnpStop():
-    //
     // This is the Pnp stop dispatch for the capture device.  It simply
     // bridges to PnpStop() in the context of the CCaptureDevice.
     //
@@ -159,9 +136,6 @@ public:
         return (reinterpret_cast <CCaptureDevice *> (Device -> Context)) -> PnpStop ();
     }
 
-    //
-    // AcquireHardwareResources():
-    //
     // Called to acquire hardware resources for the device based on a given
     // video info header.  This will fail if another object has already
     // acquired hardware resources since we emulate a single capture
@@ -169,58 +143,37 @@ public:
     //
     NTSTATUS AcquireHardwareResources ( IN ICaptureSink *CaptureSink, IN PKS_VIDEOINFOHEADER VideoInfoHeader );
 
-    //
-    // ReleaseHardwareResources():
-    //
     // Called to release hardware resources for the device.
     //
     void ReleaseHardwareResources ();
 
-    //
-    // Start():
-    //
     // Called to start the hardware simulation.  This causes us to simulate
     // interrupts, simulate filling buffers with synthesized data, etc...
     //
     NTSTATUS Start ();
 
-    //
-    // Pause():
-    //
     // Called to pause or unpause the hardware simulation.  This will be
     // indentical to a start or stop but it will not reset formats and 
     // counters.
     //
     NTSTATUS Pause ( IN BOOLEAN Pausing );
 
-    //
-    // Stop():
-    //
     // Called to stop the hardware simulation.  This causes interrupts to
     // stop issuing.  When this call returns, the "fake" hardware has
     // stopped accessing all s/g buffers, etc...
     //
     NTSTATUS Stop ();
 
-    //
-    // ProgramScatterGatherMappings():
-    //
     // Called to program the hardware simulation's scatter / gather table.
     // This synchronizes with the "fake" ISR and hardware simulation via
     // a spinlock.
     //
     ULONG ProgramScatterGatherMappings ( IN PUCHAR *Buffer, IN PKSMAPPING Mappings, IN ULONG MappingsCount );
 
-    //
-    // QueryInterruptTime():
-    //
     // Determine the frame number that this frame corresponds to.  
     //
     ULONG QueryInterruptTime ();
 
-    //
-    // IHardwareSink::Interrupt():
-    //
     // The interrupt service routine as called through the hardware sink
     // interface.  The "fake" hardware uses this method to inform the device
     // of a "fake" ISR.  The routine is called at dispatch level and must

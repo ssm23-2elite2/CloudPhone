@@ -53,12 +53,12 @@ void SimulatedInterrupt ( IN PKDPC Dpc, IN PVOID DeferredContext, IN PVOID Syste
 
 Routine Description:
 
-    Construct a hardware simulation
+    Hardware Simulation 생성
 
 Arguments:
 
     HardwareSink -
-        The hardware sink interface.  This is used to trigger
+        Hardware 동기화 인터페이스.  This is used to trigger
         fake interrupt service routines from.
 
 Return Value:
@@ -85,13 +85,12 @@ CHardwareSimulation::CHardwareSimulation ( IN IHardwareSink *HardwareSink ) : m_
 
 Routine Description:
 
-    Initialize the hardware simulation
+    Hardware Simulation을 초기화
 
 Arguments:
 
     HardwareSink -
-        The hardware sink interface.  This is what ISR's will be
-        triggered through.
+        The hardware sink interface.  This is what ISR's will be triggered through.
 
 Return Value:
 
@@ -113,8 +112,7 @@ CHardwareSimulation * CHardwareSimulation:: Initialize ( IN KSOBJECT_BAG Bag, IN
 
 Routine Description:
 
-    Start the hardware simulation.  This will kick the interrupts on,
-    begin issuing DPC's, filling in capture information, etc...
+    Hardware Simulation을 시작한다.  This will kick the interrupts on, begin issuing DPC's, filling in capture information, etc...
     We keep track of starvation starting at this point.
 
 Arguments:
@@ -142,7 +140,7 @@ Return Value:
     scratch buffer, etc...)
 
 --*/
-NTSTATUS CHardwareSimulation::Start ( IN CImageSynthesizer *ImageSynth, IN LONGLONG TimePerFrame, IN ULONG Width, IN ULONG Height, IN ULONG ImageSize )
+NTSTATUS CHardwareSimulation::Start( IN CImageSynthesizer *ImageSynth, IN LONGLONG TimePerFrame, IN ULONG Width, IN ULONG Height, IN ULONG ImageSize)
 {
     PAGED_CODE();
     NTSTATUS Status = STATUS_SUCCESS;

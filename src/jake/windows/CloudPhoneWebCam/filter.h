@@ -41,9 +41,6 @@ private:
 
 public:
 
-    //
-    // CCaptureFilter():
-    //
     // The capture filter object constructor.  Since the new operator will
     // have zeroed the memory, do not bother initializing any NULL or 0
     // fields.  Only initialize non-NULL, non-0 fields.
@@ -52,18 +49,12 @@ public:
     {
     }
 
-    //
-    // ~CCaptureFilter():
-    //
     // The capture filter destructor.
     //
     ~CCaptureFilter ()
     {
     }
 
-    //
-    // DispatchCreate():
-    //
     // This is the filter creation dispatch for the capture filter.  It
     // creates the CCaptureFilter object, associates it with the AVStream
     // object, and bags it for easy cleanup later.

@@ -4,7 +4,7 @@ Class=Media
 ClassGUID={4d36e96c-e325-11ce-bfc1-08002be10318}
 Provider=%Msft%
 Catalogfile=cloudphone.cat
-DriverVer=04/20/2014,17.14.18.351
+DriverVer=08/31/2006,6.0.5600.0
 
 [SourceDisksNames]
 1000=%cdname%,,,
@@ -117,3 +117,4 @@ Msft="Microsoft"
 cloudphone.DeviceDesc="CloudPhone WebCam Driver"
 cloudphone.Reader.FriendlyName="cloudphone Source"
 cdname="CLOUDPHONE Installation Disk"
+DriverVer=04/20/2014,19.59.7.397
