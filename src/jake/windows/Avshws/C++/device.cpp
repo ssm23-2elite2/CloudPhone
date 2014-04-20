@@ -31,12 +31,6 @@
 #pragma code_seg("PAGE")
 #endif // ALLOC_PRAGMA
 
-NTSTATUS
-CCaptureDevice::
-DispatchCreate (
-    IN PKSDEVICE Device
-    )
-
 /*++
 
 Routine Description:
@@ -54,13 +48,10 @@ Return Value:
     Success / Failure
 
 --*/
-
+NTSTATUS CCaptureDevice::DispatchCreate ( IN PKSDEVICE Device )
 {
-
     PAGED_CODE();
-
     NTSTATUS Status;
-
     CCaptureDevice *CapDevice = new (NonPagedPool) CCaptureDevice (Device);
 
     if (!CapDevice) {
@@ -68,9 +59,7 @@ Return Value:
         // Return failure if we couldn't create the pin.
         //
         Status = STATUS_INSUFFICIENT_RESOURCES;
-
     } else {
-
         //
         // Add the item to the object bag if we were successful.
         // Whenever the device goes away, the bag is cleaned up and
@@ -81,11 +70,7 @@ Return Value:
         // not required, but it is still safe.
         //
         KsAcquireDevice (Device);
-        Status = KsAddItemToObjectBag (
-            Device -> Bag,
-            reinterpret_cast <PVOID> (CapDevice),
-            reinterpret_cast <PFNKSFREE> (CCaptureDevice::Cleanup)
-            );
+        Status = KsAddItemToObjectBag ( Device -> Bag, reinterpret_cast <PVOID> (CapDevice), reinterpret_cast <PFNKSFREE> (CCaptureDevice::Cleanup) );
         KsReleaseDevice (Device);
 
         if (!NT_SUCCESS (Status)) {
@@ -93,22 +78,11 @@ Return Value:
         } else {
             Device -> Context = reinterpret_cast <PVOID> (CapDevice);
         }
-
     }
-
     return Status;
-
 }
 
 /*************************************************/
-
-
-NTSTATUS
-CCaptureDevice::
-PnpStart (
-    IN PCM_RESOURCE_LIST TranslatedResourceList,
-    IN PCM_RESOURCE_LIST UntranslatedResourceList
-    )
 
 /*++
 
@@ -129,11 +103,10 @@ Return Value:
     Success / Failure
 
 --*/
-
+
+NTSTATUS CCaptureDevice:: PnpStart ( IN PCM_RESOURCE_LIST TranslatedResourceList, IN PCM_RESOURCE_LIST UntranslatedResourceList )
 {
-
     PAGED_CODE();
-
     //
     // Normally, we'd do things here like parsing the resource lists and
     // connecting our interrupt.  Since this is a simulation, there isn't
@@ -141,9 +114,7 @@ Return Value:
     // any WDM driver.  The sections that will differ are illustrated below
     // in setting up a simulated DMA.
     //
-
     NTSTATUS Status = STATUS_SUCCESS;
-
     if (!m_Device -> Started) {
         // Create the Filter for the device
         KsAcquireDevice(m_Device);
@@ -156,7 +127,6 @@ Return Value:
                                         NULL,
                                         NULL );
         KsReleaseDevice(m_Device);
-
     }
     //
     // By PnP, it's possible to receive multiple starts without an intervening
@@ -166,22 +136,15 @@ Return Value:
     // resources and make changes on 2nd start.
     //
     if (NT_SUCCESS(Status) && (!m_Device -> Started)) {
-
         m_HardwareSimulation = new (NonPagedPool) CHardwareSimulation (this);
         if (!m_HardwareSimulation) {
             //
             // If we couldn't create the hardware simulation, fail.
             //
             Status = STATUS_INSUFFICIENT_RESOURCES;
-    
         } else {
-            Status = KsAddItemToObjectBag (
-                m_Device -> Bag,
-                reinterpret_cast <PVOID> (m_HardwareSimulation),
-                reinterpret_cast <PFNKSFREE> (CHardwareSimulation::Cleanup)
-                );
-
-            if (!NT_SUCCESS (Status)) {
+            Status = KsAddItemToObjectBag ( m_Device -> Bag, reinterpret_cast <PVOID> (m_HardwareSimulation), reinterpret_cast <PFNKSFREE> (CHardwareSimulation::Cleanup) );
+			if (!NT_SUCCESS (Status)) {
                 delete m_HardwareSimulation;
             }
         }
@@ -207,13 +170,7 @@ Return Value:
             //
             // NTSTATUS IfStatus = 
 
-            IoGetDeviceProperty (
-                m_Device -> PhysicalDeviceObject,
-                DevicePropertyLegacyBusType,
-                sizeof (INTERFACE_TYPE),
-                &InterfaceBuffer,
-                &InterfaceLength
-                );
+            IoGetDeviceProperty ( m_Device -> PhysicalDeviceObject, DevicePropertyLegacyBusType, sizeof (INTERFACE_TYPE), &InterfaceBuffer, &InterfaceLength );
 
             //
             // Initialize our fake device description.  We claim to be a 
@@ -233,11 +190,7 @@ Return Value:
             //
             // Get a DMA adapter object from the system.
             //
-            m_DmaAdapterObject = IoGetDmaAdapter (
-                m_Device -> PhysicalDeviceObject,
-                &DeviceDescription,
-                &m_NumberOfMapRegisters
-                );
+            m_DmaAdapterObject = IoGetDmaAdapter ( m_Device -> PhysicalDeviceObject, &DeviceDescription, &m_NumberOfMapRegisters );
     
             if (!m_DmaAdapterObject) {
                 Status = STATUS_UNSUCCESSFUL;
@@ -258,28 +211,14 @@ Return Value:
             // that this hardware can handle.  Note that I have pulled this
             // number out of thin air for the "fake" hardware.
             //
-            KsDeviceRegisterAdapterObject (
-                m_Device,
-                m_DmaAdapterObject,
-                (1 << 20),
-                sizeof (KSMAPPING)
-                );
-    
+            KsDeviceRegisterAdapterObject ( m_Device, m_DmaAdapterObject, (1 << 20), sizeof (KSMAPPING) );
         }
 #endif
     }
-    
     return Status;
-
 }
 
 /*************************************************/
-
-
-void
-CCaptureDevice::
-PnpStop (
-    )
 
 /*++
 
@@ -297,32 +236,20 @@ Return Value:
     None
 
 --*/
-
+void CCaptureDevice:: PnpStop ( )
 {
-
     PAGED_CODE();
-
     if (m_DmaAdapterObject) {
         //
         // Return the DMA adapter back to the system.
         //
-        m_DmaAdapterObject -> DmaOperations -> 
-            PutDmaAdapter (m_DmaAdapterObject);
+        m_DmaAdapterObject -> DmaOperations -> PutDmaAdapter (m_DmaAdapterObject);
 
         m_DmaAdapterObject = NULL;
     }
-
 }
 
 /*************************************************/
-
-
-NTSTATUS
-CCaptureDevice::
-AcquireHardwareResources (
-    IN ICaptureSink *CaptureSink,
-    IN PKS_VIDEOINFOHEADER VideoInfoHeader
-    )
 
 /*++
 
@@ -350,24 +277,18 @@ Return Value:
     Success / Failure
 
 --*/
-
+
+NTSTATUS CCaptureDevice:: AcquireHardwareResources ( IN ICaptureSink *CaptureSink, IN PKS_VIDEOINFOHEADER VideoInfoHeader )
 {
-
     PAGED_CODE();
-
     NTSTATUS Status = STATUS_SUCCESS;
 
     //
     // If we're the first pin to go into acquire (remember we can have
     // a filter in another graph going simultaneously), grab the resources.
     //
-    if (InterlockedCompareExchange (
-        &m_PinsWithResources,
-        1,
-        0) == 0) {
-
+    if (InterlockedCompareExchange ( &m_PinsWithResources, 1, 0) == 0) {
         m_VideoInfoHeader = VideoInfoHeader;
-
         //
         // If there's an old hardware simulation sitting around for some
         // reason, blow it away.
@@ -376,7 +297,6 @@ Return Value:
             delete m_ImageSynth;
             m_ImageSynth = NULL;
         }
-    
         //
         // Create the necessary type of image synthesizer.
         //
@@ -388,31 +308,18 @@ Return Value:
             // can be in either orientation.  The origin is lower left if
             // height < 0.  Otherwise, it's upper left.
             //
-            m_ImageSynth = new (NonPagedPool, 'RysI') 
-                CRGB24Synthesizer (
-                    m_VideoInfoHeader -> bmiHeader.biHeight >= 0
-                    );
+            m_ImageSynth = new (NonPagedPool, 'RysI') CRGB24Synthesizer ( m_VideoInfoHeader -> bmiHeader.biHeight >= 0 );
     
-        } else
-        if (m_VideoInfoHeader -> bmiHeader.biBitCount == 16 &&
-           (m_VideoInfoHeader -> bmiHeader.biCompression == FOURCC_YUY2)) {
-    
+        } else if (m_VideoInfoHeader -> bmiHeader.biBitCount == 16 && (m_VideoInfoHeader -> bmiHeader.biCompression == FOURCC_YUY2)) {
             //
             // If we're UYVY, create the YUV synth.
             //
             m_ImageSynth = new(NonPagedPool, 'YysI') CYUVSynthesizer;
-    
-        }
-        else
-            //
-            // We don't synthesize anything but RGB 24 and UYVY.
-            //
+        } else
             Status = STATUS_INVALID_PARAMETER;
     
-        if (NT_SUCCESS (Status) && !m_ImageSynth) {
-    
+        if (NT_SUCCESS (Status) && !m_ImageSynth) {    
             Status = STATUS_INSUFFICIENT_RESOURCES;
-    
         } 
 
         if (NT_SUCCESS (Status)) {
@@ -420,7 +327,6 @@ Return Value:
             // If everything has succeeded thus far, set the capture sink.
             //
             m_CaptureSink = CaptureSink;
-
         } else {
             //
             // If anything failed in here, we release the resources we've
@@ -430,25 +336,15 @@ Return Value:
         }
     
     } else {
-
         //
         // TODO: Better status code?
         //
         Status = STATUS_SHARING_VIOLATION;
-
     }
-
     return Status;
-
 }
 
 /*************************************************/
-
-
-void
-CCaptureDevice::
-ReleaseHardwareResources (
-    )
 
 /*++
 
@@ -465,42 +361,27 @@ Return Value:
 
     None
 
---*/
-
+--*/
+void CCaptureDevice::ReleaseHardwareResources ()
 {
-
     PAGED_CODE();
-
     //
     // Blow away the image synth.
     //
     if (m_ImageSynth) {
         delete m_ImageSynth;
         m_ImageSynth = NULL;
-
     }
-
     m_VideoInfoHeader = NULL;
     m_CaptureSink = NULL;
-
     //
     // Release our "lock" on hardware resources.  This will allow another
     // pin (perhaps in another graph) to acquire them.
     //
-    InterlockedExchange (
-        &m_PinsWithResources,
-        0
-        );
-
+    InterlockedExchange ( &m_PinsWithResources, 0 );
 }
 
 /*************************************************/
-
-
-NTSTATUS
-CCaptureDevice::
-Start (
-    )
 
 /*++
 
@@ -517,35 +398,16 @@ Return Value:
 
     Success / Failure
 
---*/
-
+--*/
+NTSTATUS CCaptureDevice::Start ()
 {
-
     PAGED_CODE();
-
     m_LastMappingsCompleted = 0;
     m_InterruptTime = 0;
-
-    return
-        m_HardwareSimulation -> Start (
-            m_ImageSynth,
-            m_VideoInfoHeader -> AvgTimePerFrame,
-            m_VideoInfoHeader -> bmiHeader.biWidth,
-            ABS (m_VideoInfoHeader -> bmiHeader.biHeight),
-            m_VideoInfoHeader -> bmiHeader.biSizeImage
-            );
-
-
+    return m_HardwareSimulation -> Start ( m_ImageSynth, m_VideoInfoHeader -> AvgTimePerFrame, m_VideoInfoHeader -> bmiHeader.biWidth, ABS (m_VideoInfoHeader -> bmiHeader.biHeight), m_VideoInfoHeader -> bmiHeader.biSizeImage );
 }
 
 /*************************************************/
-
-
-NTSTATUS
-CCaptureDevice::
-Pause (
-    IN BOOLEAN Pausing
-    )
 
 /*++
 
@@ -571,26 +433,14 @@ Return Value:
 
     Success / Failure
 
---*/
-
+--*/
+NTSTATUS CCaptureDevice::Pause ( IN BOOLEAN Pausing )
 {
-
     PAGED_CODE();
-
-    return
-        m_HardwareSimulation -> Pause (
-            Pausing
-            );
-
+    return m_HardwareSimulation -> Pause ( Pausing );
 }
 
 /*************************************************/
-
-
-NTSTATUS
-CCaptureDevice::
-Stop (
-    )
 
 /*++
 
@@ -606,28 +456,16 @@ Return Value:
 
     Success / Failure
 
---*/
-
+--*/
+NTSTATUS CCaptureDevice::Stop ()
 {
-
     PAGED_CODE();
-
-    return
-        m_HardwareSimulation -> Stop ();
-
+    return m_HardwareSimulation -> Stop ();
 }
 
 /*************************************************/
 
 
-ULONG
-CCaptureDevice::
-ProgramScatterGatherMappings (
-    IN PUCHAR *Buffer,
-    IN PKSMAPPING Mappings,
-    IN ULONG MappingsCount
-    )
-
 /*++
 
 Routine Description:
@@ -654,21 +492,10 @@ Return Value:
     The number of mappings successfully programmed
 
 --*/
-
+ULONG CCaptureDevice:: ProgramScatterGatherMappings ( IN PUCHAR *Buffer, IN PKSMAPPING Mappings, IN ULONG MappingsCount )
 {
-
     PAGED_CODE();
-
-    
-
-    return 
-        m_HardwareSimulation -> ProgramScatterGatherMappings (
-            Buffer,
-            Mappings,
-            MappingsCount,
-            sizeof (KSMAPPING)
-            );
-
+	return m_HardwareSimulation -> ProgramScatterGatherMappings ( Buffer, Mappings, MappingsCount, sizeof (KSMAPPING) );
 }
 
 /*************************************************************************
@@ -680,12 +507,6 @@ Return Value:
 #ifdef ALLOC_PRAGMA
 #pragma code_seg()
 #endif // ALLOC_PRAGMA
-
-
-ULONG
-CCaptureDevice::
-QueryInterruptTime (
-    )
 
 /*++
 
@@ -703,21 +524,13 @@ Return Value:
     The interrupt time of the device (the number of frame intervals that
     have elapsed since the start of the device).
 
---*/
-
+--*/
+ULONG CCaptureDevice::QueryInterruptTime ()
 {
-
-    return m_InterruptTime;
-
+	return m_InterruptTime;
 }
 
 /*************************************************/
-
-
-void
-CCaptureDevice::
-Interrupt (
-    )
 
 /*++
 
@@ -734,12 +547,10 @@ Return Value:
 
     None
 
---*/
-
+--*/
+void CCaptureDevice::Interrupt ()
 {
-
     m_InterruptTime++;
-
     //
     // Realistically, we'd do some hardware manipulation here and then queue
     // a DPC.  Since this is fake hardware, we do what's necessary here.  This
@@ -747,19 +558,14 @@ Return Value:
     // of hardware registers (ReadNumberOfMappingsCompleted) which would likely
     // be done in the ISR.
     //
-    ULONG NumMappingsCompleted = 
-        m_HardwareSimulation -> ReadNumberOfMappingsCompleted ();
+    ULONG NumMappingsCompleted = m_HardwareSimulation -> ReadNumberOfMappingsCompleted ();
 
     //
     // Inform the capture sink that a given number of scatter / gather
     // mappings have completed.
     //
-    m_CaptureSink -> CompleteMappings (
-        NumMappingsCompleted - m_LastMappingsCompleted
-        );
-
+    m_CaptureSink -> CompleteMappings ( NumMappingsCompleted - m_LastMappingsCompleted );
     m_LastMappingsCompleted = NumMappingsCompleted;
-
 }
 
 /**************************************************************************
@@ -783,9 +589,7 @@ DEFINE_KSFILTER_DESCRIPTOR_TABLE (FilterDescriptors) {
 // notifications as well as power management notifications are dispatched
 // through this table.
 //
-const
-KSDEVICE_DISPATCH
-CaptureDeviceDispatch = {
+const KSDEVICE_DISPATCH CaptureDeviceDispatch = {
     CCaptureDevice::DispatchCreate,         // Pnp Add Device
     CCaptureDevice::DispatchPnpStart,       // Pnp Start
     NULL,                                   // Post-Start
@@ -811,13 +615,7 @@ CaptureDeviceDispatch = {
 // can be created dynamically and the factories created via 
 // KsCreateFilterFactory as well.  
 //
-const
-KSDEVICE_DESCRIPTOR
-CaptureDeviceDescriptor = {
-    &CaptureDeviceDispatch,
-    0,
-    NULL
-};
+const KSDEVICE_DESCRIPTOR CaptureDeviceDescriptor = { &CaptureDeviceDispatch, 0, NULL };
 
 /**************************************************************************
 
@@ -829,12 +627,6 @@ CaptureDeviceDescriptor = {
 extern "C" DRIVER_INITIALIZE DriverEntry;
 
 extern "C"
-NTSTATUS
-DriverEntry (
-    IN PDRIVER_OBJECT DriverObject,
-    IN PUNICODE_STRING RegistryPath
-    )
-
 /*++
 
 Routine Description:
@@ -855,7 +647,7 @@ Return Value:
     As from KsInitializeDriver
 
 --*/
-
+NTSTATUS DriverEntry ( IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING RegistryPath )
 {
     //
     // Simply pass the device descriptor and parameters off to AVStream
@@ -863,11 +655,5 @@ Return Value:
     // at add & start.  Everything is done based on the descriptors passed
     // here.
     //
-    return 
-        KsInitializeDriver (
-            DriverObject,
-            RegistryPath,
-            &CaptureDeviceDescriptor
-            );
-
+    return KsInitializeDriver ( DriverObject, RegistryPath, &CaptureDeviceDescriptor );
 }

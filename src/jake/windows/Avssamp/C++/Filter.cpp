@@ -48,15 +48,13 @@ void TimerRoutine ( IN PKDPC Dpc, IN PVOID This, IN PVOID SystemArg1, IN PVOID S
 CCaptureFilter::CCaptureFilter(IN PKSFILTER Filter) : m_Filter(Filter)
 {
     PAGED_CODE();
-
     //
     // Initialize the DPC's, timers, and events necessary to cause a 
     // capture trigger to happen.
     //
     KeInitializeDpc ( &m_TimerDpc, TimerRoutine, this );
     KeInitializeEvent ( &m_StopDPCEvent, SynchronizationEvent, FALSE );
-    KeInitializeTimer (&m_Timer);
-
+    KeInitializeTimer ( &m_Timer );
 }
 
 /*************************************************/
@@ -65,6 +63,7 @@ CCaptureFilter::CCaptureFilter(IN PKSFILTER Filter) : m_Filter(Filter)
 
 	Routine Description:
 
+	캡쳐 핕러를 위한 디스패치를 생성한다. CCaptureFilter 오브젝트를 생성한다. 
 		This is the creation dispatch for the capture filter.  It creates
 		the CCaptureFilter object, associates it with the AVStream filter
 		object, and bag the CCaptureFilter for later cleanup.
@@ -106,11 +105,13 @@ NTSTATUS CCaptureFilter::DispatchCreate ( IN PKSFILTER Filter, IN PIRP Irp )
         }
     }
 
+	// Wave 부분이라서 생략
     //
     // Create the wave reader.  We need it at this point because the data
     // ranges exposed on the audio pin need to change dynamically right
     // now.
     //
+	/*	
     if (NT_SUCCESS (Status)) {
 
         CapFilter -> m_WaveObject =   new (NonPagedPool, 'evaW') CWaveObject ( L"\\DosDevices\\c:\\avssamp.wav" );
@@ -143,7 +144,7 @@ NTSTATUS CCaptureFilter::DispatchCreate ( IN PKSFILTER Filter, IN PIRP Irp )
         } else {
             Status = CapFilter -> BindAudioToWaveObject ();
         }
-    }
+    }*/
     return Status;
 }
 
@@ -430,22 +431,21 @@ NTSTATUS CCaptureFilter:: Process ( IN PKSPROCESSPIN_INDEXENTRY ProcessPinsIndex
         // so the below is safe.
         //
         VideoPin = ProcessPinsIndex [VIDEO_PIN_ID].Pins [0];
-        VidCapPin = 
-            reinterpret_cast <CCapturePin *> (VideoPin -> Pin -> Context);
+        VidCapPin = reinterpret_cast <CCapturePin *> (VideoPin -> Pin -> Context);
     }
 
     //
     // The audio pin only exists on the filter if the wave object does.
     // They're tied together at filter create time.
     //
+	
     if (m_WaveObject && ProcessPinsIndex [m_AudioPinId].Count != 0) {
         //
         // There can be at most one instance via the possible instances field,
         // so the below is safe.
         //
         AudioPin = ProcessPinsIndex [m_AudioPinId].Pins [0];
-        AudCapPin =
-            reinterpret_cast <CCapturePin *> (AudioPin -> Pin -> Context);
+        AudCapPin = reinterpret_cast <CCapturePin *> (AudioPin -> Pin -> Context);
     }
 
     if (VidCapPin) {
@@ -517,7 +517,6 @@ NTSTATUS CCaptureFilter:: Process ( IN PKSPROCESSPIN_INDEXENTRY ProcessPinsIndex
 --*/
 void CCaptureFilter::TimerDpc ()
 {
-
     //
     // Increment the tick counter.  This keeps track of the number of ticks
     // that have happened since the timer DPC started running.  Note that the
@@ -525,7 +524,6 @@ void CCaptureFilter::TimerDpc ()
     // variable gets incremented from the original start point.
     //
     m_Tick++;
-
     //
     // Trigger processing on the filter.  Since the filter is prepared to
     // run at DPC, we do not request asynchronous processing.  Thus, if 
@@ -537,25 +535,17 @@ void CCaptureFilter::TimerDpc ()
     // Reschedule the timer if the hardware isn't being stopped.
     //
     if (!m_StoppingDPC) {
-        
         LARGE_INTEGER NextTime;
-
-        NextTime.QuadPart = m_StartTime.QuadPart +
-            (m_TimerInterval * (m_Tick + 1));
-
+        NextTime.QuadPart = m_StartTime.QuadPart + (m_TimerInterval * (m_Tick + 1));
         KeSetTimer (&m_Timer, NextTime, &m_TimerDpc);
-
     } else {
-
         //
         // If another thread is waiting on the DPC to stop running, raise
         // the stop event and clear the flag.
         //
         m_StoppingDPC = FALSE;
         KeSetEvent (&m_StopDPCEvent, IO_NO_INCREMENT, FALSE);
-
     }
-
 }
 
 /**************************************************************************

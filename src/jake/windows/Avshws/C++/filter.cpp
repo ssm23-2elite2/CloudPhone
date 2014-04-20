@@ -31,14 +31,6 @@
 #pragma code_seg("PAGE")
 #endif // ALLOC_PRAGMA
 
-
-NTSTATUS
-CCaptureFilter::
-DispatchCreate (
-    IN PKSFILTER Filter,
-    IN PIRP Irp
-    )
-
 /*++
 
 Routine Description:
@@ -59,44 +51,31 @@ Return Value:
     
     Success / failure
 
---*/
-
+--*/
+NTSTATUS CCaptureFilter:: DispatchCreate ( IN PKSFILTER Filter, IN PIRP Irp )
 {
-
     PAGED_CODE();
-
     NTSTATUS Status = STATUS_SUCCESS;
-
     CCaptureFilter *CapFilter = new (NonPagedPool) CCaptureFilter (Filter);
-
     if (!CapFilter) {
         //
         // Return failure if we couldn't create the filter.
         //
         Status = STATUS_INSUFFICIENT_RESOURCES;
-
     } else {
         //
         // Add the item to the object bag if we we were successful. 
         // Whenever the filter closes, the bag is cleaned up and we will be
         // freed.
         //
-        Status = KsAddItemToObjectBag (
-            Filter -> Bag,
-            reinterpret_cast <PVOID> (CapFilter),
-            reinterpret_cast <PFNKSFREE> (CCaptureFilter::Cleanup)
-            );
-
-        if (!NT_SUCCESS (Status)) {
+        Status = KsAddItemToObjectBag ( Filter -> Bag, reinterpret_cast <PVOID> (CapFilter), reinterpret_cast <PFNKSFREE> (CCaptureFilter::Cleanup) );
+		if (!NT_SUCCESS (Status)) {
             delete CapFilter;
         } else {
             Filter -> Context = reinterpret_cast <PVOID> (CapFilter);
         }
-
     }
-
     return Status;
-
 }
 
 /**************************************************************************
@@ -112,9 +91,7 @@ GUID g_PINNAME_VIDEO_CAPTURE = {STATIC_PINNAME_VIDEO_CAPTURE};
 //
 // The list of category GUIDs for the capture filter.
 //
-const
-GUID
-CaptureFilterCategories [CAPTURE_FILTER_CATEGORIES_COUNT] = {
+const GUID CaptureFilterCategories [CAPTURE_FILTER_CATEGORIES_COUNT] = {
     STATICGUIDOF (KSCATEGORY_VIDEO),
     STATICGUIDOF (KSCATEGORY_CAPTURE),
     STATICGUIDOF (KSCATEGORY_VIDEO_CAMERA)
@@ -125,9 +102,7 @@ CaptureFilterCategories [CAPTURE_FILTER_CATEGORIES_COUNT] = {
 //
 // The list of pin descriptors on the capture filter.  
 //
-const 
-KSPIN_DESCRIPTOR_EX
-CaptureFilterPinDescriptors [CAPTURE_FILTER_PIN_COUNT] = {
+const KSPIN_DESCRIPTOR_EX CaptureFilterPinDescriptors [CAPTURE_FILTER_PIN_COUNT] = {
     //
     // Video Capture Pin
     //
@@ -166,9 +141,7 @@ CaptureFilterPinDescriptors [CAPTURE_FILTER_PIN_COUNT] = {
 // of creation, closure, processing (for filter-centrics, not for the capture
 // filter), and resets (for filter-centrics, not for the capture filter).
 //
-const 
-KSFILTER_DISPATCH
-CaptureFilterDispatch = {
+const KSFILTER_DISPATCH CaptureFilterDispatch = {
     CCaptureFilter::DispatchCreate,         // Filter Create
     NULL,                                   // Filter Close
     NULL,                                   // Filter Process
@@ -184,9 +157,7 @@ CaptureFilterDispatch = {
 // be some topological relationships here because there would be input 
 // pins from crossbars and the like.
 //
-const 
-KSFILTER_DESCRIPTOR 
-CaptureFilterDescriptor = {
+const KSFILTER_DESCRIPTOR CaptureFilterDescriptor = {
     &CaptureFilterDispatch,                 // Dispatch Table
     NULL,                                   // Automation Table
     KSFILTER_DESCRIPTOR_VERSION,            // Version

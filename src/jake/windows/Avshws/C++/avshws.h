@@ -114,43 +114,17 @@ const DebugLevel = DEBUGLVL_TERSE;
 //
 // filter.cpp externs:
 //
-extern
-const
-KSFILTER_DISPATCH
-CaptureFilterDispatch;
-
-extern
-const
-KSFILTER_DESCRIPTOR
-CaptureFilterDescriptor;
-
-extern
-const
-KSPIN_DESCRIPTOR_EX
-CaptureFilterPinDescriptors [CAPTURE_FILTER_PIN_COUNT];
-
-extern
-const
-GUID
-CaptureFilterCategories [CAPTURE_FILTER_CATEGORIES_COUNT];
+extern const KSFILTER_DISPATCH CaptureFilterDispatch;
+extern const KSFILTER_DESCRIPTOR CaptureFilterDescriptor;
+extern const KSPIN_DESCRIPTOR_EX CaptureFilterPinDescriptors [CAPTURE_FILTER_PIN_COUNT];
+extern const GUID CaptureFilterCategories [CAPTURE_FILTER_CATEGORIES_COUNT];
 
 //
 // capture.cpp externs:
 //
-extern 
-const
-KSALLOCATOR_FRAMING_EX
-CapturePinAllocatorFraming;
-
-extern 
-const
-KSPIN_DISPATCH
-CapturePinDispatch;
-
-extern
-const
-PKSDATARANGE
-CapturePinDataRanges [CAPTURE_PIN_DATA_RANGE_COUNT];
+extern const KSALLOCATOR_FRAMING_EX CapturePinAllocatorFraming;
+extern const KSPIN_DISPATCH CapturePinDispatch;
+extern const PKSDATARANGE CapturePinDataRanges [CAPTURE_PIN_DATA_RANGE_COUNT];
 
 /*************************************************
 
@@ -159,11 +133,9 @@ CapturePinDataRanges [CAPTURE_PIN_DATA_RANGE_COUNT];
 *************************************************/
 
 typedef enum _HARDWARE_STATE {
-
     HardwareStopped = 0,
     HardwarePaused,
     HardwareRunning
-
 } HARDWARE_STATE, *PHARDWARE_STATE;
 
 /*************************************************
@@ -182,12 +154,7 @@ typedef enum _HARDWARE_STATE {
 class IHardwareSink {
 
 public:
-
-    virtual
-    void
-    Interrupt (
-        ) = 0;
-
+    virtual void Interrupt () = 0;
 };
 
 //
@@ -200,13 +167,7 @@ public:
 class ICaptureSink {
 
 public:
-
-    virtual
-    void
-    CompleteMappings (
-        IN ULONG NumMappings
-        ) = 0;
-
+    virtual void CompleteMappings ( IN ULONG NumMappings ) = 0;
 };
 
 

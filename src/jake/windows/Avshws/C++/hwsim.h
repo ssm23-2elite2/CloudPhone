@@ -43,11 +43,9 @@
 // hardware as a doubly linked list.
 //
 typedef struct _SCATTER_GATHER_ENTRY {
-
     LIST_ENTRY ListEntry;
     PUCHAR Virtual;
     ULONG ByteCount;
-
 } SCATTER_GATHER_ENTRY, *PSCATTER_GATHER_ENTRY;
 
 //
@@ -154,9 +152,7 @@ private:
     // This is called by the hardware simulation to fill a series of scatter /
     // gather buffers with synthesized data.
     //
-    NTSTATUS
-    FillScatterGatherBuffers (
-        );
+    NTSTATUS FillScatterGatherBuffers ();
 
 public:
 
@@ -170,17 +166,14 @@ public:
     // The hardware simulation constructor.  Since the new operator will
     // have zeroed the memory, only initialize non-NULL, non-0 fields. 
     //
-    CHardwareSimulation (
-        IN IHardwareSink *HardwareSink
-        );
+    CHardwareSimulation ( IN IHardwareSink *HardwareSink );
 
     //
     // ~CHardwareSimulation():
     //
     // The hardware simulation destructor.
     //
-    ~CHardwareSimulation (
-        )
+    ~CHardwareSimulation ()
     {
     }
 
@@ -191,11 +184,7 @@ public:
     // one will call ExFreePool, which is not what we want for a constructed
     // C++ object.  This simply deletes the simulation.
     //
-    static
-    void
-    Cleanup (
-        IN CHardwareSimulation *HwSim
-        )
+    static void Cleanup ( IN CHardwareSimulation *HwSim )
     {
         delete HwSim;
     }
@@ -207,9 +196,7 @@ public:
     // actions (at DPC) then we call the "Interrupt service routine" on
     // the hardware sink.
     //
-    void
-    FakeHardware (
-        );
+    void FakeHardware ();
 
     //
     // Start():
@@ -219,14 +206,7 @@ public:
     //
     // The frame rate, image size, and a synthesizer must be provided.
     //
-    NTSTATUS
-    Start (
-        CImageSynthesizer *ImageSynth,
-        IN LONGLONG TimePerFrame,
-        IN ULONG Width,
-        IN ULONG Height,
-        IN ULONG ImageSize
-        );
+    NTSTATUS Start ( CImageSynthesizer *ImageSynth, IN LONGLONG TimePerFrame, IN ULONG Width, IN ULONG Height, IN ULONG ImageSize );
 
     //
     // Pause():
@@ -235,10 +215,7 @@ public:
     // interrupts or DPC's on a pause and restart them on an unpause.  Note
     // that this will not reset counters as a Stop() would.
     //
-    NTSTATUS
-    Pause (
-        IN BOOLEAN Pausing
-        );
+    NTSTATUS Pause ( IN BOOLEAN Pausing );
 
     //
     // Stop():
@@ -246,43 +223,28 @@ public:
     // "Stop" the fake hardware.  This will stop issuing interrupts and
     // DPC's.
     //
-    NTSTATUS
-    Stop (
-        );
+    NTSTATUS Stop ();
 
     //
     // ProgramScatterGatherMappings():
     //
     // Program a series of scatter gather mappings into the fake hardware.
     //
-    ULONG
-    ProgramScatterGatherMappings (
-        IN PUCHAR *Buffer,
-        IN PKSMAPPING Mappings,
-        IN ULONG MappingsCount,
-        IN ULONG MappingStride
-        );
+    ULONG ProgramScatterGatherMappings ( IN PUCHAR *Buffer, IN PKSMAPPING Mappings, IN ULONG MappingsCount, IN ULONG MappingStride );
 
     //
     // Initialize():
     //
     // Initialize a piece of simulated hardware.
     //
-    static 
-    CHardwareSimulation *
-    Initialize (
-        IN KSOBJECT_BAG Bag,
-        IN IHardwareSink *HardwareSink
-        );
+    static CHardwareSimulation * Initialize ( IN KSOBJECT_BAG Bag, IN IHardwareSink *HardwareSink );
 
     //
     // ReadNumberOfMappingsCompleted():
     //
     // Read the number of mappings completed since the last hardware reset.
     //
-    ULONG
-    ReadNumberOfMappingsCompleted (
-        );
+    ULONG ReadNumberOfMappingsCompleted ();
 
 };
 

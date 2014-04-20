@@ -1,23 +1,3 @@
-/**************************************************************************
-
-    AVStream Filter-Centric Sample
-
-    Copyright (c) 1999 - 2001, Microsoft Corporation
-
-    File:
-
-        avssamp.cpp
-
-    Abstract:
-
-        This is the main file for the filter-centric sample.
-
-    History:
-
-        created 6/18/01
-
-**************************************************************************/
-
 #include "avssamp.h"
 
 /**************************************************************************

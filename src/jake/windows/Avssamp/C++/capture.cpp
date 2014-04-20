@@ -33,19 +33,19 @@
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-Construct a new capture pin.  Find out the filter associated with this
-pin and stash a pointer to our parent filter.
+		Construct a new capture pin.  Find out the filter associated with this
+		pin and stash a pointer to our parent filter.
 
-Arguments:
+	Arguments:
 
-Pin -
-The AVStream pin object being created.
+		Pin -
+			The AVStream pin object being created.
 
-Return Value:
+	Return Value:
 
-None
+		None
 
 --*/
 CCapturePin::CCapturePin ( IN PKSPIN Pin ) : m_Pin (Pin), m_State (KSSTATE_STOP)
@@ -60,24 +60,24 @@ CCapturePin::CCapturePin ( IN PKSPIN Pin ) : m_Pin (Pin), m_State (KSSTATE_STOP)
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-Called when the pin is transitioning state.  This is a bridge from
-DispatchSetState in the context of the capture pin.  The function itself
-performs basic clock handling (things that all the derived pins would use)
-and then calls the appropriate method in the derived class.
+		Called when the pin is transitioning state.  This is a bridge from
+		DispatchSetState in the context of the capture pin.  The function itself
+		performs basic clock handling (things that all the derived pins would use)
+		and then calls the appropriate method in the derived class.
 
-Arguments:
+	Arguments:
 
-FromState -
-The state the pin is transitioning away from
+		FromState -
+			The state the pin is transitioning away from
 
-ToState -
-The state the pin is transitioning towards
+		ToState -
+			The state the pin is transitioning towards
 
-Return Value:
+	Return Value:
 
-Success / Failure of state transition.
+		Success / Failure of state transition.
 
 --*/
 NTSTATUS CCapturePin::SetState ( IN KSSTATE ToState, IN KSSTATE FromState )
@@ -142,17 +142,17 @@ NTSTATUS CCapturePin::SetState ( IN KSSTATE ToState, IN KSSTATE FromState )
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-Return the number of frames which have been dropped on this pin.
+		Return the number of frames which have been dropped on this pin.
 
-Arguments:
+	Arguments:
 
-None
+		None
 
-Return Value:
+	Return Value:
 
-The number of frames which have been dropped on this pin.
+		The number of frames which have been dropped on this pin.
 
 --*/
 ULONG CCapturePin::QueryFrameDrop()

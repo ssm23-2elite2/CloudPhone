@@ -531,79 +531,67 @@ Return Value:
 
 /*************************************************/
 
-
-NTSTATUS
-CVideoCapturePin::
-DispatchSetFormat (
-    IN PKSPIN Pin,
-    IN PKSDATAFORMAT OldFormat OPTIONAL,
-    IN PKSMULTIPLE_ITEM OldAttributeList OPTIONAL,
-    IN const KSDATARANGE *DataRange,
-    IN const KSATTRIBUTE_LIST *AttributeRange OPTIONAL
-    )
-
 /*++
 
-Routine Description:
+	Routine Description:
 
-    This is the set data format dispatch for the capture pin.  It is called
-    in two circumstances.
+		This is the set data format dispatch for the capture pin.  It is called
+		in two circumstances.
 
-        1: before Pin's creation dispatch has been made to verify that
-           Pin -> ConnectionFormat is an acceptable format for the range
-           DataRange.  In this case OldFormat is NULL.
+			1: before Pin's creation dispatch has been made to verify that
+			   Pin -> ConnectionFormat is an acceptable format for the range
+			   DataRange.  In this case OldFormat is NULL.
 
-        2: after Pin's creation dispatch has been made and an initial format
-           selected in order to change the format for the pin.  In this case,
-           OldFormat will not be NULL.
+			2: after Pin's creation dispatch has been made and an initial format
+			   selected in order to change the format for the pin.  In this case,
+			   OldFormat will not be NULL.
 
-    Validate that the format is acceptible and perform the actions necessary
-    to change format if appropriate.
+		Validate that the format is acceptible and perform the actions necessary
+		to change format if appropriate.
 
-Arguments:
+	Arguments:
 
-    Pin -
-        The pin this format is being set on.  The format itself will be in
-        Pin -> ConnectionFormat.
+		Pin -
+			The pin this format is being set on.  The format itself will be in
+			Pin -> ConnectionFormat.
 
-    OldFormat -
-        The previous format used on this pin.  If this is NULL, it is an
-        indication that Pin's creation dispatch has not yet been made and
-        that this is a request to validate the initial format and not to
-        change formats.
+		OldFormat -
+			The previous format used on this pin.  If this is NULL, it is an
+			indication that Pin's creation dispatch has not yet been made and
+			that this is a request to validate the initial format and not to
+			change formats.
 
-    OldAttributeList -
-        The old attribute list for the prior format
+		OldAttributeList -
+			The old attribute list for the prior format
 
-    DataRange -
-        A range out of our list of data ranges which was determined to be
-        at least a partial match for Pin -> ConnectionFormat.  If the format
-        there is unacceptable for the range, STATUS_NO_MATCH should be
-        returned.
+		DataRange -
+			A range out of our list of data ranges which was determined to be
+			at least a partial match for Pin -> ConnectionFormat.  If the format
+			there is unacceptable for the range, STATUS_NO_MATCH should be
+			returned.
 
-    AttributeRange -
-        The attribute range
+		AttributeRange -
+			The attribute range
 
-Return Value:
+	Return Value:
 
-    Success / Failure
+		Success / Failure
 
-        STATUS_SUCCESS -
-            The format is acceptable / the format has been changed
+			STATUS_SUCCESS -
+				The format is acceptable / the format has been changed
 
-        STATUS_NO_MATCH -
-            The format is not-acceptable / the format has not been changed
+			STATUS_NO_MATCH -
+				The format is not-acceptable / the format has not been changed
 
---*/
-
+--*/
+NTSTATUS CVideoCapturePin::DispatchSetFormat ( IN PKSPIN Pin, IN PKSDATAFORMAT OldFormat OPTIONAL, IN PKSMULTIPLE_ITEM OldAttributeList OPTIONAL, IN const KSDATARANGE *DataRange, IN const KSATTRIBUTE_LIST *AttributeRange OPTIONAL )
 {
 
     PAGED_CODE();
 
     NTSTATUS Status = STATUS_NO_MATCH;
 
-    const GUID VideoInfoSpecifier = 
-        {STATICGUIDOF(KSDATAFORMAT_SPECIFIER_VIDEOINFO)};
+    const GUID VideoInfoSpecifier = {STATICGUIDOF(KSDATAFORMAT_SPECIFIER_VIDEOINFO)};
 
     CCapturePin *CapPin = NULL;
     CVideoCapturePin *VidCapPin = NULL;
@@ -624,11 +612,7 @@ Return Value:
         VidCapPin = static_cast <CVideoCapturePin *> (CapPin);
     }
 
-    if (IsEqualGUID (Pin -> ConnectionFormat -> Specifier,
-            VideoInfoSpecifier) &&
-        Pin -> ConnectionFormat -> FormatSize >= 
-            sizeof (KS_DATAFORMAT_VIDEOINFOHEADER)
-        ) {
+    if (IsEqualGUID (Pin -> ConnectionFormat -> Specifier, VideoInfoSpecifier) && Pin -> ConnectionFormat -> FormatSize >=  sizeof (KS_DATAFORMAT_VIDEOINFOHEADER) ) {
 
         PKS_DATAFORMAT_VIDEOINFOHEADER ConnectionFormat =
             reinterpret_cast <PKS_DATAFORMAT_VIDEOINFOHEADER> 
@@ -645,23 +629,12 @@ Return Value:
         //
         // Check that bmiHeader.biSize is valid since we use it later.
         //
-        ULONG VideoHeaderSize = KS_SIZE_VIDEOHEADER (
-            &ConnectionFormat -> VideoInfoHeader
-            );
+        ULONG VideoHeaderSize = KS_SIZE_VIDEOHEADER ( &ConnectionFormat -> VideoInfoHeader );
 
-        ULONG DataFormatSize = FIELD_OFFSET (
-            KS_DATAFORMAT_VIDEOINFOHEADER, VideoInfoHeader
-            ) + VideoHeaderSize;
+        ULONG DataFormatSize = FIELD_OFFSET ( KS_DATAFORMAT_VIDEOINFOHEADER, VideoInfoHeader ) + VideoHeaderSize;
 
-        if (
-            VideoHeaderSize < ConnectionFormat->
-                VideoInfoHeader.bmiHeader.biSize ||
-            DataFormatSize < VideoHeaderSize ||
-            DataFormatSize > ConnectionFormat -> DataFormat.FormatSize
-            ) {
-
-            Status = STATUS_INVALID_PARAMETER;
-
+        if ( VideoHeaderSize < ConnectionFormat-> VideoInfoHeader.bmiHeader.biSize || DataFormatSize < VideoHeaderSize || DataFormatSize > ConnectionFormat -> DataFormat.FormatSize ) {
+			Status = STATUS_INVALID_PARAMETER;
         }
 
         //
@@ -779,70 +752,59 @@ Return Value:
 
 /*************************************************/
 
-
-NTSTATUS
-CVideoCapturePin::
-Pause (
-    IN KSSTATE FromState
-    )
-
 /*++
 
-Routine Description:
+	Routine Description:
 
-    Called when the pin transitions into the pause state.  If we're in an 
-    upward transition, start the capture DPC.  Note that we do not actually
-    trigger capture in the pause state, but we start up our DPC.
+		Called when the pin transitions into the pause state.  If we're in an 
+		upward transition, start the capture DPC.  Note that we do not actually
+		trigger capture in the pause state, but we start up our DPC.
 
-Arguments:
+	Arguments:
 
-    FromState -
-        The state that the pin is transitioning away from.  This is either
-        KSSTATE_ACQUIRE, indicating an upward transition, or KSSTATE_RUN,
-        indicating a downward transition.
+		FromState -
+			The state that the pin is transitioning away from.  This is either
+			KSSTATE_ACQUIRE, indicating an upward transition, or KSSTATE_RUN,
+			indicating a downward transition.
 
-Return Value:
+	Return Value:
 
-    STATUS_SUCCESS
+		STATUS_SUCCESS
 
---*/
-
+--*/
+NTSTATUS CVideoCapturePin::Pause ( IN KSSTATE FromState )
 {
-
     PAGED_CODE();
-
     //
     // On the transition from acquire -> pause, start the timer DPC running.
     //
     if (FromState == KSSTATE_ACQUIRE) {
         m_ParentFilter -> StartDPC (m_VideoInfoHeader -> AvgTimePerFrame);
     }
-
     return STATUS_SUCCESS;
-
 }
 
 /*************************************************/
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-This is called from the base class when the video capture pin transitions
-into the acquire state (from either Stop or Pause).  The state the pin
-transitioned from is passed in.
+		This is called from the base class when the video capture pin transitions
+		into the acquire state (from either Stop or Pause).  The state the pin
+		transitioned from is passed in.
 
-During this phase, the video capture pin creates the image synthesizer
-and initializes it.
+		During this phase, the video capture pin creates the image synthesizer
+		and initializes it.
 
-Arguments:
+	Arguments:
 
-FromState -
-The state transitioning from (KSSTATE_STOP or KSSTATE_PAUSE)
+		FromState -
+			The state transitioning from (KSSTATE_STOP or KSSTATE_PAUSE)
 
-Return Value:
+	Return Value:
 
-Success / Failure
+		Success / Failure
 
 --*/
 NTSTATUS CVideoCapturePin::Acquire ( IN KSSTATE FromState )
@@ -924,21 +886,21 @@ NTSTATUS CVideoCapturePin::Acquire ( IN KSSTATE FromState )
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-Called when the video capture pin transitions from acquire to stop.
-This function will clean up the image synth and any data structures
-that we need to clean up on stop.
+		Called when the video capture pin transitions from acquire to stop.
+		This function will clean up the image synth and any data structures
+		that we need to clean up on stop.
 
-Arguments:
+	Arguments:
 
-FromState -
-The state the pin is transitioning away from.  This should
-always be KSSTATE_ACQUIRE for this call.
+		FromState -
+			The state the pin is transitioning away from.  This should
+			always be KSSTATE_ACQUIRE for this call.
 
-Return Value:
+	Return Value:
 
-STATUS_SUCCESS
+		STATUS_SUCCESS
 
 --*/
 NTSTATUS CVideoCapturePin::Stop ( IN KSSTATE FromState )

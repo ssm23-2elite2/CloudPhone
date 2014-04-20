@@ -35,9 +35,7 @@
 // bus-master DMA.
 //
 typedef struct _STREAM_POINTER_CONTEXT {
-    
     PUCHAR BufferVirtual;
-
 } STREAM_POINTER_CONTEXT, *PSTREAM_POINTER_CONTEXT;
 
 //
@@ -118,9 +116,7 @@ private:
     // Clean up any references we hold on frames in the queue.  This is called
     // when we abruptly stop the fake hardware.
     //
-    NTSTATUS
-    CleanupReferences (
-        );
+    NTSTATUS CleanupReferences ();
 
     //
     // SetState():
@@ -129,11 +125,7 @@ private:
     // to acquire resources for the capture pin (or releasing them if
     // necessary) and starts and stops the hardware as required.
     //
-    NTSTATUS
-    SetState (
-        IN KSSTATE ToState,
-        IN KSSTATE FromState
-        );
+    NTSTATUS SetState ( IN KSSTATE ToState, IN KSSTATE FromState );
 
     //
     // Process():
@@ -144,18 +136,14 @@ private:
     // into the capture buffers kind of DMA as opposed to common-buffer
     // and copy strategies.
     //
-    NTSTATUS
-    Process (
-        );
+    NTSTATUS Process ();
     //
     // CaptureVideoInfoHeader():
     //
     // This routine stashes the video info header set on the pin connection
     // in the CCapturePin object.  This is used to base hardware settings.
     //
-    PKS_VIDEOINFOHEADER
-    CaptureVideoInfoHeader (
-        );
+    PKS_VIDEOINFOHEADER CaptureVideoInfoHeader ();
 
     //
     // Cleanup():
@@ -165,11 +153,7 @@ private:
     // would be called.  This is not desirable for C++ constructed objects.
     // We merely delete the object here.
     //
-    static
-    void
-    Cleanup (
-        IN CCapturePin *Pin
-        )
+    static void Cleanup ( IN CCapturePin *Pin )
     {
         delete Pin;
     }
@@ -182,17 +166,14 @@ public:
     // (since new will have zero'ed the memory anyway) and set up our
     // device level pointers for access during capture routines.
     //
-    CCapturePin (
-        IN PKSPIN Pin
-        );
+    CCapturePin ( IN PKSPIN Pin );
 
     //
     // ~CCapturePin():
     //
     // The capture pin's destructor.
     //
-    ~CCapturePin (
-        )
+    ~CCapturePin ()
     {
     }
 
@@ -204,11 +185,7 @@ public:
     // completed by the fake hardware, it signals the capture sink of this
     // through this method.
     //
-    virtual
-    void
-    CompleteMappings (
-        IN ULONG NumMappings
-        );
+    virtual void CompleteMappings ( IN ULONG NumMappings );
 
     /*************************************************
 
@@ -223,12 +200,7 @@ public:
     // the CCapturePin object and associates it with the AVStream object
     // bagging it in the process.
     //
-    static
-    NTSTATUS
-    DispatchCreate (
-        IN PKSPIN Pin,
-        IN PIRP Irp
-        );
+    static NTSTATUS DispatchCreate ( IN PKSPIN Pin, IN PIRP Irp );
 
     //
     // DispatchSetState():
@@ -236,17 +208,9 @@ public:
     // This is the set device state dispatch for the pin.  The routine bridges
     // to SetState() in the context of the CCapturePin.
     //
-    static
-    NTSTATUS
-    DispatchSetState (
-        IN PKSPIN Pin,
-        IN KSSTATE ToState,
-        IN KSSTATE FromState
-        )
+    static NTSTATUS DispatchSetState ( IN PKSPIN Pin, IN KSSTATE ToState, IN KSSTATE FromState )
     {
-        return 
-            (reinterpret_cast <CCapturePin *> (Pin -> Context)) ->
-                SetState (ToState, FromState);
+        return (reinterpret_cast <CCapturePin *> (Pin -> Context)) -> SetState (ToState, FromState);
     }
 
     //
@@ -261,15 +225,7 @@ public:
     // call and not a format change.  Even fixed format pins get this call
     // once.
     //
-    static
-    NTSTATUS
-    DispatchSetFormat (
-        IN PKSPIN Pin,
-        IN PKSDATAFORMAT OldFormat OPTIONAL,
-        IN PKSMULTIPLE_ITEM OldAttributeList OPTIONAL,
-        IN const KSDATARANGE *DataRange,
-        IN const KSATTRIBUTE_LIST *AttributeRange OPTIONAL
-        );
+    static NTSTATUS DispatchSetFormat ( IN PKSPIN Pin, IN PKSDATAFORMAT OldFormat OPTIONAL, IN PKSMULTIPLE_ITEM OldAttributeList OPTIONAL, IN const KSDATARANGE *DataRange, IN const KSATTRIBUTE_LIST *AttributeRange OPTIONAL );
 
     //
     // DispatchProcess():
@@ -277,16 +233,9 @@ public:
     // This is the processing dispatch for the capture pin.  The routine 
     // bridges to Process() in the context of the CCapturePin.
     //
-    static 
-    NTSTATUS
-    DispatchProcess (
-        IN PKSPIN Pin
-        )
+    static NTSTATUS DispatchProcess ( IN PKSPIN Pin )
     {
-        return 
-            (reinterpret_cast <CCapturePin *> (Pin -> Context)) ->
-               Process ();
-            
+        return (reinterpret_cast <CCapturePin *> (Pin -> Context)) -> Process ();
     }
 
     //
@@ -297,17 +246,5 @@ public:
     // one local and one possibly foreign.  If there is no compatible format,
     // STATUS_NO_MATCH is returned.
     //
-    static
-    NTSTATUS
-    IntersectHandler (
-        IN PKSFILTER Filter,
-        IN PIRP Irp,
-        IN PKSP_PIN PinInstance,
-        IN PKSDATARANGE CallerDataRange,
-        IN PKSDATARANGE DescriptorDataRange,
-        IN ULONG BufferSize,
-        OUT PVOID Data OPTIONAL,
-        OUT PULONG DataSize
-        );
-
+    static NTSTATUS IntersectHandler ( IN PKSFILTER Filter, IN PIRP Irp, IN PKSP_PIN PinInstance, IN PKSDATARANGE CallerDataRange, IN PKSDATARANGE DescriptorDataRange, IN ULONG BufferSize, OUT PVOID Data OPTIONAL, OUT PULONG DataSize );
 };

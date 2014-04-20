@@ -87,11 +87,7 @@ private:
     // one will call ExFreePool, which is not what we want for a constructed
     // C++ object.  This simply deletes the capture device.
     //
-    static
-    void
-    Cleanup (
-        IN CCaptureDevice *CapDevice
-        )
+    static void Cleanup ( IN CCaptureDevice *CapDevice )
     {
         delete CapDevice;
     }
@@ -102,11 +98,7 @@ private:
     // This is the Pnp start routine for our simulated hardware.  Note that
     // DispatchStart bridges to here in the context of the CCaptureDevice.
     //
-    NTSTATUS
-    PnpStart (
-        IN PCM_RESOURCE_LIST TranslatedResourceList,
-        IN PCM_RESOURCE_LIST UntranslatedResourceList
-        );
+    NTSTATUS PnpStart ( IN PCM_RESOURCE_LIST TranslatedResourceList, IN PCM_RESOURCE_LIST UntranslatedResourceList );
 
     //
     // PnpStop():
@@ -114,9 +106,7 @@ private:
     // This is the Pnp stop routine for our simulated hardware.  Note that
     // DispatchStop bridges to here in the context of the CCaptureDevice.
     //
-    void
-    PnpStop (
-        );
+    void PnpStop ();
 
 public:
 
@@ -127,10 +117,7 @@ public:
     // been zero'ed by the new operator, don't bother setting anything to
     // zero or NULL.  Only initialize non-NULL, non-0 fields.
     //
-    CCaptureDevice (
-        IN PKSDEVICE Device
-        ) :
-        m_Device (Device)
+    CCaptureDevice ( IN PKSDEVICE Device ) : m_Device (Device)
     {
     }
 
@@ -139,8 +126,7 @@ public:
     //
     // The capture device destructor.
     //
-    ~CCaptureDevice (
-        )
+    ~CCaptureDevice ()
     {
     }
 
@@ -150,32 +136,16 @@ public:
     // This is the Add Device dispatch for the capture device.  It creates
     // the CCaptureDevice and associates it with the device via the bag.
     //
-    static
-    NTSTATUS
-    DispatchCreate (
-        IN PKSDEVICE Device
-        );
+    static NTSTATUS DispatchCreate ( IN PKSDEVICE Device );
     //
     // DispatchPnpStart():
     //
     // This is the Pnp Start dispatch for the capture device.  It simply
     // bridges to PnpStart() in the context of the CCaptureDevice.
     //
-    static
-    NTSTATUS
-    DispatchPnpStart (
-        IN PKSDEVICE Device,
-        IN PIRP Irp,
-        IN PCM_RESOURCE_LIST TranslatedResourceList,
-        IN PCM_RESOURCE_LIST UntranslatedResourceList
-        )
+    static NTSTATUS DispatchPnpStart ( IN PKSDEVICE Device, IN PIRP Irp, IN PCM_RESOURCE_LIST TranslatedResourceList, IN PCM_RESOURCE_LIST UntranslatedResourceList )
     {
-        return 
-            (reinterpret_cast <CCaptureDevice *> (Device -> Context)) ->
-            PnpStart (
-                TranslatedResourceList,
-                UntranslatedResourceList
-                );
+        return (reinterpret_cast <CCaptureDevice *> (Device -> Context)) -> PnpStart ( TranslatedResourceList, UntranslatedResourceList );
     }
 
     //
@@ -184,17 +154,9 @@ public:
     // This is the Pnp stop dispatch for the capture device.  It simply
     // bridges to PnpStop() in the context of the CCaptureDevice.
     //
-    static
-    void
-    DispatchPnpStop (
-        IN PKSDEVICE Device,
-        IN PIRP Irp
-        )
+    static void DispatchPnpStop ( IN PKSDEVICE Device, IN PIRP Irp )
     {
-        return
-            (reinterpret_cast <CCaptureDevice *> (Device -> Context)) ->
-            PnpStop (
-                );
+        return (reinterpret_cast <CCaptureDevice *> (Device -> Context)) -> PnpStop ();
     }
 
     //
@@ -205,20 +167,14 @@ public:
     // acquired hardware resources since we emulate a single capture
     // device.
     //
-    NTSTATUS
-    AcquireHardwareResources (
-        IN ICaptureSink *CaptureSink,
-        IN PKS_VIDEOINFOHEADER VideoInfoHeader
-        );
+    NTSTATUS AcquireHardwareResources ( IN ICaptureSink *CaptureSink, IN PKS_VIDEOINFOHEADER VideoInfoHeader );
 
     //
     // ReleaseHardwareResources():
     //
     // Called to release hardware resources for the device.
     //
-    void
-    ReleaseHardwareResources (
-        );
+    void ReleaseHardwareResources ();
 
     //
     // Start():
@@ -226,9 +182,7 @@ public:
     // Called to start the hardware simulation.  This causes us to simulate
     // interrupts, simulate filling buffers with synthesized data, etc...
     //
-    NTSTATUS
-    Start (
-        );
+    NTSTATUS Start ();
 
     //
     // Pause():
@@ -237,10 +191,7 @@ public:
     // indentical to a start or stop but it will not reset formats and 
     // counters.
     //
-    NTSTATUS
-    Pause (
-        IN BOOLEAN Pausing
-        );
+    NTSTATUS Pause ( IN BOOLEAN Pausing );
 
     //
     // Stop():
@@ -249,9 +200,7 @@ public:
     // stop issuing.  When this call returns, the "fake" hardware has
     // stopped accessing all s/g buffers, etc...
     //
-    NTSTATUS
-    Stop (
-        );
+    NTSTATUS Stop ();
 
     //
     // ProgramScatterGatherMappings():
@@ -260,21 +209,14 @@ public:
     // This synchronizes with the "fake" ISR and hardware simulation via
     // a spinlock.
     //
-    ULONG
-    ProgramScatterGatherMappings (
-        IN PUCHAR *Buffer,
-        IN PKSMAPPING Mappings,
-        IN ULONG MappingsCount
-        );
+    ULONG ProgramScatterGatherMappings ( IN PUCHAR *Buffer, IN PKSMAPPING Mappings, IN ULONG MappingsCount );
 
     //
     // QueryInterruptTime():
     //
     // Determine the frame number that this frame corresponds to.  
     //
-    ULONG
-    QueryInterruptTime (
-        );
+    ULONG QueryInterruptTime ();
 
     //
     // IHardwareSink::Interrupt():
@@ -284,10 +226,9 @@ public:
     // of a "fake" ISR.  The routine is called at dispatch level and must
     // be in locked code.
     //
-    virtual
-    void
-    Interrupt (
-        );
+    virtual void Interrupt ();
 
-    LONG GetDroppedFrameCount(){return m_HardwareSimulation->GetSkippedFrameCount();};
+    LONG GetDroppedFrameCount(){
+		return m_HardwareSimulation->GetSkippedFrameCount();
+	};
 };

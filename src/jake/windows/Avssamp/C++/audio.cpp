@@ -259,55 +259,55 @@ NTSTATUS CAudioCapturePin:: IntersectHandler ( IN PKSFILTER Filter, IN PIRP Irp,
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-This is the set data format dispatch for the capture pin.  It is called
-in two circumstances.
+		This is the set data format dispatch for the capture pin.  It is called
+		in two circumstances.
 
-1: before Pin's creation dispatch has been made to verify that
-Pin -> ConnectionFormat is an acceptable format for the range
-DataRange.  In this case OldFormat is NULL.
+		1: before Pin's creation dispatch has been made to verify that
+		Pin -> ConnectionFormat is an acceptable format for the range
+		DataRange.  In this case OldFormat is NULL.
 
-2: after Pin's creation dispatch has been made and an initial format
-selected in order to change the format for the pin.  In this case,
-OldFormat will not be NULL.
+		2: after Pin's creation dispatch has been made and an initial format
+		selected in order to change the format for the pin.  In this case,
+		OldFormat will not be NULL.
 
-Validate that the format is acceptible and perform the actions necessary
-to change format if appropriate.
+		Validate that the format is acceptible and perform the actions necessary
+		to change format if appropriate.
 
-Arguments:
+	Arguments:
 
-Pin -
-The pin this format is being set on.  The format itself will be in
-Pin -> ConnectionFormat.
+		Pin -
+			The pin this format is being set on.  The format itself will be in
+			Pin -> ConnectionFormat.
 
-OldFormat -
-The previous format used on this pin.  If this is NULL, it is an
-indication that Pin's creation dispatch has not yet been made and
-that this is a request to validate the initial format and not to
-change formats.
+		OldFormat -
+			The previous format used on this pin.  If this is NULL, it is an
+			indication that Pin's creation dispatch has not yet been made and
+			that this is a request to validate the initial format and not to
+			change formats.
 
-OldAttributeList -
-The old attribute list for the prior format
+		OldAttributeList -
+			The old attribute list for the prior format
 
-DataRange -
-A range out of our list of data ranges which was determined to be
-at least a partial match for Pin -> ConnectionFormat.  If the format
-there is unacceptable for the range, STATUS_NO_MATCH should be
-returned.
+		DataRange -
+			A range out of our list of data ranges which was determined to be
+			at least a partial match for Pin -> ConnectionFormat.  If the format
+			there is unacceptable for the range, STATUS_NO_MATCH should be
+			returned.
 
-AttributeRange -
-The attribute range
+		AttributeRange -
+			The attribute range
 
-Return Value:
+	Return Value:
 
-Success / Failure
+		Success / Failure
 
-STATUS_SUCCESS -
-The format is acceptable / the format has been changed
+		STATUS_SUCCESS -
+			The format is acceptable / the format has been changed
 
-STATUS_NO_MATCH -
-The format is not-acceptable / the format has not been changed
+		STATUS_NO_MATCH -
+			The format is not-acceptable / the format has not been changed
 
 --*/
 NTSTATUS CAudioCapturePin::DispatchSetFormat ( IN PKSPIN Pin, IN PKSDATAFORMAT OldFormat OPTIONAL, IN PKSMULTIPLE_ITEM OldAttributeList OPTIONAL, IN const KSDATARANGE *DataRange, IN const KSATTRIBUTE_LIST *AttributeRange OPTIONAL )

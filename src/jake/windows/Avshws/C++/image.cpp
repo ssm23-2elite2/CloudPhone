@@ -299,8 +299,7 @@ UCHAR g_FontData [256][8] = {
 // Standard definition of EIA-189-A color bars.  The actual color definitions
 // are either in CRGB24Synthesizer or CYUVSynthesizer.
 //
-const COLOR g_ColorBars[] = 
-    {WHITE, YELLOW, CYAN, GREEN, MAGENTA, RED, BLUE, BLACK};
+const COLOR g_ColorBars[] = {WHITE, YELLOW, CYAN, GREEN, MAGENTA, RED, BLUE, BLACK};
 
 const UCHAR CRGB24Synthesizer::Colors [MAX_COLOR][3] = {
     {0, 0, 0},          // BLACK
@@ -336,12 +335,6 @@ const UCHAR CYUVSynthesizer::Colors [MAX_COLOR][3] = {
 #pragma code_seg()
 #endif // ALLOC_PRAGMA
 
-
-void
-CImageSynthesizer::
-SynthesizeBars (
-    )
-
 /*++
 
 Routine Description:
@@ -357,8 +350,8 @@ Return Value:
 
     None
 
---*/
-
+--*/
+void CImageSynthesizer::SynthesizeBars ()
 {
     const COLOR *CurColor = g_ColorBars;
     ULONG ColorCount = SIZEOF_ARRAY (g_ColorBars);
@@ -381,30 +374,12 @@ Return Value:
     // Copy the synthesized line to all subsequent lines.
     //
     for (ULONG line = 1; line < m_Height; line++) {
-
         GetImageLocation (0, line);
-
-        RtlCopyMemory (
-            m_Cursor,
-            ImageStart,
-            ImageEnd - ImageStart
-            );
+        RtlCopyMemory ( m_Cursor, ImageStart, ImageEnd - ImageStart );
     }
 }
 
 /*************************************************/
-
-
-void 
-CImageSynthesizer::
-OverlayText (
-    _In_ ULONG LocX,
-    _In_ ULONG LocY,
-    _In_ ULONG Scaling,
-    _In_ LPSTR Text,
-    _In_ COLOR BgColor,
-    _In_ COLOR FgColor
-    )
 
 /*++
 
@@ -444,16 +419,13 @@ Return Value:
 
     None
 
---*/
-
+--*/
+void CImageSynthesizer::OverlayText ( _In_ ULONG LocX, _In_ ULONG LocY, _In_ ULONG Scaling, _In_ LPSTR Text, _In_ COLOR BgColor, _In_ COLOR FgColor )
 {
 
-    NT_ASSERT ((LocX <= m_Width || LocX == POSITION_CENTER) &&
-            (LocY <= m_Height || LocY == POSITION_CENTER));
-
+    NT_ASSERT ((LocX <= m_Width || LocX == POSITION_CENTER) && (LocY <= m_Height || LocY == POSITION_CENTER));
     ULONG StrLen = 0;
     CHAR* CurChar;
-
     //
     // Determine the character length of the string.
     //
@@ -601,5 +573,4 @@ Return Value:
             PutPixel (BgColor);
         }
     }
-
 }
