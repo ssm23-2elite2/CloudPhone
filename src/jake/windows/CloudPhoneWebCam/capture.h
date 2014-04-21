@@ -26,9 +26,7 @@
 
 **************************************************************************/
 #include <initguid.h>
-//
-// STREAM_POINTER_CONTEXT:
-//
+
 // This is the context structure we associate with all clone stream pointers.
 // It allows the mapping code to rip apart the buffer into chunks the same
 // size as the scatter/gather mappings in order to fake scatter / gather
@@ -110,26 +108,17 @@ private:
     LONGLONG m_FrameNumber;
     LONGLONG m_DroppedFrames;
 
-    //
-    // CleanupReferences():
-    //
     // Clean up any references we hold on frames in the queue.  This is called
     // when we abruptly stop the fake hardware.
     //
     NTSTATUS CleanupReferences ();
 
-    //
-    // SetState():
-    //
     // This is the state transition handler for the capture pin.  It attempts
     // to acquire resources for the capture pin (or releasing them if
     // necessary) and starts and stops the hardware as required.
     //
     NTSTATUS SetState ( IN KSSTATE ToState, IN KSSTATE FromState );
 
-    //
-    // Process():
-    //
     // This is the processing dispatch for the capture pin.  It handles
     // programming the scatter / gather tables for the hardware as buffers
     // become available.  This processing routine is designed for a direct
@@ -137,17 +126,12 @@ private:
     // and copy strategies.
     //
     NTSTATUS Process ();
-    //
-    // CaptureVideoInfoHeader():
-    //
+
     // This routine stashes the video info header set on the pin connection
     // in the CCapturePin object.  This is used to base hardware settings.
     //
     PKS_VIDEOINFOHEADER CaptureVideoInfoHeader ();
 
-    //
-    // Cleanup():
-    //
     // This is the free callback from the bagged item (CCapturePin).  If we
     // do not provide a callback when we bag the CCapturePin, ExFreePool
     // would be called.  This is not desirable for C++ constructed objects.
@@ -159,27 +143,19 @@ private:
     }
 
 public:
-    //
-    // CCapturePin():
-    //
+
     // The capture pin's constructor.  Initialize any non-0, non-NULL fields
     // (since new will have zero'ed the memory anyway) and set up our
     // device level pointers for access during capture routines.
     //
     CCapturePin ( IN PKSPIN Pin );
 
-    //
-    // ~CCapturePin():
-    //
     // The capture pin's destructor.
     //
     ~CCapturePin ()
     {
     }
 
-    //
-    // ICaptureSink::CompleteMappings()
-    //
     // This is the capture sink notification mechanism for mapping completion.
     // When the device DPC detects that a given number of mappings have been
     // completed by the fake hardware, it signals the capture sink of this
@@ -193,18 +169,12 @@ public:
 
     *************************************************/
 
-    //
-    // DispatchCreate():
-    //
     // This is the creation dispatch for the capture pin.  It creates
     // the CCapturePin object and associates it with the AVStream object
     // bagging it in the process.
     //
     static NTSTATUS DispatchCreate ( IN PKSPIN Pin, IN PIRP Irp );
 
-    //
-    // DispatchSetState():
-    //
     // This is the set device state dispatch for the pin.  The routine bridges
     // to SetState() in the context of the CCapturePin.
     //
@@ -213,9 +183,6 @@ public:
         return (reinterpret_cast <CCapturePin *> (Pin -> Context)) -> SetState (ToState, FromState);
     }
 
-    //
-    // DispatchSetFormat():
-    //
     // This is the set data format dispatch for the pin.  This will be called
     // BEFORE pin creation to validate that a data format selected is a match
     // for the range pulled out of our range list.  It will also be called
@@ -227,9 +194,6 @@ public:
     //
     static NTSTATUS DispatchSetFormat ( IN PKSPIN Pin, IN PKSDATAFORMAT OldFormat OPTIONAL, IN PKSMULTIPLE_ITEM OldAttributeList OPTIONAL, IN const KSDATARANGE *DataRange, IN const KSATTRIBUTE_LIST *AttributeRange OPTIONAL );
 
-    //
-    // DispatchProcess():
-    //
     // This is the processing dispatch for the capture pin.  The routine 
     // bridges to Process() in the context of the CCapturePin.
     //
@@ -238,9 +202,6 @@ public:
         return (reinterpret_cast <CCapturePin *> (Pin -> Context)) -> Process ();
     }
 
-    //
-    // IntersectHandler():
-    //
     // This is the data intersection handler for the capture pin.  This 
     // determines an optimal format in the intersection of two ranges,
     // one local and one possibly foreign.  If there is no compatible format,

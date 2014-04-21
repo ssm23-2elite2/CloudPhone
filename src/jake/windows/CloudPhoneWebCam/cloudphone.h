@@ -31,7 +31,7 @@ extern "C" {
 
 *************************************************/
 #pragma warning (disable : 4100 4127 4131 4189 4701 4706)
-#define STR_MODULENAME "avshws: "
+#define STR_MODULENAME "cloudphone: "
 #define DEBUGLVL_VERBOSE 2
 #define DEBUGLVL_TERSE 1
 #define DEBUGLVL_ERROR 0
@@ -63,23 +63,15 @@ const DebugLevel = DEBUGLVL_TERSE;
 #endif
 
 #define FOURCC_YUY2         mmioFOURCC('Y', 'U', 'Y', '2')
-//
-// CAPTURE_PIN_DATA_RANGE_COUNT:
-//
+
 // The number of ranges supported on the capture pin.
 //
 #define CAPTURE_PIN_DATA_RANGE_COUNT 2
 
-//
-// CAPTURE_FILTER_PIN_COUNT:
-//
 // The number of pins on the capture filter.
 //
 #define CAPTURE_FILTER_PIN_COUNT 1
 
-//
-// CAPTURE_FILTER_CATEGORIES_COUNT:
-//
 // The number of categories for the capture filter.
 //
 #define CAPTURE_FILTER_CATEGORIES_COUNT 3
@@ -170,4 +162,4 @@ public:
 #include "filter.h"
 #include "capture.h"
 #include <uuids.h>
-#endif //_avshws_h_
+#endif //_cloudphone_h_

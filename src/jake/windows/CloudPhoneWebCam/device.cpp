@@ -623,7 +623,6 @@ const KSDEVICE_DESCRIPTOR CaptureDeviceDescriptor = { &CaptureDeviceDispatch, 0,
 
 **************************************************************************/
 
-
 extern "C" DRIVER_INITIALIZE DriverEntry;
 
 extern "C"
@@ -655,5 +654,12 @@ NTSTATUS DriverEntry ( IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING Regist
     // at add & start.  Everything is done based on the descriptors passed
     // here.
     //
-    return KsInitializeDriver ( DriverObject, RegistryPath, &CaptureDeviceDescriptor );
+
+	NTSTATUS ntStatus;
+
+	DbgPrint("DriverEntry : %ws \n", RegistryPath);
+
+	ntStatus = KsInitializeDriver(DriverObject, RegistryPath, &CaptureDeviceDescriptor);
+
+	return ntStatus;
 }

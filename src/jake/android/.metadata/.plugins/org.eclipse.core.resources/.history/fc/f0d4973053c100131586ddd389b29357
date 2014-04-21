@@ -1,6 +1,0 @@
-package com.example.cloudphonesimpletest.network;
-
-public interface PacketListener {
-	public void onPacketReceived(Packet packet);
-	public void onInterrupt();
-}

@@ -36,9 +36,6 @@
 //
 #define SCATTER_GATHER_MAPPINGS_MAX 128
 
-//
-// SCATTER_GATHER_ENTRY:
-//
 // This structure is used to keep the scatter gather table for the fake
 // hardware as a doubly linked list.
 //
@@ -48,9 +45,6 @@ typedef struct _SCATTER_GATHER_ENTRY {
     ULONG ByteCount;
 } SCATTER_GATHER_ENTRY, *PSCATTER_GATHER_ENTRY;
 
-//
-// CHardwareSimulation:
-//
 // The hardware simulation class.
 //
 class CHardwareSimulation {

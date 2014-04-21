@@ -13,11 +13,15 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
 
 namespace CloudPhoneTestServer
 {
     public partial class CloudPhoneForm : Form
     {
+        [DllImport("CloudPhoneDll.dll")]
+        public static extern int DisplayWebCam(IntPtr pArray, int length);
+
         private Boolean isConnected;
         private UdpClient client;
         private Thread serverThread;
@@ -122,7 +126,7 @@ namespace CloudPhoneTestServer
         public void ListenerThread()
         {
 
-            IPHostEntry ipHost = Dns.Resolve("211.189.20.137");
+            IPHostEntry ipHost = Dns.Resolve("192.168.0.8");
             IPAddress ipAddr = ipHost.AddressList[0];
             client = new UdpClient(3737);
             var remoteEP = new IPEndPoint(IPAddress.Any, 3737);
@@ -177,6 +181,15 @@ namespace CloudPhoneTestServer
                             {
                                 Image image = Image.FromStream(imageStream);
                                 showImageMethod(image, bOrientation);
+
+                                byte[] imageByte = imageStream.ToArray();
+                                int size = Marshal.SizeOf(imageByte[0]) * imageByte.Length;
+                                IntPtr pnt = Marshal.AllocHGlobal(size);
+                                Marshal.Copy(imageByte, 0, pnt, imageByte.Length);
+                                int n = DisplayWebCam(pnt, imageByte.Length);
+                                logi("DisplayWebCam " + n);
+                                Marshal.FreeHGlobal(pnt);
+                                
                                 imageStream.SetLength(0);
                                 imageStream = null;
                             }

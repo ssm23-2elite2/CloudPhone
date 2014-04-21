@@ -27,9 +27,6 @@ private:
     //
     PKSFILTER m_Filter;
    
-    //
-    // Cleanup():
-    //
     // This is the bag cleanup callback for the CCaptureFilter.  Not providing
     // one would cause ExFreePool to be used.  This is not good for C++
     // constructed objects.  We simply delete the object here.

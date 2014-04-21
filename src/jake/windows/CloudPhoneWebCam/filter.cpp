@@ -52,7 +52,7 @@ Return Value:
     Success / failure
 
 --*/
-NTSTATUS CCaptureFilter:: DispatchCreate ( IN PKSFILTER Filter, IN PIRP Irp )
+NTSTATUS CCaptureFilter::DispatchCreate ( IN PKSFILTER Filter, IN PIRP Irp )
 {
     PAGED_CODE();
     NTSTATUS Status = STATUS_SUCCESS;

@@ -1,4 +1,2 @@
-INDEX VERSION 1.126+D:\Workspace\SSM\CloudPhone\src\jake\android\.metadata\.plugins\org.eclipse.jdt.core
-3448091750.index
-3365879057.index
+INDEX VERSION 1.126+C:\workspace\SSM\CloudPhone\src\jake\android\.metadata\.plugins\org.eclipse.jdt.core
 2980806415.index

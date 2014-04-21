@@ -1,5 +1,0 @@
-package com.example.cloudphonesimpletest.network;
-
-public interface ScreenTransmissionListener {
-
-}

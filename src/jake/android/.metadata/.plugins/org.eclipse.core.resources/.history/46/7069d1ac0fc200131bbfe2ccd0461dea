@@ -1,5 +1,0 @@
-package org.secmem232.cloudphone;
-
-public interface CameraIPreviewListener {
-
-}
