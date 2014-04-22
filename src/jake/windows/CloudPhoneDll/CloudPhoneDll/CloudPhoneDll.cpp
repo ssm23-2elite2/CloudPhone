@@ -9,21 +9,24 @@
 #include <iostream>
 #include <fstream>
 
+#define IOCTL_IMAGE	CTL_CODE(FILE_DEVICE_UNKNOWN,0x4000,METHOD_BUFFERED,FILE_ANY_ACCESS)
+
 using std::ofstream;
 
 extern "C" __declspec(dllexport)
 int DisplayWebCam(BYTE *buf, int length)
 {	
+	/*
 	ofstream outFile("hello.jpg", std::ios::out | std::ios::binary);
 	outFile.write((const char*)buf, length);
 	outFile.close();
 
 	return 0;
+	*/
 	
-
 	HANDLE hDv;
 	WCHAR DeviceLink[] = L"\\\\.\\cloudphone";
-	DWORD writen;
+	DWORD dwRet;
 
 	hDv = CreateFileW(
 		DeviceLink,
@@ -41,14 +44,15 @@ int DisplayWebCam(BYTE *buf, int length)
 		return -3;
 	}
 
-	if (!WriteFile(hDv, buf, length, &writen, NULL))
+	if (!DeviceIoControl(hDv, IOCTL_IMAGE, 0, 0, buf, length, &dwRet, 0))
 	{
+		printf("DeviceIOControl Fail!! \n");
+		_getch();
 		CloseHandle(hDv);
-		return -2;
+		return 1;
 	}
 
 	CloseHandle(hDv);
-	return writen;
-
+	return 0;
 }
 

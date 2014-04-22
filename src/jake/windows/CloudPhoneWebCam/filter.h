@@ -1,22 +1,3 @@
-/**************************************************************************
-
-    CloudPhone WebCam Driver
-
-    Copyright (c) 2014, CloudPhone Team.
-
-    File:
-
-        filter.h
-
-    Abstract:
-
-        This file contains the filter level header for the capture filter.
-
-    History:
-
-        created 3/12/2001
-
-**************************************************************************/
 
 class CCaptureFilter {
 
@@ -57,6 +38,8 @@ public:
     // object, and bags it for easy cleanup later.
     //
     static NTSTATUS DispatchCreate ( IN PKSFILTER Filter, IN PIRP Irp );
+
 };
+
 
 

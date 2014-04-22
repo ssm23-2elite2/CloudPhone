@@ -1,30 +1,3 @@
-/**************************************************************************
-
-    CloudPhone WebCam Driver
-
-    Copyright (c) 2014, CloudPhone Team.
-
-    File:
-
-        capture.cpp
-
-    Abstract:
-
-        This file contains source for the video capture pin on the capture
-        filter.  The capture sample performs "fake" DMA directly into
-        the capture buffers.  Common buffer DMA will work slightly differently.
-
-        For common buffer DMA, the general technique would be DPC schedules
-        processing with KsPinAttemptProcessing.  The processing routine grabs
-        the leading edge, copies data out of the common buffer and advances.
-        Cloning would not be necessary with this technique.  It would be 
-        similiar to the way "AVSSamp" works, but it would be pin-centric.
-
-    History:
-
-        created 3/8/2001
-
-**************************************************************************/
 
 #include "cloudphone.h"
 #include <ksmedia.h>
@@ -94,13 +67,13 @@ Return Value:
 
     Success / Failure
 
---*/
-
-NTSTATUS CCapturePin:: DispatchCreate ( IN PKSPIN Pin, IN PIRP Irp )
+--*/
+NTSTATUS CCapturePin::DispatchCreate ( IN PKSPIN Pin, IN PIRP Irp )
 {
     PAGED_CODE();
     NTSTATUS Status = STATUS_SUCCESS;
     CCapturePin *CapPin = new (NonPagedPool) CCapturePin (Pin);
+
     if (!CapPin) {
         //
         // Return failure if we couldn't create the pin.
@@ -120,6 +93,7 @@ NTSTATUS CCapturePin:: DispatchCreate ( IN PKSPIN Pin, IN PIRP Irp )
             Pin -> Context = reinterpret_cast <PVOID> (CapPin);
         }
     }
+
     //
     // If we succeeded so far, stash the video info header away and change
     // our allocator framing to reflect the fact that only now do we know
@@ -128,7 +102,8 @@ NTSTATUS CCapturePin:: DispatchCreate ( IN PKSPIN Pin, IN PIRP Irp )
     PKS_VIDEOINFOHEADER VideoInfoHeader = NULL;
 
     if (NT_SUCCESS (Status)) {
-		VideoInfoHeader = CapPin -> CaptureVideoInfoHeader ();
+
+        VideoInfoHeader = CapPin -> CaptureVideoInfoHeader ();
         if (!VideoInfoHeader) {
             Status = STATUS_INSUFFICIENT_RESOURCES;
         }
@@ -139,14 +114,15 @@ NTSTATUS CCapturePin:: DispatchCreate ( IN PKSPIN Pin, IN PIRP Irp )
         // We need to edit the descriptor to ensure we don't mess up any other
         // pins using the descriptor or touch read-only memory.
         //
-        Status = KsEdit ( Pin, &Pin -> Descriptor, CLOUDPHONE_POOLTAG);
+        Status = KsEdit ( Pin,  &Pin -> Descriptor, AVSHWS_POOLTAG);
 
         if (NT_SUCCESS (Status)) { 
-			//
+
+            //
             // If the edits proceeded without running out of memory, adjust 
             // the framing based on the video info header.
             //
-			Status = KsEdit(Pin, &Pin->Descriptor->AllocatorFraming, CLOUDPHONE_POOLTAG);
+            Status = KsEdit ( Pin,  &Pin -> Descriptor -> AllocatorFraming, AVSHWS_POOLTAG);
 
             if (NT_SUCCESS (Status)) {
 
@@ -169,17 +145,11 @@ NTSTATUS CCapturePin:: DispatchCreate ( IN PKSPIN Pin, IN PIRP Irp )
                     Framing -> FramingItem [0].FramingRange.Range.MaxFrameSize =
                     VideoInfoHeader -> bmiHeader.biSizeImage;
 
-                Framing -> FramingItem [0].PhysicalRange.Stepping = Framing -> FramingItem [0].FramingRange.Range.Stepping = 0;
+                Framing -> FramingItem [0].PhysicalRange.Stepping = 
+                    Framing -> FramingItem [0].FramingRange.Range.Stepping =
+                    0;
             }
         }
-    }
-
-    if (NT_SUCCESS (Status)) {
-        //
-        // Adjust the stream header size.  The video packets have extended
-        // header info (KS_FRAME_INFO).
-        //
-        Pin -> StreamHeaderSize = sizeof (KSSTREAM_HEADER) + sizeof (KS_FRAME_INFO);
     }
     return Status;
 }
@@ -202,15 +172,14 @@ Return Value:
     The captured video info header or NULL if there is insufficient
     memory.
 
---*/
+--*/
+
 PKS_VIDEOINFOHEADER CCapturePin::CaptureVideoInfoHeader ()
 {
-
     PAGED_CODE();
+    PKS_VIDEOINFOHEADER ConnectionHeader = &((reinterpret_cast <PKS_DATAFORMAT_VIDEOINFOHEADER>  (m_Pin -> ConnectionFormat)) ->  VideoInfoHeader);
 
-    PKS_VIDEOINFOHEADER ConnectionHeader = &((reinterpret_cast <PKS_DATAFORMAT_VIDEOINFOHEADER> (m_Pin -> ConnectionFormat)) -> VideoInfoHeader);
-
-	m_VideoInfoHeader = reinterpret_cast <PKS_VIDEOINFOHEADER> (ExAllocatePoolWithTag(NonPagedPool, KS_SIZE_VIDEOHEADER(ConnectionHeader), CLOUDPHONE_POOLTAG));
+    m_VideoInfoHeader = reinterpret_cast <PKS_VIDEOINFOHEADER> ( ExAllocatePoolWithTag ( NonPagedPool, KS_SIZE_VIDEOHEADER (ConnectionHeader), AVSHWS_POOLTAG ) );
 
     if (!m_VideoInfoHeader)
         return NULL;
@@ -232,7 +201,6 @@ PKS_VIDEOINFOHEADER CCapturePin::CaptureVideoInfoHeader ()
         RtlCopyMemory ( m_VideoInfoHeader, ConnectionHeader, KS_SIZE_VIDEOHEADER (ConnectionHeader) );
     }
     return m_VideoInfoHeader;
-
 }
 
 /*++
@@ -253,9 +221,7 @@ Return Value:
 --*/
 NTSTATUS CCapturePin::Process ()
 {
-
     PAGED_CODE();
-
     NTSTATUS Status = STATUS_SUCCESS;
     PKSSTREAM_POINTER Leading;
 
@@ -264,6 +230,7 @@ NTSTATUS CCapturePin::Process ()
     Leading = KsPinGetLeadingEdgeStreamPointer ( m_Pin, KSSTREAM_POINTER_STATE_LOCKED );
 
     while (NT_SUCCESS (Status) && Leading) {
+
         PKSSTREAM_POINTER ClonePointer;
         PSTREAM_POINTER_CONTEXT SPContext = NULL;
 
@@ -305,10 +272,8 @@ NTSTATUS CCapturePin::Process ()
                 // update this field ourselves.
                 //
                 ClonePointer -> StreamHeader -> DataUsed = 0;
-
-                SPContext = reinterpret_cast <PSTREAM_POINTER_CONTEXT> ( ClonePointer -> Context );
-
-                SPContext -> BufferVirtual = reinterpret_cast <PUCHAR> ( ClonePointer -> StreamHeader -> Data );
+                SPContext = reinterpret_cast <PSTREAM_POINTER_CONTEXT> (ClonePointer -> Context);
+                SPContext -> BufferVirtual = reinterpret_cast <PUCHAR> (ClonePointer -> StreamHeader -> Data);
             }
         } else {
             ClonePointer = m_PreviousStreamPointer;
@@ -371,6 +336,7 @@ NTSTATUS CCapturePin::Process ()
     //
     if (!Leading) {
         m_PendIo = TRUE;
+
         //
         // If the lock failed, there's no point in getting called back 
         // immediately.  The lock could fail due to insufficient memory,
@@ -401,10 +367,8 @@ NTSTATUS CCapturePin::Process ()
     if (!NT_SUCCESS (Status) || Status == STATUS_PENDING) {
         m_PendIo = TRUE;
     }
-
     _DbgPrintF(DEBUGLVL_VERBOSE, ("Leaving Process..."));
     return Status;
-
 }
 
 /*************************************************/
@@ -430,6 +394,7 @@ NTSTATUS CCapturePin::CleanupReferences ()
     PAGED_CODE();
     PKSSTREAM_POINTER Clone = KsPinGetFirstCloneStreamPointer (m_Pin);
     PKSSTREAM_POINTER NextClone = NULL;
+
     //
     // Walk through the clones, deleting them, and setting DataUsed to
     // zero since we didn't use any data!
@@ -478,7 +443,7 @@ NTSTATUS CCapturePin::SetState ( IN KSSTATE ToState, IN KSSTATE FromState )
             //
             if (m_HardwareState != HardwareStopped) {
                 Status = m_Device -> Stop ();
-                NT_ASSERT (NT_SUCCESS (Status));
+                ASSERT (NT_SUCCESS (Status));
                 m_HardwareState = HardwareStopped;
             }
             //
@@ -496,6 +461,7 @@ NTSTATUS CCapturePin::SetState ( IN KSSTATE ToState, IN KSSTATE FromState )
             // cleans its scatter / gather tables out on the Stop call.
             //
             Status = CleanupReferences ();
+
             //
             // Release any hardware resources related to this pin.
             //
@@ -520,10 +486,8 @@ NTSTATUS CCapturePin::SetState ( IN KSSTATE ToState, IN KSSTATE FromState )
             //
             if (FromState == KSSTATE_STOP) {
                 Status = m_Device -> AcquireHardwareResources ( this, m_VideoInfoHeader );
-
                 if (NT_SUCCESS (Status)) {
                     m_AcquiredResources = TRUE;
-
                     //
                     // Attempt to get an interface to the master clock.
                     // This will fail if one has not been assigned.  Since
@@ -562,13 +526,11 @@ NTSTATUS CCapturePin::SetState ( IN KSSTATE ToState, IN KSSTATE FromState )
                 //
                 if (m_HardwareState != HardwareStopped) {
                     Status = m_Device -> Stop ();
-                    NT_ASSERT (NT_SUCCESS (Status));
+                    ASSERT (NT_SUCCESS (Status));
                     m_HardwareState = HardwareStopped;
                 }
                 Status = CleanupReferences ();
             }
-            m_FrameNumber   = 0;
-            m_DroppedFrames = 0;
             break;
         case KSSTATE_PAUSE:
             //
@@ -577,11 +539,10 @@ NTSTATUS CCapturePin::SetState ( IN KSSTATE ToState, IN KSSTATE FromState )
             if (FromState == KSSTATE_RUN) {
                 m_PresentationTime = 0;
                 Status = m_Device -> Pause (TRUE);
-				if (NT_SUCCESS (Status)) {
+                if (NT_SUCCESS (Status)) {
                     m_HardwareState = HardwarePaused;
                 }
             }
-            m_FrameNumber   = 0;
             break;
         case KSSTATE_RUN:
             //
@@ -598,7 +559,9 @@ NTSTATUS CCapturePin::SetState ( IN KSSTATE ToState, IN KSSTATE FromState )
             }
             break;
     }
+
     return Status;
+
 }
 
 /*************************************************/
@@ -655,36 +618,27 @@ Return Value:
     STATUS_BUFFER_TOO_SMALL if the supplied buffer is too small.
 
 --*/
-NTSTATUS CCapturePin::IntersectHandler (
-    IN PKSFILTER Filter,
-    IN PIRP Irp,
-    IN PKSP_PIN PinInstance,
-    IN PKSDATARANGE CallerDataRange,
-    IN PKSDATARANGE DescriptorDataRange,
-    IN ULONG BufferSize,
-    OUT PVOID Data OPTIONAL,
-    OUT PULONG DataSize
-    )
+NTSTATUS CCapturePin::IntersectHandler ( IN PKSFILTER Filter, IN PIRP Irp, IN PKSP_PIN PinInstance, IN PKSDATARANGE CallerDataRange, IN PKSDATARANGE DescriptorDataRange, IN ULONG BufferSize, OUT PVOID Data OPTIONAL, OUT PULONG DataSize )
 {
     PAGED_CODE();
     const GUID VideoInfoSpecifier = {STATICGUIDOF(KSDATAFORMAT_SPECIFIER_VIDEOINFO)};
-    NT_ASSERT(Filter);
-    NT_ASSERT(Irp);
-    NT_ASSERT(PinInstance);
-    NT_ASSERT(CallerDataRange);
-    NT_ASSERT(DescriptorDataRange);
-    NT_ASSERT(DataSize);
+    
+    ASSERT(Filter);
+    ASSERT(Irp);
+    ASSERT(PinInstance);
+    ASSERT(CallerDataRange);
+    ASSERT(DescriptorDataRange);
+    ASSERT(DataSize);
     
     ULONG DataFormatSize;
     
     //
     // Specifier FORMAT_VideoInfo for VIDEOINFOHEADER
     //
-    if (IsEqualGUID(CallerDataRange->Specifier, VideoInfoSpecifier) && CallerDataRange -> FormatSize >= sizeof (KS_DATARANGE_VIDEO)) {
+    if (IsEqualGUID(CallerDataRange->Specifier, VideoInfoSpecifier) && CallerDataRange -> FormatSize >= sizeof (KS_DATARANGE_VIDEO)) {            
         PKS_DATARANGE_VIDEO callerDataRange = reinterpret_cast <PKS_DATARANGE_VIDEO> (CallerDataRange);
         PKS_DATARANGE_VIDEO descriptorDataRange = reinterpret_cast <PKS_DATARANGE_VIDEO> (DescriptorDataRange);
         PKS_DATAFORMAT_VIDEOINFOHEADER FormatVideoInfoHeader;
-
         //
         // Check that the other fields match
         //
@@ -713,9 +667,7 @@ NTSTATUS CCapturePin::IntersectHandler (
         //
         {
             ULONG VideoHeaderSize = KS_SIZE_VIDEOHEADER ( &callerDataRange->VideoInfoHeader );
-
             ULONG DataRangeSize = FIELD_OFFSET (KS_DATARANGE_VIDEO, VideoInfoHeader) + VideoHeaderSize;
-
             //
             // Check that biSize does not extend past the buffer.  The 
             // first two checks are for arithmetic overflow on the 
@@ -727,9 +679,8 @@ NTSTATUS CCapturePin::IntersectHandler (
             }
         }
 
-        DataFormatSize = sizeof (KSDATAFORMAT) + KS_SIZE_VIDEOHEADER (&callerDataRange->VideoInfoHeader);
+        DataFormatSize = sizeof (KSDATAFORMAT) +  KS_SIZE_VIDEOHEADER (&callerDataRange->VideoInfoHeader);
 
-            
         //
         // If the passed buffer size is 0, it indicates that this is a size
         // only query.  Return the size of the intersecting data format and
@@ -738,7 +689,6 @@ NTSTATUS CCapturePin::IntersectHandler (
         if (BufferSize == 0) {
             *DataSize = DataFormatSize;
             return STATUS_BUFFER_OVERFLOW;
-
         }
         
         //
@@ -762,7 +712,7 @@ NTSTATUS CCapturePin::IntersectHandler (
         // KSDATARANGE (it's just the GUIDs, etc...  not the format information
         // following any data format.
         // 
-        RtlCopyMemory ( &FormatVideoInfoHeader->DataFormat, DescriptorDataRange, sizeof (KSDATAFORMAT));
+        RtlCopyMemory ( &FormatVideoInfoHeader->DataFormat,  DescriptorDataRange,  sizeof (KSDATAFORMAT));
 
         FormatVideoInfoHeader->DataFormat.FormatSize = DataFormatSize;
 
@@ -770,8 +720,7 @@ NTSTATUS CCapturePin::IntersectHandler (
         // Copy over the callers requested VIDEOINFOHEADER
         //
 
-        RtlCopyMemory ( &FormatVideoInfoHeader->VideoInfoHeader, &callerDataRange->VideoInfoHeader, KS_SIZE_VIDEOHEADER (&callerDataRange->VideoInfoHeader) );
-
+        RtlCopyMemory ( &FormatVideoInfoHeader->VideoInfoHeader,  &callerDataRange->VideoInfoHeader, KS_SIZE_VIDEOHEADER (&callerDataRange->VideoInfoHeader) );
         //
         // Calculate biSizeImage for this request, and put the result in both
         // the biSizeImage field of the bmiHeader AND in the SampleSize field
@@ -785,11 +734,8 @@ NTSTATUS CCapturePin::IntersectHandler (
         //
         // REVIEW - Perform other validation such as cropping and scaling checks
         // 
-        
         return STATUS_SUCCESS;
-        
     } // End of VIDEOINFOHEADER specifier
-    
     return STATUS_NO_MATCH;
 }
 
@@ -824,7 +770,6 @@ Return Value:
 BOOL MultiplyCheckOverflow ( ULONG a, ULONG b, ULONG *pab )
 {
     PAGED_CODE();
-
     *pab = a * b;
     if ((a == 0) || (((*pab) / a) == b)) {
         return TRUE;
@@ -887,13 +832,7 @@ Return Value:
             The format is not-acceptable / the format has not been changed
 
 --*/
-NTSTATUS CCapturePin::DispatchSetFormat (
-    IN PKSPIN Pin,
-    IN PKSDATAFORMAT OldFormat OPTIONAL,
-    IN PKSMULTIPLE_ITEM OldAttributeList OPTIONAL,
-    IN const KSDATARANGE *DataRange,
-    IN const KSATTRIBUTE_LIST *AttributeRange OPTIONAL
-    )
+NTSTATUS CCapturePin::DispatchSetFormat ( IN PKSPIN Pin, IN PKSDATAFORMAT OldFormat OPTIONAL, IN PKSMULTIPLE_ITEM OldAttributeList OPTIONAL, IN const KSDATARANGE *DataRange, IN const KSATTRIBUTE_LIST *AttributeRange OPTIONAL )
 {
     PAGED_CODE();
     NTSTATUS Status = STATUS_NO_MATCH;
@@ -924,17 +863,18 @@ NTSTATUS CCapturePin::DispatchSetFormat (
         // Check that bmiHeader.biSize is valid since we use it later.
         //
         ULONG VideoHeaderSize = KS_SIZE_VIDEOHEADER ( &ConnectionFormat -> VideoInfoHeader );
-
         ULONG DataFormatSize = FIELD_OFFSET ( KS_DATAFORMAT_VIDEOINFOHEADER, VideoInfoHeader ) + VideoHeaderSize;
 
-        if ( VideoHeaderSize < ConnectionFormat-> VideoInfoHeader.bmiHeader.biSize || DataFormatSize < VideoHeaderSize || DataFormatSize > ConnectionFormat -> DataFormat.FormatSize ) {
+        if ( VideoHeaderSize < ConnectionFormat-> VideoInfoHeader.bmiHeader.biSize ||
+            DataFormatSize < VideoHeaderSize ||
+            DataFormatSize > ConnectionFormat -> DataFormat.FormatSize ) {
             Status = STATUS_INVALID_PARAMETER;
         }
 
         //
         // Check that the format is a match for the selected range. 
         //
-        else if ( (ConnectionFormat -> VideoInfoHeader.bmiHeader.biWidth != VIRange -> VideoInfoHeader.bmiHeader.biWidth) ||
+        else if ((ConnectionFormat -> VideoInfoHeader.bmiHeader.biWidth != VIRange -> VideoInfoHeader.bmiHeader.biWidth) ||
             (ConnectionFormat -> VideoInfoHeader.bmiHeader.biHeight != VIRange -> VideoInfoHeader.bmiHeader.biHeight) ||
             (ConnectionFormat -> VideoInfoHeader.bmiHeader.biCompression != VIRange -> VideoInfoHeader.bmiHeader.biCompression) ) {
             Status = STATUS_NO_MATCH;
@@ -963,8 +903,8 @@ NTSTATUS CCapturePin::DispatchSetFormat (
             // We only support KS_BI_RGB (24) and KS_BI_YUV422 (16), so
             // this is valid for those formats.
             //
-            else if (!MultiplyCheckOverflow ( ImageSize, (ULONG)(ConnectionFormat->VideoInfoHeader.bmiHeader.biBitCount / 8), &ImageSize )) {
-				Status = STATUS_INVALID_PARAMETER;
+            else if (!MultiplyCheckOverflow ( ImageSize, (ULONG)(ConnectionFormat-> VideoInfoHeader.bmiHeader.biBitCount / 8), &ImageSize )) {
+                Status = STATUS_INVALID_PARAMETER;
             }
 
             //
@@ -972,7 +912,7 @@ NTSTATUS CCapturePin::DispatchSetFormat (
             // checked later.
             //
             else if (ConnectionFormat->VideoInfoHeader.bmiHeader.biSizeImage < ImageSize) {
-				Status = STATUS_INVALID_PARAMETER;
+                Status = STATUS_INVALID_PARAMETER;
             } else {
                 //
                 // We can accept the format. 
@@ -1022,6 +962,13 @@ NTSTATUS CCapturePin::DispatchSetFormat (
 #pragma code_seg()
 #endif // ALLOC_PRAGMA
 
+
+#if defined(_WIN64)
+
+//
+// 64 bit support related changes
+//
+
 /*++
 
 Routine Description:
@@ -1040,7 +987,112 @@ Return Value:
     None
 
 --*/
-void CCapturePin:: CompleteMappings ( IN ULONG NumMappings )
+void CCapturePin::CompleteMappings ( IN ULONG NumMappings )
+{
+
+    ULONG MappingsRemaining = NumMappings;
+
+    //
+    // Walk through the clones list and delete clones whose time has come.
+    // The list is guaranteed to be kept in the order they were cloned.
+    //
+    PKSSTREAM_POINTER Clone = KsPinGetFirstCloneStreamPointer (m_Pin);
+
+    while (MappingsRemaining && Clone) {
+
+        PKSSTREAM_POINTER NextClone = KsStreamPointerGetNextClone (Clone);
+
+        //
+        // Count up the number of bytes we've completed and mark this
+        // in the Stream Header.  In mapped queues 
+        // (KSPIN_FLAG_GENERATE_MAPPINGS), this is the responsibility of
+        // the minidriver.  In non-mapped queues, AVStream performs this.
+        //
+        ULONG MappingsToCount = 1;
+        //
+        // Update DataUsed according to the mappings.
+        //
+        for (ULONG CurMapping = 0; CurMapping < MappingsToCount; CurMapping++) {
+            Clone -> StreamHeader -> DataUsed += Clone -> OffsetOut.Count;
+        }
+
+        // 
+        // If we have completed all remaining mappings in this clone, it
+        // is an indication that the clone is ready to be deleted and the
+        // buffer released.  Set anything required in the stream header which
+        // has not yet been set.  If we have a clock, we can timestamp the
+        // sample.
+        //
+        if (Clone -> StreamHeader -> DataUsed >= Clone -> OffsetOut.Remaining) {
+            Clone -> StreamHeader -> Duration = m_VideoInfoHeader -> AvgTimePerFrame;
+            Clone -> StreamHeader -> PresentationTime.Numerator = Clone -> StreamHeader -> PresentationTime.Denominator = 1;
+
+            //
+            // If a clock has been assigned, timestamp the packets with the
+            // time shown on the clock. 
+            //
+            if (m_Clock) {
+                LONGLONG ClockTime = m_Clock -> GetTime ();
+                Clone -> StreamHeader -> PresentationTime.Time = ClockTime;
+                Clone -> StreamHeader -> OptionsFlags = KSSTREAM_HEADER_OPTIONSF_TIMEVALID | KSSTREAM_HEADER_OPTIONSF_DURATIONVALID;
+            } else {
+                //
+                // If there is no clock, don't time stamp the packets.
+                //
+                Clone -> StreamHeader -> PresentationTime.Time = 0;
+            }
+            MappingsRemaining --;
+            //
+            // If all of the mappings in this clone have been completed,
+            // delete the clone.  We've already updated DataUsed above.
+            //
+            KsStreamPointerDelete (Clone);
+        } else {
+            //
+            // If only part of the mappings in this clone have been completed,
+            // update the pointers.  Since we're guaranteed this won't advance
+            // to a new frame by the check above, it won't fail.
+            //
+            KsStreamPointerAdvanceOffsets ( Clone, 0, Clone -> StreamHeader -> DataUsed, FALSE );
+            MappingsRemaining = 0;
+        }
+        //
+        // Go to the next clone.
+        //
+        Clone = NextClone;
+    }
+
+    //
+    // If we've used all the mappings in hardware and pended, we can kick
+    // processing to happen again if we've completed mappings.
+    //
+    if (m_PendIo) {
+        m_PendIo = TRUE;
+        KsPinAttemptProcessing (m_Pin, TRUE);
+    }
+
+}
+#elif defined (_X86_)
+
+/*++
+
+Routine Description:
+
+    Called to notify the pin that a given number of scatter / gather
+    mappings have completed.  Let the buffers go if possible.
+    We're called at DPC.
+
+Arguments:
+
+    NumMappings -
+        The number of mappings that have completed.
+
+Return Value:
+
+    None
+
+--*/
+void CCapturePin::CompleteMappings ( IN ULONG NumMappings )
 {
     ULONG MappingsRemaining = NumMappings;
 
@@ -1054,14 +1106,13 @@ void CCapturePin:: CompleteMappings ( IN ULONG NumMappings )
 
         PKSSTREAM_POINTER NextClone = KsStreamPointerGetNextClone (Clone);
 
-#if defined(_X86_)
         //
         // Count up the number of bytes we've completed and mark this
         // in the Stream Header.  In mapped queues 
         // (KSPIN_FLAG_GENERATE_MAPPINGS), this is the responsibility of
         // the minidriver.  In non-mapped queues, AVStream performs this.
         //
-        ULONG MappingsToCount =  (MappingsRemaining > Clone -> OffsetOut.Remaining) ? Clone -> OffsetOut.Remaining : MappingsRemaining;
+        ULONG MappingsToCount = (MappingsRemaining > Clone -> OffsetOut.Remaining) ? Clone -> OffsetOut.Remaining : MappingsRemaining;
 
         //
         // Update DataUsed according to the mappings.
@@ -1069,7 +1120,6 @@ void CCapturePin:: CompleteMappings ( IN ULONG NumMappings )
         for (ULONG CurMapping = 0; CurMapping < MappingsToCount; CurMapping++) {
             Clone -> StreamHeader -> DataUsed += Clone -> OffsetOut.Mappings [CurMapping].ByteCount;
         }
-#endif
 
         // 
         // If we have completed all remaining mappings in this clone, it
@@ -1078,11 +1128,7 @@ void CCapturePin:: CompleteMappings ( IN ULONG NumMappings )
         // has not yet been set.  If we have a clock, we can timestamp the
         // sample.
         //
-#if !defined(_X86_)
-        if (Clone -> StreamHeader -> DataUsed >= Clone -> OffsetOut.Remaining) {
-#else
         if (MappingsRemaining >= Clone -> OffsetOut.Remaining) {
-#endif
             Clone -> StreamHeader -> Duration = m_VideoInfoHeader -> AvgTimePerFrame;
             Clone -> StreamHeader -> PresentationTime.Numerator = Clone -> StreamHeader -> PresentationTime.Denominator = 1;
             //
@@ -1094,88 +1140,31 @@ void CCapturePin:: CompleteMappings ( IN ULONG NumMappings )
                 Clone -> StreamHeader -> PresentationTime.Time = ClockTime;
                 Clone -> StreamHeader -> OptionsFlags = KSSTREAM_HEADER_OPTIONSF_TIMEVALID | KSSTREAM_HEADER_OPTIONSF_DURATIONVALID;
             } else {
-	      //
-	      // If there is no clock, don't time stamp the packets.
-	      //
-	      Clone -> StreamHeader -> PresentationTime.Time = 0;
-	      
+                //
+                // If there is no clock, don't time stamp the packets.
+                //
+                Clone -> StreamHeader -> PresentationTime.Time = 0;
             }
-
-            //
-            // Increment the frame number.  This is the total count of frames which
-            // have attempted capture.
-            //
-            m_FrameNumber++;
-
-            //
-            // Double check the Stream Header size.  AVStream makes no guarantee
-            // that because StreamHeaderSize is set to a specific size that you
-            // will get that size.  If the proper data type handlers are not 
-            // installed, the stream header will be of default size.
-            //
-            if ( Clone -> StreamHeader -> Size >= sizeof (KSSTREAM_HEADER) +
-                sizeof (KS_FRAME_INFO)) {
-
-                PKS_FRAME_INFO FrameInfo = reinterpret_cast <PKS_FRAME_INFO> (
-                    Clone -> StreamHeader + 1
-                    );
-    
-                FrameInfo -> ExtendedHeaderSize = sizeof (KS_FRAME_INFO);
-                FrameInfo -> dwFrameFlags       = KS_VIDEO_FLAG_FRAME;
-                FrameInfo -> PictureNumber      = (LONGLONG)m_FrameNumber;
-
-                // I don't really have a way to tell if the device has dropped a frame 
-                // or was not able to send a frame on time.
-                FrameInfo -> DropCount = (LONGLONG)m_DroppedFrames;
-            }
-
-
+            MappingsRemaining -= Clone -> OffsetOut.Remaining;
             //
             // If all of the mappings in this clone have been completed,
             // delete the clone.  We've already updated DataUsed above.
             //
-
-#if !defined(_X86_)
-            MappingsRemaining--;
-#else
-            MappingsRemaining -= Clone -> OffsetOut.Remaining;
-#endif
             KsStreamPointerDelete (Clone);
-
         } else {
             //
             // If only part of the mappings in this clone have been completed,
             // update the pointers.  Since we're guaranteed this won't advance
             // to a new frame by the check above, it won't fail.
             //
-#if !defined(_X86_)
-            (void)KsStreamPointerAdvanceOffsets (
-                Clone,
-                0,
-                Clone -> StreamHeader -> DataUsed,
-                FALSE
-                );
-
-#else
-            (void)KsStreamPointerAdvanceOffsets (
-                Clone,
-                0,
-                MappingsRemaining,
-                FALSE
-                );
-
-#endif
+            KsStreamPointerAdvanceOffsets ( Clone, 0, MappingsRemaining, FALSE );
             MappingsRemaining = 0;
-
         }
-
         //
         // Go to the next clone.
         //
         Clone = NextClone;
-
     }
-
     //
     // If we've used all the mappings in hardware and pended, we can kick
     // processing to happen again if we've completed mappings.
@@ -1184,8 +1173,8 @@ void CCapturePin:: CompleteMappings ( IN ULONG NumMappings )
         m_PendIo = TRUE;
         KsPinAttemptProcessing (m_Pin, TRUE);
     }
-
 }
+#endif
 
 /**************************************************************************
 
@@ -1198,10 +1187,7 @@ void CCapturePin:: CompleteMappings ( IN ULONG NumMappings )
 //
 // This is the data range description of the RGB24 capture format we support.
 //
-const 
-KS_DATARANGE_VIDEO 
-FormatRGB24Bpp_Capture = {
-
+const KS_DATARANGE_VIDEO FormatRGB24Bpp_Capture = {
     //
     // KSDATARANGE
     //
@@ -1218,7 +1204,7 @@ FormatRGB24Bpp_Capture = {
     },
 
     TRUE,               // BOOL,  bFixedSizeSamples (all samples same size?)
-    FALSE,              // BOOL,  bTemporalCompression (all I frames?)
+    TRUE,               // BOOL,  bTemporalCompression (all I frames?)
     0,                  // Reserved (was StreamDescriptionFlags)
     0,                  // Reserved (was MemoryAllocationFlags   
                         //           (KS_VIDEO_ALLOC_*))
@@ -1227,7 +1213,7 @@ FormatRGB24Bpp_Capture = {
     //
     {
         STATICGUIDOF( KSDATAFORMAT_SPECIFIER_VIDEOINFO ), // GUID
-        KS_AnalogVideo_None,                            // AnalogVideoStandard
+        KS_AnalogVideo_NTSC_M,                            // AnalogVideoStandard
         D_X,D_Y,        // InputSize, (the inherent size of the incoming signal
                         //             with every digitized pixel unique)
         D_X,D_Y,        // MinCroppingSize, smallest rcSrc cropping rect allowed
@@ -1254,9 +1240,9 @@ FormatRGB24Bpp_Capture = {
     // KS_VIDEOINFOHEADER (default format)
     //
     {
-        0,0,0,0,                            // RECT  rcSource; 
+        0,0,D_X,D_Y,                        // RECT  rcSource; 
         0,0,0,0,                            // RECT  rcTarget; 
-        D_X * D_Y * 3 * 8 * 30,             // DWORD dwBitRate;
+        D_X * D_Y * 3 * 30,                 // DWORD dwBitRate;
         0L,                                 // DWORD dwBitErrorRate; 
         333667,                             // REFERENCE_TIME  AvgTimePerFrame;   
         sizeof (KS_BITMAPINFOHEADER),       // DWORD biSize;
@@ -1295,7 +1281,7 @@ const KS_DATARANGE_VIDEO FormatYUY2_Capture = {
     },
 
     TRUE,               // BOOL,  bFixedSizeSamples (all samples same size?)
-    FALSE,              // BOOL,  bTemporalCompression (all I frames?)
+    TRUE,               // BOOL,  bTemporalCompression (all I frames?)
     0,                  // Reserved (was StreamDescriptionFlags)
     0,                  // Reserved (was MemoryAllocationFlags   
                         //           (KS_VIDEO_ALLOC_*))
@@ -1305,7 +1291,7 @@ const KS_DATARANGE_VIDEO FormatYUY2_Capture = {
     //
     {
         STATICGUIDOF( KSDATAFORMAT_SPECIFIER_VIDEOINFO ), // GUID
-        KS_AnalogVideo_None,                            // AnalogVideoStandard
+        KS_AnalogVideo_NTSC_M,                            // AnalogVideoStandard
         DMAX_X, DMAX_Y, // InputSize, (the inherent size of the incoming signal
                         //             with every digitized pixel unique)
         D_X,D_Y,        // MinCroppingSize, smallest rcSrc cropping rect allowed
@@ -1332,9 +1318,9 @@ const KS_DATARANGE_VIDEO FormatYUY2_Capture = {
     // KS_VIDEOINFOHEADER (default format)
     //
     {
-        0, 0, 0, 0,                         // RECT  rcSource; 
+        0, 0, D_X, D_Y,                     // RECT  rcSource; 
         0, 0, 0, 0,                         // RECT  rcTarget; 
-        DMAX_X * DMAX_Y * 2 * 8 * 30,       // DWORD dwBitRate;
+        DMAX_X * DMAX_Y * 2 * 30,           // DWORD dwBitRate;
         0L,                                 // DWORD dwBitErrorRate; 
         333667,                             // REFERENCE_TIME  AvgTimePerFrame;   
         sizeof (KS_BITMAPINFOHEADER),       // DWORD biSize;
@@ -1394,3 +1380,4 @@ DECLARE_SIMPLE_FRAMING_EX (
 // two: one RGB24, and one YUY2.
 //
 const PKSDATARANGE CapturePinDataRanges [CAPTURE_PIN_DATA_RANGE_COUNT] = { (PKSDATARANGE) &FormatYUY2_Capture, (PKSDATARANGE) &FormatRGB24Bpp_Capture };
+

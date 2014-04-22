@@ -44,6 +44,7 @@ namespace CloudPhoneTestServer
         int iRecvSize;
         MemoryStream imageStream;
 
+        private Boolean justOne = true;
         public CloudPhoneForm()
         {
             InitializeComponent();
@@ -186,8 +187,13 @@ namespace CloudPhoneTestServer
                                 int size = Marshal.SizeOf(imageByte[0]) * imageByte.Length;
                                 IntPtr pnt = Marshal.AllocHGlobal(size);
                                 Marshal.Copy(imageByte, 0, pnt, imageByte.Length);
-                                int n = DisplayWebCam(pnt, imageByte.Length);
-                                logi("DisplayWebCam " + n);
+
+                                if (justOne == true)
+                                {
+                                    justOne = false;
+                                    int n = DisplayWebCam(pnt, imageByte.Length);
+                                    logi("DisplayWebCam " + n);
+                                }
                                 Marshal.FreeHGlobal(pnt);
                                 
                                 imageStream.SetLength(0);

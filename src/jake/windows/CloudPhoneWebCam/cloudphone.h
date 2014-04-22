@@ -1,9 +1,5 @@
 
-/*************************************************
-
-    Standard Includes
-
-*************************************************/
+#pragma once
 
 #ifndef _cloudphone_h_
 #define _cloudphone_h_
@@ -25,13 +21,14 @@ extern "C" {
 #include <ksmedia.h>
 #include <kcom.h>
 
+
 /*************************************************
 
     Misc Definitions
 
 *************************************************/
 #pragma warning (disable : 4100 4127 4131 4189 4701 4706)
-#define STR_MODULENAME "cloudphone: "
+#define STR_MODULENAME "avshws: "
 #define DEBUGLVL_VERBOSE 2
 #define DEBUGLVL_TERSE 1
 #define DEBUGLVL_ERROR 0
@@ -46,7 +43,7 @@ const DebugLevel = DEBUGLVL_TERSE;
         DbgPrint##strings;\
         DbgPrint("\n");\
         if ((lvl) == DEBUGLVL_ERROR) {\
-            NT_ASSERT(0);\
+            DbgBreakPoint();\
         } \
     }\
 }
@@ -63,20 +60,28 @@ const DebugLevel = DEBUGLVL_TERSE;
 #endif
 
 #define FOURCC_YUY2         mmioFOURCC('Y', 'U', 'Y', '2')
-
+//
+// CAPTURE_PIN_DATA_RANGE_COUNT:
+//
 // The number of ranges supported on the capture pin.
 //
 #define CAPTURE_PIN_DATA_RANGE_COUNT 2
 
+//
+// CAPTURE_FILTER_PIN_COUNT:
+//
 // The number of pins on the capture filter.
 //
 #define CAPTURE_FILTER_PIN_COUNT 1
 
+//
+// CAPTURE_FILTER_CATEGORIES_COUNT:
+//
 // The number of categories for the capture filter.
 //
-#define CAPTURE_FILTER_CATEGORIES_COUNT 3
+#define CAPTURE_FILTER_CATEGORIES_COUNT 2
 
-#define CLOUDPHONE_POOLTAG 'hSVA'
+#define AVSHWS_POOLTAG 'hSVA'
 
 /*************************************************
 
@@ -126,7 +131,9 @@ typedef enum _HARDWARE_STATE {
 class IHardwareSink {
 
 public:
+
     virtual void Interrupt () = 0;
+
 };
 
 //
@@ -139,7 +146,9 @@ public:
 class ICaptureSink {
 
 public:
+
     virtual void CompleteMappings ( IN ULONG NumMappings ) = 0;
+
 };
 
 

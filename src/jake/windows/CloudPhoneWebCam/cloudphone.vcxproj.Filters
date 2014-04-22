@@ -55,12 +55,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Inf Include="cloudphone.inf" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="cloudphone.htm" />
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="cloudphone.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>

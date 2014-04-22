@@ -1,32 +1,8 @@
-/**************************************************************************
-
-    CloudPhone WebCam Driver
-
-    Copyright (c) 2014, CloudPhone Team.
-
-    File:
-
-        capture.h
-
-    Abstract:
-
-        This file contains header for the video capture pin on the capture
-        filter.  The capture sample performs "fake" DMA directly into
-        the capture buffers.  Common buffer DMA will work slightly differently.
-
-        For common buffer DMA, the general technique would be DPC schedules
-        processing with KsPinAttemptProcessing.  The processing routine grabs
-        the leading edge, copies data out of the common buffer and advances.
-        Cloning would not be necessary with this technique.  It would be 
-        similiar to the way "AVSSamp" works, but it would be pin-centric.
-
-    History:
-
-        created 3/8/2001
-
-**************************************************************************/
+#include "cloudphone.h"
 #include <initguid.h>
-
+//
+// STREAM_POINTER_CONTEXT:
+//
 // This is the context structure we associate with all clone stream pointers.
 // It allows the mapping code to rip apart the buffer into chunks the same
 // size as the scatter/gather mappings in order to fake scatter / gather
@@ -105,9 +81,6 @@ private:
     //
     LONGLONG m_PresentationTime;
 
-    LONGLONG m_FrameNumber;
-    LONGLONG m_DroppedFrames;
-
     // Clean up any references we hold on frames in the queue.  This is called
     // when we abruptly stop the fake hardware.
     //
@@ -126,8 +99,8 @@ private:
     // and copy strategies.
     //
     NTSTATUS Process ();
-
-    // This routine stashes the video info header set on the pin connection
+    
+	// This routine stashes the video info header set on the pin connection
     // in the CCapturePin object.  This is used to base hardware settings.
     //
     PKS_VIDEOINFOHEADER CaptureVideoInfoHeader ();
@@ -143,8 +116,8 @@ private:
     }
 
 public:
-
-    // The capture pin's constructor.  Initialize any non-0, non-NULL fields
+    
+	// The capture pin's constructor.  Initialize any non-0, non-NULL fields
     // (since new will have zero'ed the memory anyway) and set up our
     // device level pointers for access during capture routines.
     //
@@ -152,9 +125,7 @@ public:
 
     // The capture pin's destructor.
     //
-    ~CCapturePin ()
-    {
-    }
+    ~CCapturePin () {}
 
     // This is the capture sink notification mechanism for mapping completion.
     // When the device DPC detects that a given number of mappings have been

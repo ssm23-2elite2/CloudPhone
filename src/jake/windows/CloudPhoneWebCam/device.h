@@ -1,25 +1,3 @@
-/**************************************************************************
-
-    CloudPhone WebCam Driver
-
-    Copyright (c) 2014, CloudPhone Team.
-
-    File:
-
-        device.h
-
-    Abstract:
-
-        The header for the device level of the simulated hardware.  This is
-        not actually the hardware simulation itself.  The hardware simulation
-        is contained in hwsim.*, image.*.
-        
-    History:
-
-        created 3/9/2001
-
-**************************************************************************/
-
 class CCaptureDevice :
     public IHardwareSink {
 
@@ -43,7 +21,7 @@ private:
     // overlay in software.
     //
     CHardwareSimulation *m_HardwareSimulation;
-	CImageSynthesizer *m_ImageSynth;
+    CImageSynthesizer *m_ImageSynth;
 
     //
     // The number of ISR's that have occurred since capture started.
@@ -109,6 +87,8 @@ public:
     {
     }
 
+	static NTSTATUS PSYCamCreateClose( PDEVICE_OBJECT DeviceObject, PIRP Irp);
+    
     // The capture device destructor.
     //
     ~CCaptureDevice ()
@@ -119,7 +99,7 @@ public:
     // the CCaptureDevice and associates it with the device via the bag.
     //
     static NTSTATUS DispatchCreate ( IN PKSDEVICE Device );
-
+    
     // This is the Pnp Start dispatch for the capture device.  It simply
     // bridges to PnpStart() in the context of the CCaptureDevice.
     //
@@ -179,9 +159,7 @@ public:
     // of a "fake" ISR.  The routine is called at dispatch level and must
     // be in locked code.
     //
-    virtual void Interrupt ();
+    virtual void Interrupt ();	
 
-    LONG GetDroppedFrameCount(){
-		return m_HardwareSimulation->GetSkippedFrameCount();
-	};
 };
+
