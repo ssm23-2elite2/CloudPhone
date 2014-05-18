@@ -16,14 +16,6 @@ using std::ofstream;
 extern "C" __declspec(dllexport)
 int DisplayWebCam(BYTE *buf, int length)
 {	
-	/*
-	ofstream outFile("hello.jpg", std::ios::out | std::ios::binary);
-	outFile.write((const char*)buf, length);
-	outFile.close();
-
-	return 0;
-	*/
-	
 	HANDLE hDv;
 	WCHAR DeviceLink[] = L"\\\\.\\cloudphone";
 	DWORD dwRet;
@@ -53,6 +45,7 @@ int DisplayWebCam(BYTE *buf, int length)
 	}
 
 	CloseHandle(hDv);
+	
 	return 0;
 }
 

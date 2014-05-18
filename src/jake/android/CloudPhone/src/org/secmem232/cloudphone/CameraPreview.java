@@ -108,6 +108,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 			mCamera.setPreviewCallback(mPreviewCallBack);
 			mCamera.setOneShotPreviewCallback(mPreviewCallBack);
 			mCamera.startPreview();
+		
+			setPreviewSize( 3 , 320, 240);
 		} catch (Exception e) {
 			mCamera.setPreviewCallback(null);
 			mCamera.release();
@@ -403,4 +405,31 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 	public void setCameraPreviewListener(CameraPreviewListener listener) { 
 		mCameraPreviewListener = listener;
 	}
+	
+	public void setPreviewSize(int index, int width, int height) {
+        mCamera.stopPreview();
+        
+        Camera.Parameters cameraParams = mCamera.getParameters();
+        boolean portrait = isPortrait();
+        
+        Camera.Size previewSize = mPreviewSizeList.get(index);
+        Camera.Size pictureSize = determinePictureSize(previewSize);
+        if (DEBUGGING) { Log.v(LOG_TAG, "Requested Preview Size - w: " + previewSize.width + ", h: " + previewSize.height); }
+        mPreviewSize = previewSize;
+        mPictureSize = pictureSize;
+        boolean layoutChanged = adjustSurfaceLayoutSize(previewSize, portrait, width, height);
+        if (layoutChanged) {
+            mSurfaceConfiguring = true;
+            return;
+        }
+
+        configureCameraParameters(cameraParams, portrait);
+        try {
+            mCamera.startPreview();
+        } catch (Exception e) {
+            
+        }
+        mSurfaceConfiguring = false;
+    }
+
 }

@@ -1,4 +1,4 @@
-ï»¿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -50,7 +50,7 @@ namespace CloudPhoneTestServer
             InitializeComponent();
         }
 
-        // ì´ˆê¸°í™”
+        // ÃÊ±âÈ­
         private void CloudPhoneForm_Load(object sender, EventArgs e)
         {
             this.listLog.DrawMode = DrawMode.OwnerDrawFixed;
@@ -65,12 +65,12 @@ namespace CloudPhoneTestServer
             _loge = new logee(loge);
 
             isConnected = true;
-            logi("ì„œë²„ ì“°ë ˆë“œ ìƒì„± CloudPhoneTestServer new Thread");
+            logi("¼­¹ö ¾²·¹µå »ı¼º CloudPhoneTestServer new Thread");
             serverThread = new Thread(new ThreadStart(ListenerThread));
             serverThread.Start();
         }
 
-        // ì¢…ë£Œì‹œ ì²˜ë¦¬
+        // Á¾·á½Ã Ã³¸®
         private void CloudPhoneForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             if (serverThread != null && serverThread.IsAlive)
@@ -80,7 +80,7 @@ namespace CloudPhoneTestServer
                 serverThread = null;
             }
 
-            string processName = "CloudPhoneTestServer"; // .exe ëŠ” ë¹¼ì…”ì•¼ ë˜ì—¬~
+            string processName = "CloudPhoneTestServer"; // .exe ´Â »©¼Å¾ß µÇ¿©~
             Process[] processes = Process.GetProcessesByName(processName);
 
             foreach (Process process in processes)
@@ -89,10 +89,10 @@ namespace CloudPhoneTestServer
             }
         }
 
-        // í´ë¼ì´ì–¸íŠ¸ì˜ ìš”ì²­ì„ ë°›ì•„ì„œ ì´ë¯¸ì§€ë¥¼ ë¿Œë¦´ ë•Œ ìˆ˜í–‰ë˜ëŠ” í•¨ìˆ˜
+        // Å¬¶óÀÌ¾ğÆ®ÀÇ ¿äÃ»À» ¹Ş¾Æ¼­ ÀÌ¹ÌÁö¸¦ »Ñ¸± ¶§ ¼öÇàµÇ´Â ÇÔ¼ö
         public void showImageMethod(Image image, byte bOrientation)
         {
-            //logi("ì´ë¯¸ì§€ë¥¼ ë³´ì—¬ì¤ë‹ˆë‹¤. CloudPhoneTestServer.showImageMethod");
+            //logi("ÀÌ¹ÌÁö¸¦ º¸¿©Áİ´Ï´Ù. CloudPhoneTestServer.showImageMethod");
             switch (bOrientation)
             {
                 case Orientation.VERTICAL:
@@ -106,39 +106,39 @@ namespace CloudPhoneTestServer
             camViewer.Refresh();
         }
 
-        // On ë²„íŠ¼ì´ ëˆŒë¦¬ë©´
+        // On ¹öÆ°ÀÌ ´­¸®¸é
         private void btn_serverOn_Click(object sender, EventArgs e)
         {
-            logi("ì„œë²„ë¥¼ ì¼­ë‹ˆë‹¤. CloudPhoneTestServer.btn_serverOn_Click");
+            logi("¼­¹ö¸¦ ÄÕ´Ï´Ù. CloudPhoneTestServer.btn_serverOn_Click");
             if (isConnected)
             {
-                logw("ì„œë²„ê°€ ì´ë¯¸ ì‹¤í–‰ë˜ì–´ìˆìŠµë‹ˆë‹¤.");
+                logw("¼­¹ö°¡ ÀÌ¹Ì ½ÇÇàµÇ¾îÀÖ½À´Ï´Ù.");
             }
             else
             {
                 isConnected = true;
-                logi("ì„œë²„ ì“°ë ˆë“œ ìƒì„± CloudPhoneTestServer new Thread");
+                logi("¼­¹ö ¾²·¹µå »ı¼º CloudPhoneTestServer new Thread");
                 serverThread = new Thread(new ThreadStart(ListenerThread));
                 serverThread.Start();
             }
         }
 
-        // í´ë¼ì´ì–¸íŠ¸ì˜ ì—°ê²°ì„ ê¸°ë‹¤ë¦¬ëŠ” Thread
+        // Å¬¶óÀÌ¾ğÆ®ÀÇ ¿¬°áÀ» ±â´Ù¸®´Â Thread
         public void ListenerThread()
         {
 
             IPHostEntry ipHost = Dns.Resolve("192.168.0.8");
             IPAddress ipAddr = ipHost.AddressList[0];
-            client = new UdpClient(3737);
-            var remoteEP = new IPEndPoint(IPAddress.Any, 3737);
-            logi("í´ë¼ì´ì–¸íŠ¸ ëŒ€ê¸°ì¤‘... CloudPhoneTestServer.ListenerThread");
+            client = new UdpClient(3838);
+            var remoteEP = new IPEndPoint(IPAddress.Any, 3838);
+            logi("Å¬¶óÀÌ¾ğÆ® ´ë±âÁß... CloudPhoneTestServer.ListenerThread");
 
             while (true)
             {
                 try
                 {
                     byte[] packet = client.Receive(ref remoteEP);
-                    //logi("í´ë¼ì´ì–¸íŠ¸ì˜ ìš”ì²­ ë°œê²¬!... CloudPhoneTestServer.ListenerThread");
+                    //logi("Å¬¶óÀÌ¾ğÆ®ÀÇ ¿äÃ» ¹ß°ß!... CloudPhoneTestServer.ListenerThread");
 
                     int iRecvLen = packet.Length;
                     if (iRecvLen <= 0)
@@ -188,7 +188,7 @@ namespace CloudPhoneTestServer
                                 IntPtr pnt = Marshal.AllocHGlobal(size);
                                 Marshal.Copy(imageByte, 0, pnt, imageByte.Length);
 
-                                if (justOne == true)
+                                //if (justOne == true)
                                 {
                                     justOne = false;
                                     int n = DisplayWebCam(pnt, imageByte.Length);
@@ -213,7 +213,7 @@ namespace CloudPhoneTestServer
 
         }
 
-        // Off ë²„íŠ¼ì´ ëˆŒë¦¬ë©´
+        // Off ¹öÆ°ÀÌ ´­¸®¸é
         private void btn_serverOff_Click(object sender, EventArgs e)
         {
             if (serverThread != null && serverThread.IsAlive)
@@ -222,11 +222,11 @@ namespace CloudPhoneTestServer
                 //client.Stop();
                 serverThread.Abort();
                 serverThread = null;
-                logi("ì„œë²„ë¥¼ ë•ë‹ˆë‹¤. CloudPhoneTestServer.btn_serverOff_Click");
+                logi("¼­¹ö¸¦ ²ü´Ï´Ù. CloudPhoneTestServer.btn_serverOff_Click");
             }
             else
             {
-                logw("ì„œë²„ê°€ ì‹¤í–‰ë˜ì–´ìˆì§€ ì•ŠìŠµë‹ˆë‹¤.");
+                logw("¼­¹ö°¡ ½ÇÇàµÇ¾îÀÖÁö ¾Ê½À´Ï´Ù.");
             }
         }
 
@@ -240,28 +240,28 @@ namespace CloudPhoneTestServer
         private void logi(String msg)
         {
             String date = System.DateTime.Now.ToString("MM-dd hh:mm:ss ");
-            listLog.Items.Add(new ListBoxItem(Color.Green, "ì •ë³´ : " + date + msg));
-            statusBar.Text = "ì •ë³´ : " + date + msg;
+            listLog.Items.Add(new ListBoxItem(Color.Green, "Á¤º¸ : " + date + msg));
+            statusBar.Text = "Á¤º¸ : " + date + msg;
             logend();
         }
 
         private void logw(String msg)
         {
             String date = System.DateTime.Now.ToString("MM-dd hh:mm:ss ");
-            listLog.Items.Add(new ListBoxItem(Color.Orange, "ê²½ê³  : " + date + msg));
-            statusBar.Text = "ê²½ê³  : " + date + msg;
+            listLog.Items.Add(new ListBoxItem(Color.Orange, "°æ°í : " + date + msg));
+            statusBar.Text = "°æ°í : " + date + msg;
             logend();
         }
 
         private void loge(String msg)
         {
             String date = System.DateTime.Now.ToString("MM-dd hh:mm:ss ");
-            listLog.Items.Add(new ListBoxItem(Color.Red, "ì—ëŸ¬ : " + date + msg));
-            statusBar.Text = "ì—ëŸ¬ : " + date + msg;
+            listLog.Items.Add(new ListBoxItem(Color.Red, "¿¡·¯ : " + date + msg));
+            statusBar.Text = "¿¡·¯ : " + date + msg;
             logend();
         }
 
-        // listLogì˜ Log ìƒ‰ìƒì„ ë‹¤ë¥´ê²Œ í•˜ê¸° ìœ„í•´ ì˜¤ë²„ë¼ì´ë”©
+        // listLogÀÇ Log »ö»óÀ» ´Ù¸£°Ô ÇÏ±â À§ÇØ ¿À¹ö¶óÀÌµù
         private void listLog_DrawItem(object sender, DrawItemEventArgs e)
         {
             bool isItemSelected = ((e.State & DrawItemState.Selected) == DrawItemState.Selected);
@@ -288,4 +288,4 @@ namespace CloudPhoneTestServer
         public Color ItemColor { get; set; }
         public string Message { get; set; }
     }
-}
+}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
