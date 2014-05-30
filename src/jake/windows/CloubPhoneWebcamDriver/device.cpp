@@ -621,8 +621,8 @@ extern "C" NTSTATUS CCaptureDevice::MyCamDeviceControl(PDEVICE_OBJECT DeviceObje
 	NTSTATUS ntStatus = STATUS_SUCCESS;
 	PIO_STACK_LOCATION	irpStack = IoGetCurrentIrpStackLocation(Irp);
 	ULONG				ioControlCode;
-//	UCHAR *inBuf;
-//	ULONG inBufLength = 0;
+	UCHAR *inBuf;
+	ULONG inBufLength = 0;
 	ioControlCode = irpStack->Parameters.DeviceIoControl.IoControlCode;
 
 	switch (irpStack->MajorFunction)
@@ -642,18 +642,18 @@ extern "C" NTSTATUS CCaptureDevice::MyCamDeviceControl(PDEVICE_OBJECT DeviceObje
 		switch (ioControlCode)
 		{
 		case IOCTL_IMAGE:
-/*			DbgPrint("IOCTL_IMAGE case\n");
+			DbgPrint("IOCTL_IMAGE case\n");
 			inBufLength = irpStack->Parameters.DeviceIoControl.InputBufferLength;
 			inBuf = (UCHAR*)Irp->AssociatedIrp.SystemBuffer;
 			
 			if (inBufLength != 0) {
-				//RtlCopyBytes(psyImageBuf_, inBuf, inBufLength > sizeof(psyImageBuf_) ? sizeof(psyImageBuf_) : inBufLength);
+				RtlCopyBytes(psyImageBuf_, inBuf, inBufLength > sizeof(psyImageBuf_) ? sizeof(psyImageBuf_) : inBufLength);
 			}
 			else {
 				DbgPrint("[!] IOCTL : IOCTL_TEST - inBufLength Fail\n");
 			}
 			ntStatus = STATUS_SUCCESS;
-			break;*/
+			break;
 		default:
 			ntStatus = STATUS_NOT_SUPPORTED;
 			break;
