@@ -15,36 +15,32 @@ using std::ofstream;
 
 extern "C" __declspec(dllexport)
 int DisplayWebCam(BYTE *buf, int length)
-{	
-	HANDLE hDv;
-	WCHAR DeviceLink[] = L"\\\\.\\cloudphone";
-	DWORD dwRet;
-
-	hDv = CreateFileW(
-		DeviceLink,
-		GENERIC_READ | GENERIC_WRITE,
-		0,
-		NULL,
-		OPEN_EXISTING,
-		FILE_ATTRIBUTE_NORMAL,
+{
+	HANDLE hdevice = CreateFile(TEXT("\\\\.\\cloudphone"), 
+		GENERIC_READ | GENERIC_WRITE, 
+		0, 
+		NULL, 
+		OPEN_EXISTING, 
+		0, 
 		NULL
 		);
-
-	if (hDv == INVALID_HANDLE_VALUE)
+	if (hdevice == INVALID_HANDLE_VALUE)
 	{
-		printf("Get Device Handle Fail! : 0x%X \n", GetLastError());
-		return -3;
-	}
-
-	if (!DeviceIoControl(hDv, IOCTL_IMAGE, 0, 0, buf, length, &dwRet, 0))
-	{
-		printf("DeviceIOControl Fail!! \n");
-		_getch();
-		CloseHandle(hDv);
+		printf("Unable to open UsbcameraFilter device - error %d\n",
+			GetLastError());
 		return 1;
 	}
 
-	CloseHandle(hDv);
+	DWORD dwRet;
+	if (!DeviceIoControl(hdevice, IOCTL_IMAGE, NULL, 0, buf, sizeof(buf), &dwRet, NULL))
+	{
+		printf("DeviceIOControl Fail!! \n");
+		_getch();
+		CloseHandle(hdevice);
+		return 1;
+	}
+
+	CloseHandle(hdevice);
 	
 	return 0;
 }

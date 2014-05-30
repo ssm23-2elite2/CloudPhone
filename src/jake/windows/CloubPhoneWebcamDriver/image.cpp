@@ -48,7 +48,7 @@ LOCKED CODE
 #pragma code_seg()
 #endif // ALLOC_PRAGMA
 
-void CImageSynthesizer::setImage() {
+void CImageSynthesizer::SetImage() {
 	GetImageLocation(0, 0);
 	ULONG w = 320;
 	for (ULONG line = 0; line < 240; line++) {
@@ -56,8 +56,8 @@ void CImageSynthesizer::setImage() {
 		PUCHAR ImageStart = m_Cursor;
 		ULONG x = 0;
 		for (; x < w; x++) {
-			PutPsyPixel(psyImageBuf_[line * w + x][0], psyImageBuf_[line * w + x][1], psyImageBuf_[line * w + x][2]);
-			//PutPsyPixel(255, 0, 0);
+			//PutMyPixel(psyImageBuf_[line * w + x][0], psyImageBuf_[line * w + x][1], psyImageBuf_[line * w + x][2]);
+			PutMyPixel(255, 0, 0);
 		}
 		PUCHAR ImageEnd = m_Cursor;
 	}

@@ -87,7 +87,8 @@ public:
 	{
 	}
 
-	static NTSTATUS PSYCamCreateClose(PDEVICE_OBJECT DeviceObject, PIRP Irp);
+	static NTSTATUS MyCamCreate(PDEVICE_OBJECT DeviceObject, PIRP Irp);
+	static NTSTATUS MyCamDeviceControl(PDEVICE_OBJECT DeviceObject, PIRP Irp);
 
 	// The capture device destructor.
 	//
@@ -160,6 +161,6 @@ public:
 	// be in locked code.
 	//
 	virtual void Interrupt();
-
+	LONG GetDroppedFrameCount(){ return m_HardwareSimulation->GetSkippedFrameCount(); };
 };
 

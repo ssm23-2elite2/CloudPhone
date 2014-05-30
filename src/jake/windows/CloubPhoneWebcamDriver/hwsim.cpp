@@ -25,19 +25,19 @@ PAGEABLE CODE
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-Construct a hardware simulation
+		Construct a hardware simulation
 
-Arguments:
+	Arguments:
 
-HardwareSink -
-The hardware sink interface.  This is used to trigger
-fake interrupt service routines from.
+		HardwareSink -
+			The hardware sink interface.  This is used to trigger
+			fake interrupt service routines from.
 
-Return Value:
+	Return Value:
 
-Success / Failure
+		Success / Failure
 
 --*/
 CHardwareSimulation::CHardwareSimulation(IN IHardwareSink *HardwareSink) : m_HardwareSink(HardwareSink), m_ScatterGatherMappingsMax(SCATTER_GATHER_MAPPINGS_MAX)
@@ -57,20 +57,20 @@ CHardwareSimulation::CHardwareSimulation(IN IHardwareSink *HardwareSink) : m_Har
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-Initialize the hardware simulation
+		Initialize the hardware simulation
 
-Arguments:
+	Arguments:
 
-HardwareSink -
-The hardware sink interface.  This is what ISR's will be
-triggered through.
+		HardwareSink -
+			The hardware sink interface.  This is what ISR's will be
+			triggered through.
 
-Return Value:
+		Return Value:
 
-A fully initialized hardware simulation or NULL if the simulation
-could not be initialized.
+			A fully initialized hardware simulation or NULL if the simulation
+			could not be initialized.
 
 --*/
 CHardwareSimulation * CHardwareSimulation::Initialize(IN KSOBJECT_BAG Bag, IN IHardwareSink *HardwareSink)
@@ -84,35 +84,35 @@ CHardwareSimulation * CHardwareSimulation::Initialize(IN KSOBJECT_BAG Bag, IN IH
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-Start the hardware simulation.  This will kick the interrupts on,
-begin issuing DPC's, filling in capture information, etc...
-We keep track of starvation starting at this point.
+		Start the hardware simulation.  This will kick the interrupts on,
+		begin issuing DPC's, filling in capture information, etc...
+		We keep track of starvation starting at this point.
 
-Arguments:
+	Arguments:
 
-ImageSynth -
-The image synthesizer to use to generate pictures to display
-on the capture buffer.
+		ImageSynth -
+			The image synthesizer to use to generate pictures to display
+			on the capture buffer.
 
-TimePerFrame -
-The time per frame...  we issue interrupts this often.
+		TimePerFrame -
+			The time per frame...  we issue interrupts this often.
 
-Width -
-The image width
+		Width -
+			The image width
 
-Height -
-The image height
+		Height -
+			The image height
 
-ImageSize -
-The size of the image.  We allocate a temporary scratch buffer
-based on this size to fake hardware.
+		ImageSize -
+			The size of the image.  We allocate a temporary scratch buffer
+			based on this size to fake hardware.
 
-Return Value:
+	Return Value:
 
-Success / Failure (typical failure will be out of memory on the
-scratch buffer, etc...)
+		Success / Failure (typical failure will be out of memory on the
+		scratch buffer, etc...)
 
 --*/
 NTSTATUS CHardwareSimulation::Start(IN CImageSynthesizer *ImageSynth, IN LONGLONG TimePerFrame, IN ULONG Width, IN ULONG Height, IN ULONG ImageSize)
@@ -171,27 +171,27 @@ NTSTATUS CHardwareSimulation::Start(IN CImageSynthesizer *ImageSynth, IN LONGLON
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-Pause the hardware simulation...  When the hardware simulation is told
-to pause, it stops issuing interrupts, etc...  but it does not reset
-the counters
+		Pause the hardware simulation...  When the hardware simulation is told
+		to pause, it stops issuing interrupts, etc...  but it does not reset
+		the counters
 
-Arguments:
+	Arguments:
 
-Pausing -
-Indicates whether the hardware is pausing or not.
+		Pausing -
+			Indicates whether the hardware is pausing or not.
 
-TRUE -
-Pause the hardware
+		TRUE -
+			Pause the hardware
 
-FALSE -
-Unpause the hardware from a previous pause
+		FALSE -
+			Unpause the hardware from a previous pause
 
 
-Return Value:
+	Return Value:
 
-Success / Failure
+		Success / Failure
 
 --*/
 NTSTATUS CHardwareSimulation::Pause(BOOLEAN Pausing)
@@ -233,18 +233,18 @@ LOCKED CODE
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-Stop the hardware simulation....  Wait until the hardware simulation
-has successfully stopped and then return.
+	Stop the hardware simulation....  Wait until the hardware simulation
+	has successfully stopped and then return.
 
-Arguments:
+	Arguments:
 
-None
+		None
 
-Return Value:
+	Return Value:
 
-Success / Failure
+		Success / Failure
 
 --*/
 NTSTATUS CHardwareSimulation::Stop()
@@ -302,19 +302,19 @@ NTSTATUS CHardwareSimulation::Stop()
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-Read the number of scatter / gather mappings which have been
-completed (TOTAL NUMBER) since the last reset of the simulated
-hardware
+		Read the number of scatter / gather mappings which have been
+		completed (TOTAL NUMBER) since the last reset of the simulated
+		hardware
 
-Arguments:
+	Arguments:
 
-None
+		None
 
-Return Value:
+	Return Value:
 
-Total number of completed mappings.
+		Total number of completed mappings.
 
 --*/
 ULONG CHardwareSimulation::ReadNumberOfMappingsCompleted()
@@ -331,31 +331,31 @@ ULONG CHardwareSimulation::ReadNumberOfMappingsCompleted()
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-Program the scatter gather mapping list.  This shoves a bunch of
-entries on a list for access during the fake interrupt.  Note that
-we have physical addresses here only for simulation.  We really
-access via the virtual address....  although we chunk it into multiple
-buffers to more realistically simulate S/G
+		Program the scatter gather mapping list.  This shoves a bunch of
+		entries on a list for access during the fake interrupt.  Note that
+		we have physical addresses here only for simulation.  We really
+		access via the virtual address....  although we chunk it into multiple
+		buffers to more realistically simulate S/G
 
-Arguments:
+	Arguments:
 
-Buffer -
-The virtual address of the buffer mapped by the mapping list
+		Buffer -
+			The virtual address of the buffer mapped by the mapping list
 
-Mappings -
-The KSMAPPINGS array corresponding to the buffer
+		Mappings -
+			The KSMAPPINGS array corresponding to the buffer
 
-MappingsCount -
-The number of mappings in the mappings array
+		MappingsCount -
+			The number of mappings in the mappings array
 
-MappingStride -
-The mapping stride used in initialization of AVStream DMA
+		MappingStride -
+			The mapping stride used in initialization of AVStream DMA
 
-Return Value:
+	Return Value:
 
-Number of mappings actually inserted.
+		Number of mappings actually inserted.
 
 --*/
 ULONG CHardwareSimulation::ProgramScatterGatherMappings(IN PUCHAR *Buffer, IN PKSMAPPING Mappings, IN ULONG MappingsCount, IN ULONG MappingStride)
@@ -429,18 +429,18 @@ ULONG CHardwareSimulation::ProgramScatterGatherMappings(IN PUCHAR *Buffer, IN PK
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-The hardware has synthesized a buffer in scratch space and we're to
-fill scatter / gather buffers.
+		The hardware has synthesized a buffer in scratch space and we're to
+		fill scatter / gather buffers.
 
-Arguments:
+	Arguments:
 
-None
+		None
 
-Return Value:
+	Return Value:
 
-Success / Failure
+		Success / Failure
 
 --*/
 NTSTATUS CHardwareSimulation::FillScatterGatherBuffers()
@@ -498,18 +498,18 @@ NTSTATUS CHardwareSimulation::FillScatterGatherBuffers()
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-Simulate an interrupt and what the hardware would have done in the
-time since the previous interrupt.
+		Simulate an interrupt and what the hardware would have done in the
+		time since the previous interrupt.
 
-Arguments:
+	Arguments:
 
-None
+		None
 
-Return Value:
+	Return Value:
 
-None
+		None
 
 --*/
 void CHardwareSimulation::FakeHardware()
@@ -543,7 +543,7 @@ void CHardwareSimulation::FakeHardware()
 		Text[0] = '\0';
 		(void)RtlStringCbPrintfA(Text, sizeof(Text), "%ld:%02ld.%02ld", Min, Sec, Hund);
 
-		m_ImageSynth->setImage();
+		m_ImageSynth->SetImage();
 
 		//
 		// Overlay a clock onto the scratch space image.

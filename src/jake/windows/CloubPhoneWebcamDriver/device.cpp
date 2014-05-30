@@ -38,27 +38,13 @@ Success / Failure
 --*/
 NTSTATUS CCaptureDevice::DispatchCreate(IN PKSDEVICE Device)
 {
-	DbgPrint("enter the dispatch created");
 	PAGED_CODE();
 	NTSTATUS Status;
 	CCaptureDevice *CapDevice = new (NonPagedPool)CCaptureDevice(Device);
 
 	if (!CapDevice) {
-		//
-		// Return failure if we couldn't create the pin.
-		//
 		Status = STATUS_INSUFFICIENT_RESOURCES;
-	}
-	else {
-		//
-		// Add the item to the object bag if we were successful.
-		// Whenever the device goes away, the bag is cleaned up and
-		// we will be freed.
-		//
-		// For backwards compatibility with DirectX 8.0, we must grab
-		// the device mutex before doing this.  For Windows XP, this is
-		// not required, but it is still safe.
-		//
+	} else {
 		KsAcquireDevice(Device);
 		Status = KsAddItemToObjectBag(Device->Bag, reinterpret_cast <PVOID> (CapDevice), reinterpret_cast <PFNKSFREE> (CCaptureDevice::Cleanup));
 		KsReleaseDevice(Device);
@@ -95,15 +81,7 @@ Success / Failure
 --*/
 NTSTATUS CCaptureDevice::PnpStart(IN PCM_RESOURCE_LIST TranslatedResourceList, IN PCM_RESOURCE_LIST UntranslatedResourceList)
 {
-	DbgPrint("enter the pnp start@@@@@@@@");
 	PAGED_CODE();
-	//
-	// Normally, we'd do things here like parsing the resource lists and
-	// connecting our interrupt.  Since this is a simulation, there isn't
-	// much to parse.  The parsing and connection should be the same as
-	// any WDM driver.  The sections that will differ are illustrated below
-	// in setting up a simulated DMA.
-	//
 
 	NTSTATUS Status = STATUS_SUCCESS;
 
@@ -113,20 +91,10 @@ NTSTATUS CCaptureDevice::PnpStart(IN PCM_RESOURCE_LIST TranslatedResourceList, I
 		Status = KsCreateFilterFactory(m_Device->FunctionalDeviceObject, &CaptureFilterDescriptor, L"GLOBAL", NULL, KSCREATE_ITEM_FREEONSTOP, NULL, NULL, NULL);
 		KsReleaseDevice(m_Device);
 	}
-	//
-	// By PnP, it's possible to receive multiple starts without an intervening
-	// stop (to reevaluate resources, for example).  Thus, we only perform
-	// creations of the simulation on the initial start and ignore any 
-	// subsequent start.  Hardware drivers with resources should evaluate
-	// resources and make changes on 2nd start.
-	//
-	if (NT_SUCCESS(Status) && (!m_Device->Started)) {
 
+	if (NT_SUCCESS(Status) && (!m_Device->Started)) {
 		m_HardwareSimulation = new (NonPagedPool)CHardwareSimulation(this);
 		if (!m_HardwareSimulation) {
-			//
-			// If we couldn't create the hardware simulation, fail.
-			//
 			Status = STATUS_INSUFFICIENT_RESOURCES;
 		}
 		else {
@@ -136,33 +104,13 @@ NTSTATUS CCaptureDevice::PnpStart(IN PCM_RESOURCE_LIST TranslatedResourceList, I
 			}
 		}
 #if defined(_X86_)
-		//
-		// DMA operations illustrated in this sample are applicable only for 32bit platform.
-		//
 		INTERFACE_TYPE InterfaceBuffer;
 		ULONG InterfaceLength;
 		DEVICE_DESCRIPTION DeviceDescription;
 
 		if (NT_SUCCESS(Status)) {
-			//
-			// Set up DMA...
-			//
-			// Ordinarilly, we'd be using InterfaceBuffer or 
-			// InterfaceTypeUndefined if !NT_SUCCESS (IfStatus) as the 
-			// InterfaceType below; however, for the purposes of this sample, 
-			// we lie and say we're on the PCI Bus.  Otherwise, we're using map
-			// registers on x86 32 bit physical to 32 bit logical and this isn't
-			// what I want to show in this sample.
-			//
-			//
-			// NTSTATUS IfStatus = 
-
 			IoGetDeviceProperty(m_Device->PhysicalDeviceObject, DevicePropertyLegacyBusType, sizeof (INTERFACE_TYPE), &InterfaceBuffer, &InterfaceLength);
 
-			//
-			// Initialize our fake device description.  We claim to be a 
-			// bus-mastering 32-bit scatter/gather capable piece of hardware.
-			//
 			DeviceDescription.Version = DEVICE_DESCRIPTION_VERSION;
 			DeviceDescription.DmaChannel = ((ULONG)~0);
 			DeviceDescription.InterfaceType = PCIBus;
@@ -174,9 +122,6 @@ NTSTATUS CCaptureDevice::PnpStart(IN PCM_RESOURCE_LIST TranslatedResourceList, I
 			DeviceDescription.AutoInitialize = FALSE;
 			DeviceDescription.MaximumLength = (ULONG)-1;
 
-			//
-			// Get a DMA adapter object from the system.
-			//
 			m_DmaAdapterObject = IoGetDmaAdapter(m_Device->PhysicalDeviceObject, &DeviceDescription, &m_NumberOfMapRegisters);
 
 			if (!m_DmaAdapterObject) {
@@ -185,18 +130,6 @@ NTSTATUS CCaptureDevice::PnpStart(IN PCM_RESOURCE_LIST TranslatedResourceList, I
 		}
 
 		if (NT_SUCCESS(Status)) {
-			//
-			// Initialize our DMA adapter object with AVStream.  This is 
-			// **ONLY** necessary **IF** you are doing DMA directly into
-			// capture buffers as this sample does.  For this,
-			// KSPIN_FLAG_GENERATE_MAPPINGS must be specified on a queue.
-			//
-
-			//
-			// The (1 << 20) below is the maximum size of a single s/g mapping
-			// that this hardware can handle.  Note that I have pulled this
-			// number out of thin air for the "fake" hardware.
-			//
 			KsDeviceRegisterAdapterObject(m_Device, m_DmaAdapterObject, (1 << 20), sizeof (KSMAPPING));
 		}
 #endif
@@ -295,16 +228,14 @@ NTSTATUS CCaptureDevice::AcquireHardwareResources(IN ICaptureSink *CaptureSink, 
 			// height < 0.  Otherwise, it's upper left.
 			//
 			m_ImageSynth = new (NonPagedPool, 'RysI') CRGB24Synthesizer(m_VideoInfoHeader->bmiHeader.biHeight >= 0);
-		}
-		else if (m_VideoInfoHeader->bmiHeader.biBitCount == 16 &&
+		} else if (m_VideoInfoHeader->bmiHeader.biBitCount == 16 &&
 			(m_VideoInfoHeader->bmiHeader.biCompression == FOURCC_YUY2)) {
 
 			//
 			// If we're UYVY, create the YUV synth.
 			//
 			m_ImageSynth = new(NonPagedPool, 'YysI') CYUVSynthesizer;
-		}
-		else
+		} else
 			//
 			// We don't synthesize anything but RGB 24 and UYVY.
 			//
@@ -397,28 +328,11 @@ Success / Failure
 --*/
 NTSTATUS CCaptureDevice::Start()
 {
-	DbgPrint("enter the start");
 	PAGED_CODE();
 	m_LastMappingsCompleted = 0;
 	m_InterruptTime = 0;
 
 	return m_HardwareSimulation->Start(m_ImageSynth, m_VideoInfoHeader->AvgTimePerFrame, m_VideoInfoHeader->bmiHeader.biWidth, ABS(m_VideoInfoHeader->bmiHeader.biHeight), m_VideoInfoHeader->bmiHeader.biSizeImage);
-}
-
-NTSTATUS Create_Handler(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp)
-{
-	Irp->IoStatus.Status = STATUS_SUCCESS;
-	IoCompleteRequest(Irp, IO_NO_INCREMENT);
-
-	return STATUS_SUCCESS;
-}
-
-VOID OnUnload(IN PDRIVER_OBJECT DriverObject)
-{
-	IoDeleteDevice(DriverObject->DeviceObject);
-	IoDeleteSymbolicLink(&DeviceLink);
-
-	//DbgPrint("OnUnload Call! \n");
 }
 
 /*************************************************/
@@ -450,7 +364,6 @@ Success / Failure
 --*/
 NTSTATUS CCaptureDevice::Pause(IN BOOLEAN Pausing)
 {
-	DbgPrint("enter the pause");
 	PAGED_CODE();
 	return m_HardwareSimulation->Pause(Pausing);
 }
@@ -474,7 +387,6 @@ Success / Failure
 --*/
 NTSTATUS CCaptureDevice::Stop()
 {
-	DbgPrint("enter the stop");
 	PAGED_CODE();
 	return m_HardwareSimulation->Stop();
 }
@@ -509,7 +421,6 @@ The number of mappings successfully programmed
 --*/
 ULONG CCaptureDevice::ProgramScatterGatherMappings(IN PUCHAR *Buffer, IN PKSMAPPING Mappings, IN ULONG MappingsCount)
 {
-	DbgPrint("enter the program scatter catter mapping");
 	PAGED_CODE();
 
 	return m_HardwareSimulation->ProgramScatterGatherMappings(Buffer, Mappings, MappingsCount, sizeof (KSMAPPING));
@@ -644,11 +555,51 @@ const KSDEVICE_DESCRIPTOR CaptureDeviceDescriptor = { &CaptureDeviceDispatch, 0,
 #define DEVICE_NAME      L"\\Device\\cloudphone"
 #define LINK_NAME     L"\\DosDevices\\cloudphone"
 
+VOID OnUnload(IN PDRIVER_OBJECT DriverObject)
+{
+	IoDeleteDevice(DriverObject->DeviceObject);
+	IoDeleteSymbolicLink(&DeviceLink);
+}
 
-extern "C"
 
-NTSTATUS
-CCaptureDevice::PSYCamCreateClose(PDEVICE_OBJECT DeviceObject, PIRP Irp)
+extern "C" DRIVER_INITIALIZE DriverEntry;
+
+extern "C" NTSTATUS DriverEntry(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING RegistryPath)
+{
+	NTSTATUS ntStatus;
+
+	UNREFERENCED_PARAMETER(RegistryPath);
+	RtlInitUnicodeString(&DeviceLink, LINK_NAME);
+	RtlInitUnicodeString(&DeviceName, DEVICE_NAME);
+
+	ntStatus = IoCreateDevice(
+		DriverObject,
+		0,
+		&DeviceName,
+		FILE_DEVICE_UNKNOWN,
+		FILE_DEVICE_SECURE_OPEN,
+		FALSE,
+		&DriverObject->DeviceObject);
+
+	if (!NT_SUCCESS(ntStatus))
+	{
+		return ntStatus;
+	}
+
+	ntStatus = IoCreateSymbolicLink(&DeviceLink, &DeviceName);
+	ntStatus = KsInitializeDriver(DriverObject, RegistryPath, &CaptureDeviceDescriptor);
+	DriverObject->DriverUnload = OnUnload;
+
+	fpClassCreatefunction = DriverObject->MajorFunction[IRP_MJ_CREATE];
+	DriverObject->MajorFunction[IRP_MJ_CREATE] = CCaptureDevice::MyCamCreate;
+
+	fpClassDispatchfunction = DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL];
+	DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = CCaptureDevice::MyCamDeviceControl;
+
+	return ntStatus;
+}
+
+extern "C" NTSTATUS CCaptureDevice::MyCamCreate(PDEVICE_OBJECT DeviceObject, PIRP Irp)
 {
 	PIO_STACK_LOCATION irpStack = IoGetCurrentIrpStackLocation(Irp);
 
@@ -665,33 +616,44 @@ CCaptureDevice::PSYCamCreateClose(PDEVICE_OBJECT DeviceObject, PIRP Irp)
 
 }
 
-extern "C"
-NTSTATUS PSYCamDeviceControl(PDEVICE_OBJECT DeviceObject, PIRP Irp)
+extern "C" NTSTATUS CCaptureDevice::MyCamDeviceControl(PDEVICE_OBJECT DeviceObject, PIRP Irp)
 {
 	NTSTATUS ntStatus = STATUS_SUCCESS;
 	PIO_STACK_LOCATION	irpStack = IoGetCurrentIrpStackLocation(Irp);
 	ULONG				ioControlCode;
-	UCHAR *inBuf;
-	ULONG inBufLength = 0;
+//	UCHAR *inBuf;
+//	ULONG inBufLength = 0;
 	ioControlCode = irpStack->Parameters.DeviceIoControl.IoControlCode;
 
 	switch (irpStack->MajorFunction)
 	{
+	case IRP_MJ_CREATE:
+		DbgPrint("Create \n");
+		break;
+
+	case IRP_MJ_CLOSE:
+		DbgPrint("Close \n");
+		break;
+
+	case IRP_MJ_CLEANUP:
+		DbgPrint("Cleanup \n");
+		break;
 	case IRP_MJ_DEVICE_CONTROL:
 		switch (ioControlCode)
 		{
 		case IOCTL_IMAGE:
+/*			DbgPrint("IOCTL_IMAGE case\n");
 			inBufLength = irpStack->Parameters.DeviceIoControl.InputBufferLength;
 			inBuf = (UCHAR*)Irp->AssociatedIrp.SystemBuffer;
 			
 			if (inBufLength != 0) {
-				RtlCopyBytes(psyImageBuf_, inBuf, inBufLength > sizeof(psyImageBuf_) ? sizeof(psyImageBuf_) : inBufLength);
+				//RtlCopyBytes(psyImageBuf_, inBuf, inBufLength > sizeof(psyImageBuf_) ? sizeof(psyImageBuf_) : inBufLength);
 			}
 			else {
 				DbgPrint("[!] IOCTL : IOCTL_TEST - inBufLength Fail\n");
 			}
 			ntStatus = STATUS_SUCCESS;
-			break;
+			break;*/
 		default:
 			ntStatus = STATUS_NOT_SUPPORTED;
 			break;
@@ -719,47 +681,3 @@ NTSTATUS PSYCamDeviceControl(PDEVICE_OBJECT DeviceObject, PIRP Irp)
 }
 
 
-extern "C" DRIVER_INITIALIZE DriverEntry;
-
-extern "C" NTSTATUS DriverEntry(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING RegistryPath)
-{
-	NTSTATUS        ntStatus;
-
-	UNREFERENCED_PARAMETER(RegistryPath);
-	RtlInitUnicodeString(&DeviceLink, LINK_NAME);
-	RtlInitUnicodeString(&DeviceName, DEVICE_NAME);
-
-	ntStatus = IoCreateDevice(
-		DriverObject,
-		0,
-		&DeviceName,
-		FILE_DEVICE_UNKNOWN,
-		FILE_DEVICE_SECURE_OPEN,
-		FALSE,
-		&DriverObject->DeviceObject);
-
-	if (!NT_SUCCESS(ntStatus))
-	{
-		DbgPrint("Couldn't create the device object\n");
-		return ntStatus;
-	}
-
-	ntStatus = IoCreateSymbolicLink(&DeviceLink, &DeviceName);
-
-
-	if (!NT_SUCCESS(ntStatus)){
-		DbgPrint("wow!! not succeess fxxk symbolic link... error kkkkkk \n");
-	}
-
-	ntStatus = KsInitializeDriver(DriverObject, RegistryPath, &CaptureDeviceDescriptor);
-
-	DriverObject->DriverUnload = OnUnload;
-
-	fpClassDispatchfunction = DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL];
-	DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = PSYCamDeviceControl;
-
-	fpClassCreatefunction = DriverObject->MajorFunction[IRP_MJ_CREATE];
-	DriverObject->MajorFunction[IRP_MJ_CREATE] = Create_Handler;
-
-	return ntStatus;
-}
