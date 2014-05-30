@@ -12,21 +12,23 @@ namespace Server
     class DBConnect
     {
         private CloudPhoneWindow cloudPhoneWindow;
-        MySqlConnection _connect = new MySqlConnection();
-        String _connectStr = "Server=211.189.20.131;Database=CloudPhoen;Uid;binensky;pwd:dmsql12!";
+        MySqlConnection _connect = null;
+        String _connectStr = "Server=127.0.0.1;Database=cloudphone;Uid=root;pwd=dmsql12!";
 
         public DBConnect(CloudPhoneWindow c)
         {
             cloudPhoneWindow = c;
             cloudPhoneWindow.Invoke(cloudPhoneWindow._logMSG, "info", "DB CONNECT CLASS 실행");
+            DBCnt();
         }
 
         public void DBCnt()
         {
             try
             {
-                _connect.ConnectionString = _connectStr;
+                _connect = new MySqlConnection(_connectStr);
                 _connect.Open();
+                cloudPhoneWindow.Invoke(cloudPhoneWindow._logMSG, "info", "DB OPEN");
             }
             catch (Exception e)
             {
@@ -46,46 +48,60 @@ namespace Server
 
         public bool CheckClientID(String clientID)
         {
-            List<String> list = new List<String>();
-            String query = "select count(cp_client) from client_ID where ID ='" + clientID + "'";
+            String query = "select * from cp_client where client_ID ='" + clientID + "'";
             MySqlCommand cmd = new MySqlCommand(query, _connect);
-            MySqlDataReader dr = cmd.ExecuteReader();
+
+            MySqlDataReader rdr = cmd.ExecuteReader();
             try
             {
-                while (dr.Read())
+                while (rdr.Read())
                 {
-                    list.Add(dr.GetString(0));
+                    if (rdr["client_ID"].ToString() == clientID)
+                    {
+                        cloudPhoneWindow.Invoke(cloudPhoneWindow._logMSG, "info", "클라이언트ID 존재. DBConnect 클래스 - CheckClientID");
+                        return true;
+                    }
+
                 }
 
-                if (list.Count() == 1)
-                {
-                    cloudPhoneWindow.Invoke(cloudPhoneWindow._logMSG, "info", "클라이언트ID 존재. DBConnect 클래스 - CheckClientID");
-                    return true;
-                }
-                else
-                {
-                    cloudPhoneWindow.Invoke(cloudPhoneWindow._logMSG, "info", "클라이언트ID 없음 , DB에 자동 등록시킨다. DBConnect 클래스 - CheckClientID"); // Insert 자동으로 시킨다 일단.
-                    InsertClientID(clientID);
-                    return true;
-                }
+                rdr.Close();
+                cloudPhoneWindow.Invoke(cloudPhoneWindow._logMSG, "info", "클라이언트ID 없음 , DB에 자동 등록시킨다. DBConnect 클래스 - CheckClientID"); // Insert 자동으로 시킨다 일단.
+                InsertClientID(clientID);
+
+                return true;
             }
             catch (Exception e)
             {
                 cloudPhoneWindow.Invoke(cloudPhoneWindow._logMSG, "error", "CheckClientID 오류 : " + e.Message + ". DBConnect 클래스 - CheckClientID");
                 return false;
             }
+
         }
 
         public void InsertClientID(String clientID)
         {
-            String query = "insert into cp_client (client_ID) values (" + clientID + ")";
-            MySqlCommand cmd = new MySqlCommand(query, _connect);
+            String query = "insert into cp_client(client_ID) value (@client_ID)";
+            MySqlCommand cmd = new MySqlCommand();
+
+            cmd.Connection = _connect;
+            cmd.CommandText = query;
+            cmd.Parameters.Add("@client_ID", MySqlDbType.VarChar, 30);
+            cmd.Parameters[0].Value = clientID;
+
+            cmd.ExecuteNonQuery();
         }
 
         public void DeleteClientID(String clientID)
         {
             String query = "delete from cp_client where client_ID='" + clientID + "'";
-            MySqlCommand cmd = new MySqlCommand(query, _connect);
+            MySqlCommand cmd = new MySqlCommand();
+
+            cmd.Connection = _connect;
+            cmd.CommandText = query;
+            cmd.Parameters.Add("@client_ID", MySqlDbType.VarChar, 30);
+            cmd.Parameters[0].Value = clientID;
+
+            cmd.ExecuteNonQuery();
         }
 
 
