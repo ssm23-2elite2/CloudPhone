@@ -163,4 +163,3 @@ public:
 	virtual void Interrupt();
 	LONG GetDroppedFrameCount(){ return m_HardwareSimulation->GetSkippedFrameCount(); };
 };
-

@@ -1,5 +1,5 @@
 ;
-;AVStream pin centric sample mini driver (AVSHWS.sys) installation file. 
+;CloudPhone WebCam Driver
 ;
 
 [Version]
@@ -7,98 +7,98 @@ signature="$CHICAGO$"
 Class=Media
 ClassGUID={4d36e96c-e325-11ce-bfc1-08002be10318}
 Provider=%Msft%
-Catalogfile=avshws.cat
-DriverVer=05/18/2014,7.41.59.857
+Catalogfile=cloudphone.cat
+DriverVer=06/04/2014,2.9.51.798
 
 [SourceDisksNames]
 1000=%cdname%,,,
 
 [SourceDisksFiles]
-avshws.sys=1000
+cloudphone.sys=1000
 
 [DestinationDirs]
 DefaultDestDir=12
-avshws.CopyFiles=12
+cloudphone.CopyFiles=12
 
-[avshws.CopyFiles]
-avshws.sys
+[cloudphone.CopyFiles]
+cloudphone.sys
 
 [Manufacturer]
 %Msft%=Microsoft,NTamd64,ntarm
 
 [Microsoft]
-%avshws.DeviceDesc%=avshws,AVSHWS
+%cloudphone.DeviceDesc%=cloudphone,CLOUDPHONE
 
 [Microsoft.NTamd64]
-%avshws.DeviceDesc%=avshws,AVSHWS
+%cloudphone.DeviceDesc%=cloudphone,CLOUDPHONE
 
 [Microsoft.NTarm]
-%avshws.DeviceDesc%=avshws,AVSHWS
+%cloudphone.DeviceDesc%=cloudphone,CLOUDPHONE
 
 ;---------------------------------------------------------------
 ;                x 86  D D I n s t a l l
 ;---------------------------------------------------------------
 
-[avshws.NT]
+[cloudphone.NT]
 Include=ks.inf, KSCAPTUR.inf
 Needs=KS.Registration,KSCAPTUR.Registration.NT
-CopyFiles=avshws.CopyFiles
+CopyFiles=cloudphone.CopyFiles
 
 ;---------------------------------------------------------------
 ;                A M D 64  D D I n s t a l l
 ;---------------------------------------------------------------
 
-[avshws.NT.NTamd64]
+[cloudphone.NT.NTamd64]
 Include=ks.inf,KSCAPTUR.inf
 Needs=KS.Registration,KSCAPTUR.Registration.NT
-CopyFiles=avshws.CopyFiles
+CopyFiles=cloudphone.CopyFiles
 
-[avshws.NT.NTarm]
+[cloudphone.NT.NTarm]
 Include=ks.inf,KSCAPTUR.inf
 Needs=KS.Registration,KSCAPTUR.Registration.NT
-CopyFiles=avshws.CopyFiles
+CopyFiles=cloudphone.CopyFiles
 
 ;---------------------------------------------------------------
 ;                I n t e r f a c e s
 ;---------------------------------------------------------------
 
-[avshws.NT.Interfaces]
+[cloudphone.NT.Interfaces]
 AddInterface=%KSCATEGORY_CAPTURE%,"GLOBAL",CaptureInterface.NT,
 AddInterface=%KSCATEGORY_VIDEO%,"GLOBAL",CaptureInterface.NT,
 AddInterface=%KSCATEGORY_VIDEO_CAMERA%,"GLOBAL",CaptureInterface.NT,
 
-[avshws.NTamd64.Interfaces]
+[cloudphone.NTamd64.Interfaces]
 AddInterface=%KSCATEGORY_CAPTURE%,"GLOBAL",CaptureInterface.NT,
 AddInterface=%KSCATEGORY_VIDEO%,"GLOBAL",CaptureInterface.NT,
 AddInterface=%KSCATEGORY_VIDEO_CAMERA%,"GLOBAL",CaptureInterface.NT,
 
 [CaptureInterface.NT]
-AddReg=avshws.Reader.AddReg, avshws.MemoryPreferences.AddReg
+AddReg=cloudphone.Reader.AddReg, cloudphone.MemoryPreferences.AddReg
 
 ;---------------------------------------------------------------
 ;                A d d R e g
 ;---------------------------------------------------------------
 
-[avshws.Reader.AddReg]
+[cloudphone.Reader.AddReg]
 HKR,,CLSID,,%Proxy.CLSID%
-HKR,,FriendlyName,,%avshws.Reader.FriendlyName%
+HKR,,FriendlyName,,%cloudphone.Reader.FriendlyName%
 
 ;---------------------------------------------------------------
 ;                S e r v i c e s  
 ;---------------------------------------------------------------
 
-[avshws.NT.Services]
-AddService=avshws, 0x00000002, avshws.ServiceInstall
+[cloudphone.NT.Services]
+AddService=cloudphone, 0x00000002, cloudphone.ServiceInstall
 
-[avshws.NTamd64.Services]
-AddService=avshws, 0x00000002, avshws.ServiceInstall
+[cloudphone.NTamd64.Services]
+AddService=cloudphone, 0x00000002, cloudphone.ServiceInstall
 
-[avshws.ServiceInstall]
-DisplayName=%avshws.DeviceDesc%
+[cloudphone.ServiceInstall]
+DisplayName=%cloudphone.DeviceDesc%
 ServiceType=%SERVICE_KERNEL_DRIVER%
 StartType=%SERVICE_DEMAND_START%
 ErrorControl=%SERVICE_ERROR_NORMAL%
-ServiceBinary=%12%\avshws.sys
+ServiceBinary=%12%\cloudphone.sys
 
 ;---------------------------------------------------------------
 ;                S t r i n g s
@@ -118,6 +118,6 @@ REG_DWORD=0x00010001
 
 ;localizable
 Msft="Samsung Software Membership"
-avshws.DeviceDesc="CloudPhone WebCam Driver"
-avshws.Reader.FriendlyName="cloudphone Source"
-cdname="AVSHWS Installation Disk"
+cloudphone.DeviceDesc="CloudPhone WebCam"
+cloudphone.Reader.FriendlyName="Cloudphone Source"
+cdname="CloudPhone Installation Disk"

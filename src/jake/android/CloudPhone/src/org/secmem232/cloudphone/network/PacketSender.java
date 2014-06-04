@@ -32,7 +32,7 @@ public class PacketSender {
 		this.recvStream = stream;
 	}
 
-	public void Send(Packet packet) throws IOException{
+	public synchronized void Send(Packet packet) throws IOException{
 		//get packet size for transmission
 		int packetSize = packet.getHeader().getPacketLength();
 		synchronized(java.lang.Object.class){

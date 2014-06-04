@@ -1,24 +1,15 @@
 package org.secmem232.cloudphone;
 
-import java.io.ByteArrayOutputStream;
-import java.util.List;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Configuration;
-import android.graphics.ImageFormat;
-import android.graphics.Rect;
-import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.Size;
 import android.os.Build;
 import android.util.Log;
-import android.view.Display;
-import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.WindowManager;
 
 /**
  * This class assumes the parent layout is RelativeLayout.LayoutParams.
@@ -33,8 +24,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 	protected Context mContext;
 	private SurfaceHolder mHolder;
 	protected Camera mCamera;
-	protected List<Camera.Size> mPreviewSizeList;
-	protected List<Camera.Size> mPictureSizeList;
 	protected Camera.Size mPreviewSize;
 	protected Camera.Size mPictureSize;
 	private int mSurfaceChangedCallDepth = 0;
@@ -98,9 +87,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 		} else {
 			mCamera = Camera.open();
 		}
-		Camera.Parameters cameraParams = mCamera.getParameters();
-		mPreviewSizeList = cameraParams.getSupportedPreviewSizes();
-		mPictureSizeList = cameraParams.getSupportedPictureSizes();
 	}
 
 
@@ -109,22 +95,50 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 		Log.w(LOG, "surfaceCreated");
 		try {
 			mCamera.setPreviewDisplay(holder);
-			mCamera.setPreviewCallback(mPreviewCallBack);
-			mCamera.setOneShotPreviewCallback(mPreviewCallBack);
-			mCamera.setDisplayOrientation(90);
-			mPreviewSize = mCamera.new Size(320,240);
-			mPictureSize = mCamera.new Size(320,240);
-			mCameraParams = mCamera.getParameters();
-			mCameraParams.setPreviewSize(320, 240);
-			mCameraParams.setPictureSize(mPictureSize.width, mPictureSize.height);
-			mCamera.setParameters(mCameraParams);
-			mCamera.startPreview();
-			
 		} catch (Exception e) {
 			mCamera.setPreviewCallback(null);
 			mCamera.release();
 			mCamera = null;
 		}
+			mCamera.setPreviewCallback(mPreviewCallBack);
+			mCamera.setOneShotPreviewCallback(mPreviewCallBack);
+			mCamera.setDisplayOrientation(90);
+			mPreviewSize = mCamera.new Size(320,240);
+			//mPictureSize = mCamera.new Size(320,240);
+			mCameraParams = mCamera.getParameters();
+			mCameraParams.setPreviewSize(320, 240);
+			//mCameraParams.setPictureSize(mPictureSize.width, mPictureSize.height);
+			mCamera.setParameters(mCameraParams);
+			mCamera.startPreview();
+	}
+	
+	public void decodeYUV420SP(byte[] rgb, byte[] yuv420sp, int width, int height) {
+	    final int frameSize = width * height;
+
+	    for (int j = 0, yp = 0; j < height; j++) {
+	        int uvp = frameSize + (j >> 1) * width, u = 0, v = 0;
+	        for (int i = 0; i < width; i++, yp++) {
+	            int y = (0xff & ((int) yuv420sp[yp])) - 16;
+	            if (y < 0) y = 0;
+	            if ((i & 1) == 0) {
+	                v = (0xff & yuv420sp[uvp++]) - 128;
+	                u = (0xff & yuv420sp[uvp++]) - 128;
+	            }
+
+	            int y1192 = 1192 * y;
+	            int r = (y1192 + 1634 * v);
+	            int g = (y1192 - 833 * v - 400 * u);
+	            int b = (y1192 + 2066 * u);
+
+	            if (r < 0) r = 0; else if (r > 262143) r = 262143;
+	            if (g < 0) g = 0; else if (g > 262143) g = 262143;
+	            if (b < 0) b = 0; else if (b > 262143) b = 262143;
+
+	            rgb[yp*3] = (byte)r;
+	            rgb[yp*3 + 1] = (byte)g;
+	            rgb[yp*3 + 2] = (byte)b;
+	        }
+	    }
 	}
 
 	@Override
@@ -150,11 +164,12 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 	private Camera.PreviewCallback mPreviewCallBack = new PreviewCallback() {
 		@Override
 		public void onPreviewFrame(byte[] data, Camera camera) {
-			byte[] out = new byte[data.length];
+			byte[] out = new byte[320 * 240 * 3];
+			
 			Camera.Parameters parameters = camera.getParameters();
 			Size size = parameters.getPreviewSize();
 			
-			YuvImage image = new YuvImage(data, ImageFormat.YUY2, size.width, size.height, null);
+			//YuvImage image = new YuvImage(data, ImageFormat.YUY2, size.width, size.height, null);
 			/*Rect rectangle = new Rect();
 			rectangle.bottom = size.height;
 			rectangle.top = 0;
@@ -163,9 +178,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			image.compressToJpeg(rectangle, 50, out);
 			*/
-			//yuv420sp2rgb(image.getYuvData(), size.width, size.height, 256, out);
+			decodeYUV420SP(out, data, mPreviewSize.width , mPreviewSize.height);
+			//yuv420sp2rgb(data, size.width, size.height, 1, out);
 			
-			Log.w(LOG, "onPreviewFrame" + data.length + ", " + size.width + ", " + size.height + "," + out.length);
+			Log.w(LOG, "onPreviewFrame" + data.length + ", " + size.width + ", " + size.height + ", " + out.length);
 			
 			
 			if(mCameraPreviewListener != null) {

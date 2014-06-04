@@ -17,7 +17,7 @@ public class CameraSender extends PacketSender {
 	private static final int ORIENTATION_INFO_LENGTH = 1;
 
 	private byte[] sendBuffer = new byte[MAXDATASIZE];
-	private byte[] sizeInfo = new byte[INFOLENGTH];
+	private byte[] sizeInfo = new byte[INFOLENGTH + 1];
 
 	public CameraSender(DatagramSocket socket, InetAddress serverAddr, int port, OutputStream out, InputStream in) {
 		super(socket, serverAddr, port, out, in);

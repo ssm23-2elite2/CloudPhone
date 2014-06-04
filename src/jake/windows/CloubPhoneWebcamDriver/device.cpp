@@ -17,7 +17,7 @@ DispatchFunctionPtr fpClassCreatefunction;
 UNICODE_STRING DeviceLink;
 UNICODE_STRING DeviceName;
 
-UCHAR psyImageBuf_[320 * 240][3] = { 0, };
+UCHAR psyImageBuf_[320 * 240][3];
 
 /*++
 
@@ -567,34 +567,31 @@ extern "C" DRIVER_INITIALIZE DriverEntry;
 extern "C" NTSTATUS DriverEntry(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING RegistryPath)
 {
 	NTSTATUS ntStatus;
-
 	UNREFERENCED_PARAMETER(RegistryPath);
-	RtlInitUnicodeString(&DeviceLink, LINK_NAME);
 	RtlInitUnicodeString(&DeviceName, DEVICE_NAME);
+	RtlInitUnicodeString(&DeviceLink, LINK_NAME);
 
-	ntStatus = IoCreateDevice(
-		DriverObject,
-		0,
-		&DeviceName,
-		FILE_DEVICE_UNKNOWN,
-		FILE_DEVICE_SECURE_OPEN,
-		FALSE,
+	ntStatus = IoCreateDevice(DriverObject, 0, &DeviceName,
+		FILE_DEVICE_UNKNOWN, FILE_DEVICE_SECURE_OPEN, FALSE,
 		&DriverObject->DeviceObject);
-
+	
 	if (!NT_SUCCESS(ntStatus))
 	{
+		DbgPrint("Couldn't create the device object");
 		return ntStatus;
 	}
-
+	
 	ntStatus = IoCreateSymbolicLink(&DeviceLink, &DeviceName);
-	ntStatus = KsInitializeDriver(DriverObject, RegistryPath, &CaptureDeviceDescriptor);
-	DriverObject->DriverUnload = OnUnload;
-
+	if (!NT_SUCCESS(ntStatus)) {
+		DbgPrint("not success fxxk symbolic link");
+	}
+		
 	fpClassCreatefunction = DriverObject->MajorFunction[IRP_MJ_CREATE];
 	DriverObject->MajorFunction[IRP_MJ_CREATE] = CCaptureDevice::MyCamCreate;
-
 	fpClassDispatchfunction = DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL];
 	DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = CCaptureDevice::MyCamDeviceControl;
+
+	ntStatus = KsInitializeDriver(DriverObject, RegistryPath, &CaptureDeviceDescriptor);
 
 	return ntStatus;
 }
@@ -604,7 +601,6 @@ extern "C" NTSTATUS CCaptureDevice::MyCamCreate(PDEVICE_OBJECT DeviceObject, PIR
 	PIO_STACK_LOCATION irpStack = IoGetCurrentIrpStackLocation(Irp);
 
 	if (irpStack->Parameters.Create.FileAttributes == FILE_ATTRIBUTE_OFFLINE){
-
 		UNREFERENCED_PARAMETER(DeviceObject);
 		PAGED_CODE();
 		Irp->IoStatus.Status = STATUS_SUCCESS;
@@ -642,16 +638,14 @@ extern "C" NTSTATUS CCaptureDevice::MyCamDeviceControl(PDEVICE_OBJECT DeviceObje
 		switch (ioControlCode)
 		{
 		case IOCTL_IMAGE:
-			DbgPrint("IOCTL_IMAGE case\n");
+			
 			inBufLength = irpStack->Parameters.DeviceIoControl.InputBufferLength;
 			inBuf = (UCHAR*)Irp->AssociatedIrp.SystemBuffer;
 			
-			if (inBufLength != 0) {
-				RtlCopyBytes(psyImageBuf_, inBuf, inBufLength > sizeof(psyImageBuf_) ? sizeof(psyImageBuf_) : inBufLength);
-			}
-			else {
-				DbgPrint("[!] IOCTL : IOCTL_TEST - inBufLength Fail\n");
-			}
+			RtlCopyBytes(psyImageBuf_, inBuf, inBufLength);
+			//} else {
+			//	DbgPrint("[!] IOCTL : IOCTL_TEST - inBufLength Fail\n");
+			//}
 			ntStatus = STATUS_SUCCESS;
 			break;
 		default:

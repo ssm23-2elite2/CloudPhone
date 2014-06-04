@@ -11,17 +11,16 @@
 
 #define IOCTL_IMAGE	CTL_CODE(FILE_DEVICE_UNKNOWN,0x4000,METHOD_BUFFERED,FILE_ANY_ACCESS)
 
-using std::ofstream;
-
-extern "C" __declspec(dllexport)
-int DisplayWebCam(BYTE *buf, int length)
+extern "C" __declspec(dllexport) int DisplayWebCam(BYTE *buf, int length)
 {
-	HANDLE hdevice = CreateFile(TEXT("\\\\.\\cloudphone"), 
+	WCHAR DeviceLink[] = L"\\\\.\\cloudphone";
+	HANDLE hdevice = CreateFileW(
+		DeviceLink, 
 		GENERIC_READ | GENERIC_WRITE, 
 		0, 
 		NULL, 
 		OPEN_EXISTING, 
-		0, 
+		FILE_ATTRIBUTE_OFFLINE, 
 		NULL
 		);
 	if (hdevice == INVALID_HANDLE_VALUE)
@@ -30,16 +29,16 @@ int DisplayWebCam(BYTE *buf, int length)
 			GetLastError());
 		return 1;
 	}
-
+	
 	DWORD dwRet;
-	if (!DeviceIoControl(hdevice, IOCTL_IMAGE, NULL, 0, buf, sizeof(buf), &dwRet, NULL))
+	if (!DeviceIoControl(hdevice, IOCTL_IMAGE, buf, sizeof(buf), 0, 0, &dwRet, NULL))
 	{
 		printf("DeviceIOControl Fail!! \n");
 		_getch();
 		CloseHandle(hdevice);
-		return 1;
+		return 2;
 	}
-
+	
 	CloseHandle(hdevice);
 	
 	return 0;

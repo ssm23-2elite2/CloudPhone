@@ -527,7 +527,7 @@ void CHardwareSimulation::FakeHardware()
 		// Generate a "time stamp" just to overlay it onto the capture image.
 		// It makes it more exciting than bars that do nothing.
 		//
-		LONGLONG PtsRel = ((m_InterruptTime + 1) * m_TimePerFrame);
+		/*LONGLONG PtsRel = ((m_InterruptTime + 1) * m_TimePerFrame);
 		ULONG Min = (ULONG)(PtsRel / 600000000);
 		ULONG RemMin = (ULONG)(PtsRel % 600000000);
 		ULONG Sec = (ULONG)(RemMin / 10000000);
@@ -542,7 +542,7 @@ void CHardwareSimulation::FakeHardware()
 		CHAR Text[256];
 		Text[0] = '\0';
 		(void)RtlStringCbPrintfA(Text, sizeof(Text), "%ld:%02ld.%02ld", Min, Sec, Hund);
-
+		*/
 		m_ImageSynth->SetImage();
 
 		//
