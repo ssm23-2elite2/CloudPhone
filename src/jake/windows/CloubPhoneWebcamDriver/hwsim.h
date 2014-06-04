@@ -130,7 +130,10 @@ private:
 	NTSTATUS FillScatterGatherBuffers();
 
 public:
-
+	LONG GetSkippedFrameCount()
+	{
+		return InterlockedExchange((LONG*)&this->m_NumFramesSkipped, this->m_NumFramesSkipped);
+	}
 	// The hardware simulation constructor.  Since the new operator will
 	// have zeroed the memory, only initialize non-NULL, non-0 fields. 
 	//

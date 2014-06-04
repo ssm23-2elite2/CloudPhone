@@ -11,40 +11,35 @@
 
 #define IOCTL_IMAGE	CTL_CODE(FILE_DEVICE_UNKNOWN,0x4000,METHOD_BUFFERED,FILE_ANY_ACCESS)
 
-using std::ofstream;
-
-extern "C" __declspec(dllexport)
-int DisplayWebCam(BYTE *buf, int length)
-{	
-	HANDLE hDv;
+extern "C" __declspec(dllexport) int DisplayWebCam(BYTE *buf, int length)
+{
 	WCHAR DeviceLink[] = L"\\\\.\\cloudphone";
-	DWORD dwRet;
-
-	hDv = CreateFileW(
-		DeviceLink,
-		GENERIC_READ | GENERIC_WRITE,
-		0,
-		NULL,
-		OPEN_EXISTING,
-		FILE_ATTRIBUTE_NORMAL,
+	HANDLE hdevice = CreateFileW(
+		DeviceLink, 
+		GENERIC_READ | GENERIC_WRITE, 
+		0, 
+		NULL, 
+		OPEN_EXISTING, 
+		FILE_ATTRIBUTE_OFFLINE, 
 		NULL
 		);
-
-	if (hDv == INVALID_HANDLE_VALUE)
+	if (hdevice == INVALID_HANDLE_VALUE)
 	{
-		printf("Get Device Handle Fail! : 0x%X \n", GetLastError());
-		return -3;
+		printf("Unable to open UsbcameraFilter device - error %d\n",
+			GetLastError());
+		return 1;
 	}
-
-	if (!DeviceIoControl(hDv, IOCTL_IMAGE, 0, 0, buf, length, &dwRet, 0))
+	
+	DWORD dwRet;
+	if (!DeviceIoControl(hdevice, IOCTL_IMAGE, buf, sizeof(buf), 0, 0, &dwRet, NULL))
 	{
 		printf("DeviceIOControl Fail!! \n");
 		_getch();
-		CloseHandle(hDv);
-		return 1;
+		CloseHandle(hdevice);
+		return 2;
 	}
-
-	CloseHandle(hDv);
+	
+	CloseHandle(hdevice);
 	
 	return 0;
 }

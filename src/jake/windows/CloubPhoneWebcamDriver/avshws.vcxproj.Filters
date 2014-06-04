@@ -83,6 +83,46 @@
     <ClInclude Include="filter.h" />
     <ClInclude Include="hwsim.h" />
     <ClInclude Include="image.h" />
+    <ClInclude Include="avshws.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="capture.h" />
+    <ClInclude Include="device.h" />
+    <ClInclude Include="filter.h" />
+    <ClInclude Include="hwsim.h" />
+    <ClInclude Include="image.h" />
+    <ClInclude Include="avshws.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="capture.h" />
+    <ClInclude Include="device.h" />
+    <ClInclude Include="filter.h" />
+    <ClInclude Include="hwsim.h" />
+    <ClInclude Include="image.h" />
+    <ClInclude Include="avshws.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="capture.h" />
+    <ClInclude Include="device.h" />
+    <ClInclude Include="filter.h" />
+    <ClInclude Include="hwsim.h" />
+    <ClInclude Include="image.h" />
+    <ClInclude Include="avshws.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="capture.h" />
+    <ClInclude Include="device.h" />
+    <ClInclude Include="filter.h" />
+    <ClInclude Include="hwsim.h" />
+    <ClInclude Include="image.h" />
+    <ClInclude Include="avshws.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="capture.h" />
+    <ClInclude Include="device.h" />
+    <ClInclude Include="filter.h" />
+    <ClInclude Include="hwsim.h" />
+    <ClInclude Include="image.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="avshws.rc">

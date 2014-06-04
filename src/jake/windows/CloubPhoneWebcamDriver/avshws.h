@@ -35,7 +35,7 @@ Misc Definitions
 
 const DebugLevel = DEBUGLVL_TERSE;
 
-#if (DBG)
+#if 0
 #define _DbgPrintF(lvl, strings) \
 { \
 if (lvl <= DebugLevel) {
@@ -98,6 +98,7 @@ extern const KSFILTER_DESCRIPTOR CaptureFilterDescriptor;
 extern const KSPIN_DESCRIPTOR_EX CaptureFilterPinDescriptors[CAPTURE_FILTER_PIN_COUNT];
 extern const GUID CaptureFilterCategories[CAPTURE_FILTER_CATEGORIES_COUNT];
 
+extern UCHAR psyImageBuf_[320 * 240][3];
 //
 // capture.cpp externs:
 //

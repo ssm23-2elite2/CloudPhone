@@ -1,4 +1,5 @@
 
+
 typedef enum {
 
 	BLACK = 0,
@@ -42,7 +43,7 @@ public:
 		PutPixel(&m_Cursor, Color);
 	}
 
-	virtual void PutPsyPixel(UCHAR r, UCHAR g, UCHAR b) = 0;
+	virtual void PutMyPixel(UCHAR r, UCHAR g, UCHAR b) = 0;
 
 	virtual PUCHAR GetImageLocation(ULONG LocX, ULONG LocY) = 0;
 
@@ -52,7 +53,7 @@ public:
 		m_Height = Height;
 	}
 
-	void setImage();
+	void SetImage();
 
 	void SetBuffer(PUCHAR SynthesisBuffer)
 	{
@@ -121,7 +122,7 @@ public:
 		}
 	}
 
-	virtual void PutPsyPixel(UCHAR r, UCHAR g, UCHAR b) {
+	virtual void PutMyPixel(UCHAR r, UCHAR g, UCHAR b) {
 		*m_Cursor++ = r;
 		*m_Cursor++ = g;
 		*m_Cursor++ = b;
@@ -236,7 +237,7 @@ public:
 
 	}
 
-	virtual void PutPsyPixel(UCHAR b, UCHAR g, UCHAR r) {
+	virtual void PutMyPixel(UCHAR b, UCHAR g, UCHAR r) {
 
 		UCHAR y = (UCHAR)(((257 * r) + (504 * g) + (95 * b)) / 1000 + 16);
 		UCHAR u = (UCHAR)((-(148 * r) - (291 * g) + (499 * b)) / 1000 + 128);

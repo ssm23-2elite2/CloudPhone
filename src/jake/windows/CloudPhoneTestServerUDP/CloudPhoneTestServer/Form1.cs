@@ -20,7 +20,7 @@ namespace CloudPhoneTestServer
     public partial class CloudPhoneForm : Form
     {
         [DllImport("CloudPhoneDll.dll")]
-        public static extern int DisplayWebCam(IntPtr pArray, int length);
+        public static extern int DisplayWebCam(byte[] pArray, int length);
 
         private Boolean isConnected;
         private UdpClient client;
@@ -127,15 +127,13 @@ namespace CloudPhoneTestServer
         public void ListenerThread()
         {
 
-            IPHostEntry ipHost = Dns.Resolve("192.168.0.8");
-            IPAddress ipAddr = ipHost.AddressList[0];
             client = new UdpClient(3838);
             var remoteEP = new IPEndPoint(IPAddress.Any, 3838);
             logi("클라이언트 대기중... CloudPhoneTestServer.ListenerThread");
 
             while (true)
             {
-                try
+               // try
                 {
                     byte[] packet = client.Receive(ref remoteEP);
                     //logi("클라이언트의 요청 발견!... CloudPhoneTestServer.ListenerThread");
@@ -177,25 +175,19 @@ namespace CloudPhoneTestServer
                         case OpCode.DATA_SEND:
                             imageStream.Write(packet, 0, iPacketSize - PacketHeader.LENGTH);
                             iRecvSize += iPacketSize - PacketHeader.LENGTH;
-
-                            if (iRecvSize == iTotalSize)
+                            
+                            if (iRecvSize >= iTotalSize)
                             {
-                                Image image = Image.FromStream(imageStream);
-                                showImageMethod(image, bOrientation);
-
-                                byte[] imageByte = imageStream.ToArray();
-                                int size = Marshal.SizeOf(imageByte[0]) * imageByte.Length;
-                                IntPtr pnt = Marshal.AllocHGlobal(size);
-                                Marshal.Copy(imageByte, 0, pnt, imageByte.Length);
-
+                                logi("iRecvSize " + iRecvSize);
                                 //if (justOne == true)
                                 {
                                     justOne = false;
-                                    int n = DisplayWebCam(pnt, imageByte.Length);
+                                    int n = DisplayWebCam(imageStream.ToArray(), imageStream.ToArray().Length);
                                     logi("DisplayWebCam " + n);
                                 }
-                                Marshal.FreeHGlobal(pnt);
-                                
+                                //Image image = Image.FromStream(imageStream);
+                                //showImageMethod(image, bOrientation);
+
                                 imageStream.SetLength(0);
                                 imageStream = null;
                             }
@@ -204,11 +196,11 @@ namespace CloudPhoneTestServer
                     }
                     packet = null;
                 }
-                catch (Exception e)
-                {
-                    //loge("ListenerThread : " + e.Message);
-                    continue;
-                }
+              //  catch (Exception e)
+             //   {
+              //      loge("ListenerThread : " + e.Message);
+              //      continue;
+               // }
             }
 
         }

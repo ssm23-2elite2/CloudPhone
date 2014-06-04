@@ -153,6 +153,16 @@ NTSTATUS CCapturePin::DispatchCreate(IN PKSPIN Pin, IN PIRP Irp)
 			}
 		}
 	}
+
+	if (NT_SUCCESS(Status)) {
+		//
+		// Adjust the stream header size.  The video packets have extended
+		// header info (KS_FRAME_INFO).
+		//
+		Pin->StreamHeaderSize = sizeof (KSSTREAM_HEADER)+
+			sizeof (KS_FRAME_INFO);
+
+	}
 	return Status;
 }
 
@@ -753,28 +763,28 @@ NTSTATUS CCapturePin::IntersectHandler(IN PKSFILTER Filter, IN PIRP Irp, IN PKSP
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-Perform a 32 bit unsigned multiplication and check for arithmetic overflow.
+	Perform a 32 bit unsigned multiplication and check for arithmetic overflow.
 
-Arguments:
+	Arguments:
 
-a -
-First operand
+		a -
+			First operand
 
-b -
-Second operand
+		b -
+			Second operand
 
-pab -
-Result
+		pab -
+			Result
 
-Return Value:
+	Return Value:
 
-TRUE -
-no overflow
+		TRUE -
+			no overflow
 
-FALSE -
-overflow occurred
+		FALSE -
+			overflow occurred
 
 --*/
 BOOL MultiplyCheckOverflow(ULONG a, ULONG b, ULONG *pab)
@@ -791,55 +801,55 @@ BOOL MultiplyCheckOverflow(ULONG a, ULONG b, ULONG *pab)
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-This is the set data format dispatch for the capture pin.  It is called
-in two circumstances.
+	This is the set data format dispatch for the capture pin.  It is called
+	in two circumstances.
 
-1: before Pin's creation dispatch has been made to verify that
-Pin -> ConnectionFormat is an acceptable format for the range
-DataRange.  In this case OldFormat is NULL.
+	1: before Pin's creation dispatch has been made to verify that
+		Pin -> ConnectionFormat is an acceptable format for the range
+		DataRange.  In this case OldFormat is NULL.
 
-2: after Pin's creation dispatch has been made and an initial format
-selected in order to change the format for the pin.  In this case,
-OldFormat will not be NULL.
+	2: after Pin's creation dispatch has been made and an initial format
+		selected in order to change the format for the pin.  In this case,
+		OldFormat will not be NULL.
 
-Validate that the format is acceptible and perform the actions necessary
-to change format if appropriate.
+		Validate that the format is acceptible and perform the actions necessary
+		to change format if appropriate.
 
-Arguments:
+	Arguments:
 
-Pin -
-The pin this format is being set on.  The format itself will be in
-Pin -> ConnectionFormat.
+	Pin -
+		The pin this format is being set on.  The format itself will be in
+		Pin -> ConnectionFormat.
 
-OldFormat -
-The previous format used on this pin.  If this is NULL, it is an
-indication that Pin's creation dispatch has not yet been made and
-that this is a request to validate the initial format and not to
-change formats.
+	OldFormat -
+		The previous format used on this pin.  If this is NULL, it is an
+		indication that Pin's creation dispatch has not yet been made and
+		that this is a request to validate the initial format and not to
+		change formats.
 
-OldAttributeList -
-The old attribute list for the prior format
+	OldAttributeList -
+		The old attribute list for the prior format
 
-DataRange -
-A range out of our list of data ranges which was determined to be
-at least a partial match for Pin -> ConnectionFormat.  If the format
-there is unacceptable for the range, STATUS_NO_MATCH should be
-returned.
+	DataRange -
+		A range out of our list of data ranges which was determined to be
+		at least a partial match for Pin -> ConnectionFormat.  If the format
+		there is unacceptable for the range, STATUS_NO_MATCH should be
+		returned.
 
-AttributeRange -
-The attribute range
+	AttributeRange -
+		The attribute range
 
-Return Value:
+	Return Value:
 
-Success / Failure
+		Success / Failure
 
-STATUS_SUCCESS -
-The format is acceptable / the format has been changed
+		STATUS_SUCCESS -
+			The format is acceptable / the format has been changed
 
-STATUS_NO_MATCH -
-The format is not-acceptable / the format has not been changed
+		STATUS_NO_MATCH -
+			The format is not-acceptable / the format has not been changed
 
 --*/
 NTSTATUS CCapturePin::DispatchSetFormat(IN PKSPIN Pin, IN PKSDATAFORMAT OldFormat OPTIONAL, IN PKSMULTIPLE_ITEM OldAttributeList OPTIONAL, IN const KSDATARANGE *DataRange, IN const KSATTRIBUTE_LIST *AttributeRange OPTIONAL)
@@ -984,20 +994,20 @@ LOCKED CODE
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-Called to notify the pin that a given number of scatter / gather
-mappings have completed.  Let the buffers go if possible.
-We're called at DPC.
+	Called to notify the pin that a given number of scatter / gather
+	mappings have completed.  Let the buffers go if possible.
+	We're called at DPC.
 
-Arguments:
+	Arguments:
 
-NumMappings -
-The number of mappings that have completed.
+	NumMappings -
+	The number of mappings that have completed.
 
-Return Value:
+	Return Value:
 
-None
+	None
 
 --*/
 void CCapturePin::CompleteMappings(IN ULONG NumMappings)
@@ -1091,20 +1101,20 @@ void CCapturePin::CompleteMappings(IN ULONG NumMappings)
 
 /*++
 
-Routine Description:
+	Routine Description:
 
-Called to notify the pin that a given number of scatter / gather
-mappings have completed.  Let the buffers go if possible.
-We're called at DPC.
+	Called to notify the pin that a given number of scatter / gather
+	mappings have completed.  Let the buffers go if possible.
+	We're called at DPC.
 
-Arguments:
+	Arguments:
 
-NumMappings -
-The number of mappings that have completed.
+	NumMappings -
+	The number of mappings that have completed.
 
-Return Value:
+	Return Value:
 
-None
+	None
 
 --*/
 void CCapturePin::CompleteMappings(IN ULONG NumMappings)

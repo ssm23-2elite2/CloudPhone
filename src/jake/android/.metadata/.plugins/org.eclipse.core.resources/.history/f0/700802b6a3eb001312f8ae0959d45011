@@ -1,0 +1,226 @@
+package org.secmem232.cloudphone;
+
+import java.io.ByteArrayOutputStream;
+import java.util.List;
+
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.res.Configuration;
+import android.graphics.ImageFormat;
+import android.graphics.Rect;
+import android.graphics.YuvImage;
+import android.hardware.Camera;
+import android.hardware.Camera.PreviewCallback;
+import android.hardware.Camera.Size;
+import android.os.Build;
+import android.util.Log;
+import android.view.Display;
+import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.view.WindowManager;
+
+/**
+ * This class assumes the parent layout is RelativeLayout.LayoutParams.
+ */
+@SuppressLint("NewApi")
+public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
+	private static boolean DEBUGGING = true;
+	private static final String LOG_TAG = "CameraPreview";
+	private static final String CAMERA_PARAM_ORIENTATION = "orientation";
+	private static final String CAMERA_PARAM_LANDSCAPE = "landscape";
+	private static final String CAMERA_PARAM_PORTRAIT = "portrait";
+	protected Context mContext;
+	private SurfaceHolder mHolder;
+	protected Camera mCamera;
+	protected List<Camera.Size> mPreviewSizeList;
+	protected List<Camera.Size> mPictureSizeList;
+	protected Camera.Size mPreviewSize;
+	protected Camera.Size mPictureSize;
+	private int mSurfaceChangedCallDepth = 0;
+	private int mCameraId;
+	private LayoutMode mLayoutMode;
+	private int mCenterPosX = -1;
+	private int mCenterPosY;
+	
+	private PreviewReadyCallback mPreviewReadyCallback = null;
+	private CameraPreviewListener mCameraPreviewListener = null;
+	private Camera.Parameters mCameraParams;
+	
+	private final String LOG = "CameraPreview";
+	public static enum LayoutMode {
+		FitToParent, // Scale to the size that no side is larger than the parent
+		NoBlank // Scale to the size that no side is smaller than the parent
+	};
+
+	public interface PreviewReadyCallback {
+		public void onPreviewReady();
+	}
+	
+	public interface CameraPreviewListener {
+		public void onPreview(byte[] image);
+	}
+
+	static { 
+        System.loadLibrary( "yuv420sp2rgb" );       
+    }
+	
+	public native void yuv420sp2rgb(byte[] in, int width, int height, int textureSize, byte[] out);
+	
+	/**
+	 * State flag: true when surface's layout size is set and surfaceChanged()
+	 * process has not been completed.
+	 */
+	protected boolean mSurfaceConfiguring = false;
+
+	@SuppressLint("NewApi")
+	public CameraPreview(Context context, int cameraId, LayoutMode mode) {
+		super(context); // Always necessary
+		Log.w(LOG, "cameraId :" + cameraId);
+		mContext = context;
+		mLayoutMode = mode;
+		mHolder = getHolder();
+		mHolder.addCallback(this);
+		mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+		
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+			if (Camera.getNumberOfCameras() > cameraId) {
+				mCameraId = cameraId;
+			} else {
+				mCameraId = 0;
+			}
+		} else {
+			mCameraId = 0;
+		}
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+			mCamera = Camera.open(mCameraId);
+		} else {
+			mCamera = Camera.open();
+		}
+		Camera.Parameters cameraParams = mCamera.getParameters();
+		mPreviewSizeList = cameraParams.getSupportedPreviewSizes();
+		mPictureSizeList = cameraParams.getSupportedPictureSizes();
+	}
+
+
+	@Override
+	public void surfaceCreated(SurfaceHolder holder) {
+		Log.w(LOG, "surfaceCreated");
+		try {
+			mCamera.setPreviewDisplay(holder);
+		} catch (Exception e) {
+			mCamera.setPreviewCallback(null);
+			mCamera.release();
+			mCamera = null;
+		}
+			mCamera.setPreviewCallback(mPreviewCallBack);
+			mCamera.setOneShotPreviewCallback(mPreviewCallBack);
+			mCamera.setDisplayOrientation(90);
+			mPreviewSize = mCamera.new Size(320,240);
+			mPictureSize = mCamera.new Size(320,240);
+			mCameraParams = mCamera.getParameters();
+			mCameraParams.setPreviewSize(320, 240);
+			mCameraParams.setPictureSize(mPictureSize.width, mPictureSize.height);
+			mCamera.setParameters(mCameraParams);
+			mCamera.startPreview();
+	}
+	
+	public void decodeYUV420SP(byte[] rgb, byte[] yuv420sp, int width, int height) {
+	    final int frameSize = width * height;
+
+	    for (int j = 0, yp = 0; j < height; j++) {
+	        int uvp = frameSize + (j >> 1) * width, u = 0, v = 0;
+	        for (int i = 0; i < width; i++, yp++) {
+	            int y = (0xff & ((int) yuv420sp[yp])) - 16;
+	            if (y < 0) y = 0;
+	            if ((i & 1) == 0) {
+	                v = (0xff & yuv420sp[uvp++]) - 128;
+	                u = (0xff & yuv420sp[uvp++]) - 128;
+	            }
+
+	            int y1192 = 1192 * y;
+	            int r = (y1192 + 1634 * v);
+	            int g = (y1192 - 833 * v - 400 * u);
+	            int b = (y1192 + 2066 * u);
+
+	            if (r < 0) r = 0; else if (r > 262143) r = 262143;
+	            if (g < 0) g = 0; else if (g > 262143) g = 262143;
+	            if (b < 0) b = 0; else if (b > 262143) b = 262143;
+
+	            rgb[yp*3] = (byte)r;
+	            rgb[yp*3 + 1] = (byte)g;
+	            rgb[yp*3 + 2] = (byte)b;
+	        }
+	    }
+	}
+
+	@Override
+	public void surfaceDestroyed(SurfaceHolder holder) {
+		stop();
+	}
+
+	public void stop() {
+		if (null == mCamera) {
+			return;
+		}
+		mCamera.stopPreview();
+		mCamera.setPreviewCallback(null);
+		mCamera.release();
+		mCamera = null;
+	}
+
+	public boolean isPortrait() {
+		return (mContext.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT);
+	}
+
+	
+	private Camera.PreviewCallback mPreviewCallBack = new PreviewCallback() {
+		@Override
+		public void onPreviewFrame(byte[] data, Camera camera) {
+			byte[] out = new byte[data.length * 3];
+			
+			Camera.Parameters parameters = camera.getParameters();
+			Size size = parameters.getPreviewSize();
+			
+			//YuvImage image = new YuvImage(data, ImageFormat.YUY2, size.width, size.height, null);
+			/*Rect rectangle = new Rect();
+			rectangle.bottom = size.height;
+			rectangle.top = 0;
+			rectangle.left = 0;
+			rectangle.right = size.width;
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			image.compressToJpeg(rectangle, 50, out);
+			*/
+			decodeYUV420SP(out, data, mPreviewSize.width , mPreviewSize.height);
+			//yuv420sp2rgb(data, size.width, size.height, 1, out);
+			
+			Log.w(LOG, "onPreviewFrame" + data.length + ", " + size.width + ", " + size.height);
+			
+			
+			if(mCameraPreviewListener != null) {
+				mCameraPreviewListener.onPreview(out);
+				camera.setPreviewCallback(this);
+			}
+		}
+	};
+	
+	public Camera.Size getPreviewSize() {
+		return mPreviewSize;
+	}
+
+	public void setOnPreviewReady(PreviewReadyCallback cb) {
+		mPreviewReadyCallback = cb;
+	}
+	
+	public void setCameraPreviewListener(CameraPreviewListener listener) { 
+		mCameraPreviewListener = listener;
+	}
+
+	@Override
+	public void surfaceChanged(SurfaceHolder holder, int format, int width,
+			int height) {
+		// TODO Auto-generated method stub
+		
+	}
+}
