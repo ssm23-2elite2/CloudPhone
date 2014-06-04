@@ -36,29 +36,33 @@ namespace Server
 
         public void clientHandler()
         {
-            try
-            {
+            //try
+            //{
                 client = threadListener.AcceptTcpClient();
                 ns = client.GetStream();
                 System.IO.StreamReader sr = new System.IO.StreamReader(ns);
 
                 while (isRunning)
                 {
-                    try
-                    {
-                        String receive = "";
-
+                   // try
+                   // {
+                        String receive = null;
+                        
                         receive = sr.ReadLine();
-                        // cloudPhoneWindow.Invoke(cloudPhoneWindow._logMSG, "info", "Receive MSG : " + receive);
+                        cloudPhoneWindow.Invoke(cloudPhoneWindow._logMSG, "info", "Receive MSG : " + receive);
+                        if (receive != null)
+                        {
+                            UnPackingMessage(receive);
+                        }
+                        else
+                            isRunning = false;
 
-                        UnPackingMessage(receive);
-
-                    }
-                    catch (Exception e)
-                    {
-                        cloudPhoneWindow.Invoke(cloudPhoneWindow._logMSG, "error", "clientHandler with while: " + e.Message);
-                        isRunning = false;
-                    }
+                    //}
+                    //catch (Exception e)
+                    //{
+                    //    cloudPhoneWindow.Invoke(cloudPhoneWindow._logMSG, "error", "clientHandler with while: " + e.Message);
+                    //    isRunning = false;
+                    //}
                 }
 
                 sr.Close();
@@ -68,13 +72,14 @@ namespace Server
                 sr = null;
                 ns = null;
                 client = null;
+                
 
-            }
-            catch (Exception e)
-            {
-                cloudPhoneWindow.Invoke(cloudPhoneWindow._logMSG, "error", "clientHandler : " + e.Message);
-                isRunning = false;
-            }
+            //}
+            //catch (Exception e)
+            //{
+            //    cloudPhoneWindow.Invoke(cloudPhoneWindow._logMSG, "error", "clientHandler : " + e.Message);
+            //    isRunning = false;
+            //}
         }
 
         public void RequestStop()
@@ -101,7 +106,7 @@ namespace Server
                 cpTcpClient = new TcpClient("localhost", portNum);
                 if (true == cpTcpClient.Connected)
                 {
-                    cloudPhoneWindow.Invoke(cloudPhoneWindow._logMSG, "info", "Telnet Msg : " + Msg);
+                   // cloudPhoneWindow.Invoke(cloudPhoneWindow._logMSG, "info", "Telnet Msg : " + Msg);
                     cpNetStream = cpTcpClient.GetStream();
                     cpStmWriter = new StreamWriter(cpNetStream);
                     cpStmWriter.WriteLine(Msg);
@@ -138,6 +143,8 @@ namespace Server
         // Client로부터 온 메시지 Unpack
         private void UnPackingMessage(String str)
         {
+            if (str == null) return;
+
             String[] strings = str.Split('/');
             int portNum = 0;
             // Unpacking해서 메시지 헤더에 따라서 돌린다.
@@ -156,7 +163,7 @@ namespace Server
                     // cloudPhoneWindow.DecideAVDMsg(strings[2]);
                     portNum = (int)cloudPhoneWindow.Invoke(cloudPhoneWindow._getPortNum, strings[1]);
                     cloudPhoneWindow.Invoke(cloudPhoneWindow._setTime, DateTime.Now, portNum);
-                    SendMsg("ACK");
+                    //SendMsg("ACK");
                     break;
 
                 case "2": // ACTION { ACTIONTYPE : (ACTION_UP, ACTION_DOWN, ACTION_MOVE) / X / Y }

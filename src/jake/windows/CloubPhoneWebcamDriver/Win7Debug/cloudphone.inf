@@ -8,7 +8,7 @@ Class=Media
 ClassGUID={4d36e96c-e325-11ce-bfc1-08002be10318}
 Provider=%Msft%
 Catalogfile=cloudphone.cat
-DriverVer=06/04/2014,2.9.51.798
+DriverVer=06/04/2014,9.2.49.155
 
 [SourceDisksNames]
 1000=%cdname%,,,

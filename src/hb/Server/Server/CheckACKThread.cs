@@ -41,6 +41,9 @@ namespace Server
 
             }
 
+            // Server Client Exit
+            cloudPhoneWindow.Invoke(cloudPhoneWindow._exitClient, portNum);
+
             return;
         }
 
@@ -56,8 +59,8 @@ namespace Server
             if (ts.Seconds >= 30) // 30초동안 응답이 없으면 해당 AVD를 종료시킨다.
             {
                // 종료 코드
-               // ErrExit(portNum);
-               // isRunning = false;
+                ErrExit(portNum);
+                isRunning = false;
             }
         }
 

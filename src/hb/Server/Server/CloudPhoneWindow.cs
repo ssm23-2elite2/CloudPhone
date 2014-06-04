@@ -13,8 +13,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Diagnostics;
 
-using MySql.Data;
-using MySql.Data.MySqlClient;
+//using MySql.Data;
+//using MySql.Data.MySqlClient;
 
 namespace Server
 {
@@ -36,10 +36,9 @@ namespace Server
         private TcpListener tcpClient = null; // 각종 메시지를 받기 위한 tcp 소켓
         private bool isRunning; // 써버 쓰레드
         private Socket udpSock = null;
-        private int clientNum = 0;
 
         private ConnectHandler con = null;
-        private DBConnect db = null;
+        //private DBConnect db = null;
 
         // 돌릴 쓰레드 선언
         public CheckBackGroundThread checkBG = null;
@@ -52,7 +51,9 @@ namespace Server
         public delegate int d_getPortNum(String ClientID);
         public delegate DateTime d_getTime(int portNum);
         public delegate void d_setTime(DateTime t, int portNum);
+        public delegate void d_exitClient(int portNum);
 
+        public d_exitClient _exitClient;
         public d_setTime _setTime;
         public d_getTime _getTime;
         public d_getPortNum _getPortNum;
@@ -97,7 +98,8 @@ namespace Server
             _getPortNum = new d_getPortNum(getPortNum);
             _getTime = new d_getTime(getTime);
             _setTime = new d_setTime(setTime);
-
+            _exitClient = new d_exitClient(exitClient);
+            
             proc_cmd = new Process();
             startInfo = new ProcessStartInfo();
             Dict_ClientID = new Dictionary<String, int>();
@@ -117,8 +119,45 @@ namespace Server
         private void CloudPhoneWindow_FormClosing(object sender, FormClosingEventArgs e)
         {
 
-            e.Cancel = true;
-            this.Visible = false;
+            notifyIcon.Visible = false;
+            isConnected = false;
+
+            if (serverThread != null && serverThread.IsAlive)
+            {
+                if (Dict_Client.Count > 0)
+                {
+                    foreach (KeyValuePair<int, ClientData> data in Dict_Client)
+                    {
+                        // allow the worker thread to do some work:
+                        Thread.Sleep(1);
+                        // Request that the worker thread stop itself:
+                        data.Value._UdpThreadClass.RequestStop();
+                        // Use the Join method to block the current thread 
+                        // until the object's thread terminates.
+                        data.Value.UDPThread.Abort();
+
+                        Thread.Sleep(1);
+                        data.Value._AckThreadClass.RequestStop();
+                        data.Value.ACKThread.Abort();
+                    }
+                }
+
+                Thread.Sleep(1);
+                isRunning = false;
+                serverThread.Abort(); // 써버 쓰레드 종료
+                serverThread = null;
+                logMSG("info", "Exit");
+            }
+
+            String processName = "Server";
+            Process[] processes = Process.GetProcessesByName(processName);
+
+            foreach (Process process in processes)
+            {
+                process.Kill();
+            }
+            this.Dispose();
+            Application.Exit();
         }
 
         // Tray Icon Menu에서 'About...'을 눌렀을 때
@@ -205,14 +244,14 @@ namespace Server
         {
             try
             {
-                IPHostEntry ipHost = Dns.Resolve("192.168.0.16");
+                IPHostEntry ipHost = Dns.Resolve("192.168.0.8");
                 IPAddress ipAddr = ipHost.AddressList[0];
                 tcpClient = new TcpListener(ipAddr, tcpPortNum);
                 udpSock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
                 tcpClient.Start();
                 isRunning = true;
 
-                db = new DBConnect(this);
+               // db = new DBConnect(this);
                 con = new ConnectHandler(this);
                 checkACK = new CheckACKThread(this, avdPortNum);
 
@@ -236,7 +275,6 @@ namespace Server
                         Thread.Sleep(100);
                     }
 
-                    clientNum += 1;
                     //logMSG("info", "클라이언트의 요청 발견... CloudPhoneTestServer.ListenerThread");
 
                     // logMSG("info", "TCP 클라이언트 통신용 쓰레드 생성 CloudPhoneTestServer new ConnectionHandler");
@@ -254,16 +292,20 @@ namespace Server
                     setClientInfo(con.ip, con.clientID, clientData);
 
                     // DB 에 클라이언트 ID가 있는 지 체크하고 등록한다.
-                    db.CheckClientID(clientData.ClientID);
+                    //db.CheckClientID(clientData.ClientID);
                     Dict_ClientID.Add(clientData.ClientID, avdPortNum);
 
                     ACKThread = new Thread(new ThreadStart(checkACK.SendAckToClient));
+                    
 
-                    StartAVD(avdPortNum++);
-
+                    clientData._TcpThreadClass = con;
+                    clientData.TCPThread = tcpThread;
+                    clientData._AckThreadClass = checkACK;
+                    clientData.ACKThread = ACKThread;
+                    Dict_Client.Add(avdPortNum , clientData);
                     ACKThread.Start();
-
                     logMSG("info", "ACKThread 시작");
+                    StartAVD(avdPortNum);
 
                     IPHostEntry _ipHost = Dns.Resolve(clientData.ClientIP);
                     IPAddress _ipAddr = _ipHost.AddressList[0];
@@ -276,15 +318,9 @@ namespace Server
                     logMSG("info", "udpThread 시작");
 
                     // ClientData Set
-                    clientData._TcpThreadClass = con;
-                    clientData.TCPThread = tcpThread;
-                    clientData.ACKThread = ACKThread;
-                    clientData._AckThreadClass = checkACK;
-                    clientData._UdpThreadClass = checkBG;
-                    clientData.UDPThread = udpThread;
-
-                    Dict_Client.Add((avdPortNum - 1), clientData);
-
+                    Dict_Client[avdPortNum]._UdpThreadClass = checkBG;
+                    Dict_Client[avdPortNum].UDPThread = udpThread;
+                    
                     Thread.Sleep(300);
                 }
 
@@ -387,13 +423,13 @@ namespace Server
         // AVD 시작
         public void StartAVD(int ClientNum)
         {
-            String cmd_string = @"start emulator -avd client_dev -sdcard ""D:\Program Files\Java\adt\adt-bundle-windows-x86_64-20140321\sdk\img\sdcard.iso"" -port " + ClientNum + " -gpu off";
+            String cmd_string = @"start emulator -avd client_dev -sdcard ""C:\sdcard.iso"" -port " + ClientNum + " -gpu off";
             // String cmd_string = @"emulator -avd my_android";
-            // logMSG("info", cmd_string);
+            logMSG("info", "StartAVD");
             startCMD();
             ControlCMD(cmd_string);
             exitCMD();
-            Thread.Sleep(24000);
+            Thread.Sleep(27000);
             String chmod = @"adb shell chmod 777 ""/dev/graphics/fb0"""; // frame buffer 권한주기
             logMSG("info", chmod);
             startCMD();
@@ -404,6 +440,22 @@ namespace Server
         public void startCMD()
         {
             proc_cmd.Start();
+        }
+
+        public void exitClient(int portNum)
+        {
+            Thread.Sleep(1);
+            Dict_Client[portNum]._AckThreadClass.RequestStop();
+            Dict_Client[portNum].ACKThread.Abort();
+
+            Thread.Sleep(1);
+            Dict_Client[portNum]._UdpThreadClass.RequestStop();
+            Dict_Client[portNum].UDPThread.Abort();
+
+            Dict_ClientID.Remove(Dict_Client[portNum].ClientID);
+            Dict_Client.Remove(portNum);
+            
+
         }
 
         public void ControlCMD(String cmd_Msg)
