@@ -40,23 +40,10 @@ public class CloudPhoneSocket {
 		Log.w(LOG, "connect");
 		try{
 			mSocket = new Socket();
-			//mSocket.connect(new InetSocketAddress(ip, port), 2000); // Set timeout to 2 seconds
 
 			mServerAddr = InetAddress.getByName(ip);
 			mUDPSocket = new DatagramSocket();
-			
-			// Open outputStream
-			//mSendStream = mSocket.getOutputStream();
-			
-			// Open inputStream
-			//mRecvStream = mSocket.getInputStream();		
-
 			mCameraSender = new CameraSender(mUDPSocket, mServerAddr, port, mSendStream, mRecvStream);
-
-			// Create and start packet receiver
-			//mPacketReceiver = new PacketReceiver(mRecvStream);
-			//mPacketReceiver.setPacketListener(this);
-			//mPacketReceiver.start();	
 
 			mServerConnectionListener.onServerConnected(ip);
 
