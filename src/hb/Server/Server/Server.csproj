@@ -61,10 +61,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CheckACKThread.cs" />
     <Compile Include="CheckBackGroundThread.cs" />
-    <Compile Include="CheckBatteryValue.cs" />
-    <Compile Include="CheckGPSValue.cs" />
-    <Compile Include="CheckGyroValue.cs" />
     <Compile Include="CloudPhoneWindow.cs">
       <SubType>Form</SubType>
     </Compile>

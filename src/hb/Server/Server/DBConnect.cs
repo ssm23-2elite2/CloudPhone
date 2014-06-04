@@ -9,7 +9,7 @@ using MySql.Data;
 
 namespace Server
 {
-    class DBConnect
+    public class DBConnect
     {
         private CloudPhoneWindow cloudPhoneWindow;
         MySqlConnection _connect = null;
@@ -18,7 +18,7 @@ namespace Server
         public DBConnect(CloudPhoneWindow c)
         {
             cloudPhoneWindow = c;
-            cloudPhoneWindow.Invoke(cloudPhoneWindow._logMSG, "info", "DB CONNECT CLASS 실행");
+           // cloudPhoneWindow.Invoke(cloudPhoneWindow._logMSG, "info", "DB CONNECT CLASS 실행");
             DBCnt();
         }
 

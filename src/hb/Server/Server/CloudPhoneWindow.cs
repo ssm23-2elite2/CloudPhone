@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Diagnostics;
 
-using MySql.Data; 
+using MySql.Data;
 using MySql.Data.MySqlClient;
 
 namespace Server
@@ -22,35 +22,48 @@ namespace Server
     public partial class CloudPhoneWindow : Form
     {
 
+        public ClientData clientData = null;
         private bool isConnected;
-
-        private Thread tcpThread;
-        private Thread udpThread;
-        private TcpListener tcpClient; // 각종 메시지를 받기 위한 tcp 소켓
+        private Dictionary<String, int> Dict_ClientID;
+        private Dictionary<int, ClientData> Dict_Client;
+        public Thread tcpThread = null;
+        public Thread udpThread = null;
+        public Thread ACKThread = null;
+        private Thread serverThread = null;
+        private int tcpPortNum = 20000;
+        private int udpPortNum = 8000;
+        private int avdPortNum = 5554;
+        private TcpListener tcpClient = null; // 각종 메시지를 받기 위한 tcp 소켓
         private bool isRunning; // 써버 쓰레드
-        private Socket udpSock;
-        private Thread serverThread;
+        private Socket udpSock = null;
+        private int clientNum = 0;
 
-        private ConnectHandler con;
-        private DBConnect db;
-        
+        private ConnectHandler con = null;
+        private DBConnect db = null;
+
         // 돌릴 쓰레드 선언
-        private CheckBackGroundThread checkBG;
-        private CheckGPSValue checkGPS;
-        private CheckGyroValue checkGyro;
-        
-        public delegate void logMSGd(String msgType, String msg);
-        public logMSGd _logMSG;
-        
-        private ArrayList clientThreadList = new ArrayList();
-        private ArrayList clientUDPThreadList = new ArrayList();
-        private ArrayList clientIDList = new ArrayList();
+        public CheckBackGroundThread checkBG = null;
+        public CheckACKThread checkACK = null;
 
-        
+        public delegate void d_logMSG(String msgType, String msg);
+        public delegate void d_startCMD();
+        public delegate void d_controlCMD(String cmd_string);
+        public delegate void d_exitCMD();
+        public delegate int d_getPortNum(String ClientID);
+        public delegate DateTime d_getTime(int portNum);
+        public delegate void d_setTime(DateTime t, int portNum);
+
+        public d_setTime _setTime;
+        public d_getTime _getTime;
+        public d_getPortNum _getPortNum;
+        public d_logMSG _logMSG;
+        public d_controlCMD _controlCMD;
+        public d_startCMD _startCMD;
+        public d_exitCMD _exitCMD;
 
         private Process proc_cmd;
         private ProcessStartInfo startInfo;
-        
+
         public CloudPhoneWindow()
         {
             InitializeComponent();
@@ -75,11 +88,19 @@ namespace Server
             isConnected = false;
             notifyIcon.ContextMenuStrip = trayMenuStrip;
 
-            _logMSG = new logMSGd(logMSG);
+
+
+            _logMSG = new d_logMSG(logMSG);
+            _controlCMD = new d_controlCMD(ControlCMD);
+            _startCMD = new d_startCMD(startCMD);
+            _exitCMD = new d_exitCMD(exitCMD);
+            _getPortNum = new d_getPortNum(getPortNum);
+            _getTime = new d_getTime(getTime);
+            _setTime = new d_setTime(setTime);
 
             proc_cmd = new Process();
             startInfo = new ProcessStartInfo();
-
+            Dict_ClientID = new Dictionary<String, int>();
             startInfo.FileName = "cmd.exe";
             startInfo.UseShellExecute = false;
             startInfo.RedirectStandardInput = true;
@@ -90,14 +111,12 @@ namespace Server
 
             proc_cmd.EnableRaisingEvents = false;
             proc_cmd.StartInfo = startInfo;
-            
-
         }
 
         // 종료시 처리 ( X를 눌렀을 때 최소화만 시킴)
         private void CloudPhoneWindow_FormClosing(object sender, FormClosingEventArgs e)
         {
-            
+
             e.Cancel = true;
             this.Visible = false;
         }
@@ -118,54 +137,35 @@ namespace Server
         private void TrayMenu_Exit_Click(object sender, EventArgs e)
         {
             notifyIcon.Visible = false;
-          
             isConnected = false;
+
             if (serverThread != null && serverThread.IsAlive)
             {
-
-                clientThreadList.Clear();
-                clientUDPThreadList.Clear();
-
-                if (tcpClient != null) // tcpListener 클래스, TCP 쓰레드 멈춤
+                if (Dict_Client.Count > 0)
                 {
-                    if (tcpThread != null)
+                    foreach (KeyValuePair<int, ClientData> data in Dict_Client)
                     {
-                        con.isRunning = false;
-                        tcpThread.Abort();
-                        tcpThread = null;
-                    }
+                        // allow the worker thread to do some work:
+                        Thread.Sleep(1);
+                        // Request that the worker thread stop itself:
+                        data.Value._UdpThreadClass.RequestStop();
+                        // Use the Join method to block the current thread 
+                        // until the object's thread terminates.
+                        data.Value.UDPThread.Abort();
 
-                    tcpClient.Stop();
-                    logMSG("info", "tcpClientStop");
-                    tcpClient = null;
+                        Thread.Sleep(1);
+                        data.Value._AckThreadClass.RequestStop();
+                        data.Value.ACKThread.Abort();
+                    }
                 }
 
-                if (udpSock != null) // udp Socket, UDP 쓰레드(Back Ground) 멈춤
-                {
-                    if (udpThread != null)
-                    {
-                        checkBG.isRunning = false;
-                        udpThread.Abort();
-                        udpThread = null;
-                    }
-
-                    udpSock.Close();
-                    udpSock = null;
-                }
-
+                Thread.Sleep(1);
                 isRunning = false;
                 serverThread.Abort(); // 써버 쓰레드 종료
                 serverThread = null;
-
-                logMSG("info", "서버 OFF, CloudPhoneWindow.btn_stop_Click");
-
-                EndThreading(); // 검사하던 쓰레드들도 다 종료
+                logMSG("info", "Exit");
             }
-            else
-            {
-                logMSG("warn", "서버가 실행되어 있지 않습니다");
-            }
-           
+
             String processName = "Server";
             Process[] processes = Process.GetProcessesByName(processName);
 
@@ -180,13 +180,13 @@ namespace Server
 
         private void CloudPhoneWindow_FormClosed(object sender, FormClosedEventArgs e)
         {
-               
+
         }
 
         private void btn_start_Click(object sender, EventArgs e)
         {
             /* 멀티 쓰레딩 시작 */
-            logMSG("info", "서버 시작. btn_start_Click");
+            //  logMSG("info", "서버 시작. btn_start_Click");
 
             if (isConnected)
             {
@@ -195,7 +195,7 @@ namespace Server
             else
             {
                 isConnected = true;
-                logMSG("info", "서버 쓰레드 생성, btn_start_Click -> CreateThread");
+                //   logMSG("info", "서버 쓰레드 생성, btn_start_Click -> CreateThread");
                 serverThread = new Thread(new ThreadStart(ListenerThread));
                 serverThread.Start();
             }
@@ -207,115 +207,161 @@ namespace Server
             {
                 IPHostEntry ipHost = Dns.Resolve("192.168.0.16");
                 IPAddress ipAddr = ipHost.AddressList[0];
-                tcpClient = new TcpListener(ipAddr, 20000);
+                tcpClient = new TcpListener(ipAddr, tcpPortNum);
+                udpSock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
                 tcpClient.Start();
-                logMSG("info", "TCP 클라이언트 대기중... CloudPhoneTestServer.ListenerThread");
                 isRunning = true;
+
+                db = new DBConnect(this);
+                con = new ConnectHandler(this);
+                checkACK = new CheckACKThread(this, avdPortNum);
+
+                Dict_Client = new Dictionary<int, ClientData>();
+                // 클라이언트의 연결 요청 확인
+                logMSG("info", "TCP 클라이언트 대기중... CloudPhoneTestServer.ListenerThread");
 
                 while (isRunning)
                 {
-                    // 클라이언트의 연결 요청 확인
+                    clientData = new ClientData();
+                    clientData.AVDPortNum = avdPortNum;
+
                     while (!tcpClient.Pending())
                     {
-                        if (isRunning == false) tcpClient.Stop();
+                        if (isRunning == false)
+                        {
+                            tcpClient.Server.Close(0);
+                            tcpClient.Stop();
+                            tcpClient = null;
+                        }
                         Thread.Sleep(100);
                     }
-                    logMSG("info", "클라이언트의 요청 발견... CloudPhoneTestServer.ListenerThread");
-                    con = new ConnectHandler(this);
-                    db = new DBConnect(this);
-                    logMSG("info", "TCP 클라이언트 통신용 쓰레드 생성 CloudPhoneTestServer new ConnectionHandler");
+
+                    clientNum += 1;
+                    //logMSG("info", "클라이언트의 요청 발견... CloudPhoneTestServer.ListenerThread");
+
+                    // logMSG("info", "TCP 클라이언트 통신용 쓰레드 생성 CloudPhoneTestServer new ConnectionHandler");
                     con.threadListener = this.tcpClient;
+
                     tcpThread = new Thread(new ThreadStart(con.clientHandler));
                     tcpThread.Start();
-                    clientThreadList.Add(tcpThread);
+                    logMSG("info", "tcpThread 시작");
 
                     Thread.Sleep(2000);
-                    
+
                     // TCP로 메시지를 받았으면 바로 BackGroundThread 실행(UDP)
-                    logMSG("info", "UDP Thread 실행 준비");
-                    String ip = con.ip;
-                    String clientID = con.clientID;
+                    //logMSG("info", "UDP Thread 실행 준비");
+
+                    setClientInfo(con.ip, con.clientID, clientData);
+
                     // DB 에 클라이언트 ID가 있는 지 체크하고 등록한다.
-                    db.CheckClientID(clientID);
+                    db.CheckClientID(clientData.ClientID);
+                    Dict_ClientID.Add(clientData.ClientID, avdPortNum);
 
-                    StartAVD(0);
+                    ACKThread = new Thread(new ThreadStart(checkACK.SendAckToClient));
 
-                    udpSock = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-                    
-                    IPHostEntry _ipHost = Dns.Resolve(ip);
+                    StartAVD(avdPortNum++);
+
+                    ACKThread.Start();
+
+                    logMSG("info", "ACKThread 시작");
+
+                    IPHostEntry _ipHost = Dns.Resolve(clientData.ClientIP);
                     IPAddress _ipAddr = _ipHost.AddressList[0];
-                    IPEndPoint ipep = new IPEndPoint(_ipAddr, 20001);
+                    IPEndPoint ipep = new IPEndPoint(_ipAddr, udpPortNum);
+
                     checkBG = new CheckBackGroundThread(this, udpSock, ipep);
                     udpThread = new Thread(new ThreadStart(checkBG.udpCheckbg));
-
-                    logMSG("info", "UDP 클라이언트 통신용 쓰레드 생성... CheckBackGroundThread 실행");
+                    //logMSG("info", "UDP 클라이언트 통신용 쓰레드 생성... CheckBackGroundThread 실행");
                     udpThread.Start();
-                    clientUDPThreadList.Add(udpThread);
+                    logMSG("info", "udpThread 시작");
+
+                    // ClientData Set
+                    clientData._TcpThreadClass = con;
+                    clientData.TCPThread = tcpThread;
+                    clientData.ACKThread = ACKThread;
+                    clientData._AckThreadClass = checkACK;
+                    clientData._UdpThreadClass = checkBG;
+                    clientData.UDPThread = udpThread;
+
+                    Dict_Client.Add((avdPortNum - 1), clientData);
+
                     Thread.Sleep(300);
-
                 }
-
-                tcpClient.Stop();
-                udpSock.Close();
 
             }
             catch (Exception e)
             {
                 logMSG("error", "ListenerThread : " + e.Message);
+                isRunning = false;
+                isConnected = false;
             }
+            finally // TCP, UDP 종료
+            {
+                if (tcpClient != null)
+                {
+                    try
+                    {
+                       // tcpClient.Server.Shutdown(SocketShutdown.Both);
+                    }
+                    catch (Exception e)
+                    {
+                        logMSG("error", "tcpClient Shutdown Err : " + e.Message);
+                    }
+                    finally
+                    {
+                        tcpClient.Server.Close(0);
+                        tcpClient.Stop();
+                        
+                        tcpClient = null;
+                    }
+                }
+
+                if (udpSock != null)
+                {
+                   // udpSock.Shutdown(SocketShutdown.Both);
+                    udpSock.Close();
+                    udpSock = null;
+                }
+            }
+        }
+
+        public void setClientInfo(String ip, String clientID, ClientData d)
+        {
+            d.ClientID = clientID;
+            d.ClientIP = ip;
         }
 
         private void btn_stop_Click(object sender, EventArgs e)
         {
             /* 쓰레드 끝 */
-            int i ;
             isConnected = false;
-            if (tcpClient != null)
-            {
-                tcpClient.Stop();
-            }
 
             if (serverThread != null && serverThread.IsAlive)
             {
-                
-                clientThreadList.Clear();
-                clientUDPThreadList.Clear();
-
-                if (tcpClient != null) // tcpListener 클래스, TCP 쓰레드 멈춤
+                if (Dict_Client.Count > 0)
                 {
-                    if (tcpThread != null)
-                    {
-                        con.isRunning = false;
-                        tcpThread.Abort();
-                        tcpThread = null;
-                    }
 
-                    logMSG("info", "tcpClientStop");
-                    
-                    tcpClient.Stop();
-                    tcpClient = null;
+                    foreach (KeyValuePair<int, ClientData> data in Dict_Client)
+                    {
+                        Thread.Sleep(1);
+                        data.Value._UdpThreadClass.RequestStop();
+                        data.Value.UDPThread.Abort();
+
+                        Thread.Sleep(1);
+                        data.Value._AckThreadClass.RequestStop();
+                        data.Value.ACKThread.Abort();
+
+                    }
                 }
 
-                if (udpSock != null) // udp Socket, UDP 쓰레드(Back Ground) 멈춤
-                {
-                    if (udpThread != null)
-                    {
-                        checkBG.isRunning = false;
-                        udpThread.Abort();
-                        udpThread = null;
-                    }
-                    
-                    udpSock.Close();
-                    udpSock = null;
-                }
-
+                Thread.Sleep(1);
                 isRunning = false;
-                serverThread.Abort(); // 써버 쓰레드 종료
+                serverThread.Abort();
+                //serverThread.Join(); // 써버 쓰레드 종료
                 serverThread = null;
 
                 logMSG("info", "서버 OFF, CloudPhoneWindow.btn_stop_Click");
-                
-                EndThreading(); // 검사하던 쓰레드들도 다 종료
+
             }
             else
             {
@@ -323,168 +369,51 @@ namespace Server
             }
         }
 
-        // 각종 검사하는 쓰레드 시작
-        private void StartThreading()
+        public DateTime getTime(int portNum)
         {
-
-            /*
-             *  쓰레드 시작
-             *  센서 값 검사하는(받아서 쏘아주는) 쓰레드 시작
-             */
-
+            return Dict_Client[portNum]._AckThreadClass.getTime();
         }
 
-        // Client Login Process
-        public bool ClientLogin(String clientID)
+        public void setTime(DateTime t, int portNum)
         {
-            logMSG("info", "CloudPhoneWindow - ClientLogin");
-            clientIDList.Add(clientID);
-            return  db.CheckClientID(clientID);
+            Dict_Client[portNum]._AckThreadClass.setTime(t);
         }
 
-        // Client Logout Process
-        public void ClientLogout(String clientID)
+        public int getPortNum(String ClientID)
         {
-            logMSG("info", "CloudPhoneWindow - ClientLogout");
-            int index = clientIDList.IndexOf(clientID);
-
-            // index를 이용하여 Thread를 받아서 쓰레드 종료시키고, 그에 관련된 쓰레드들도 다 종료시킨다.(센서값)
-            IEnumerator e = clientThreadList.GetEnumerator();
-
-            for (int i = 0; i < index; i++)
-            {
-                e.MoveNext();
-            }
-
-            Thread obj = (Thread)e.Current;
-            obj.Abort();
-            clientThreadList.RemoveAt(index);
-            clientUDPThreadList.RemoveAt(index);
-            clientIDList.RemoveAt(index);
+            return Dict_ClientID[ClientID];
         }
 
-        // 검사 쓰레드 종료
-        public void EndThreading()
-        {
-
-
-        }
-
-        // AVD Method ,  avdmsg[] = { { clientNum } , {executeMSG } , {intData or strData} } -> strData는 좀 더 정확하게 수정요망
-        public void DecideAVDMsg(String AVDMsg)
-        {
-            logMSG("info", "CloudPhoneWindow - DecideAVDMsg");
-            String[] avdmsg = AVDMsg.Split(',');
-            int toNum = Convert.ToInt32(avdmsg[0]);
-
-            if (avdmsg[1] == "start")
-            {
-                logMSG("info", "CloudPhoneWindow - DecideAVDMsg : start");
-                StartAVD(toNum);
-            }
-            
-            else if (avdmsg[1] == "exit")
-            {
-                logMSG("info", "CloudPhoneWindow - DecideAVDMsg : exit"); 
-                ExitAVD(toNum);
-            }
-
-            else if (avdmsg[1] == "create")
-            {
-                logMSG("info", "CloudPhoneWindow - DecideAVDMsg : create");
-                CreateAVD(toNum, avdmsg[2]);
-            }
-
-            else if (avdmsg[1] == "remove")
-            {
-                logMSG("info", "CloudPhoneWindow - DecideAVDMsg : remove"); 
-                RemoveAVD(toNum, avdmsg[2]);
-            }
-        }
-        
         // AVD 시작
         public void StartAVD(int ClientNum)
         {
-            String cmd_string = @"start emulator -avd haxm_test -sdcard ""D:\Program Files\Java\adt\adt-bundle-windows-x86_64-20140321\sdk\img\sdcard.iso"" -gpu off";
-           // String cmd_string = @"emulator -avd my_android";
-            logMSG("info", cmd_string);
+            String cmd_string = @"start emulator -avd client_dev -sdcard ""D:\Program Files\Java\adt\adt-bundle-windows-x86_64-20140321\sdk\img\sdcard.iso"" -port " + ClientNum + " -gpu off";
+            // String cmd_string = @"emulator -avd my_android";
+            // logMSG("info", cmd_string);
+            startCMD();
             ControlCMD(cmd_string);
-            Thread.Sleep(26000);
-            String chmod = @"adb shell chmod 777 ""/dev/graphics/fb0""";
+            exitCMD();
+            Thread.Sleep(24000);
+            String chmod = @"adb shell chmod 777 ""/dev/graphics/fb0"""; // frame buffer 권한주기
             logMSG("info", chmod);
+            startCMD();
             ControlCMD(chmod);
-
+            exitCMD();
         }
 
-        // AVD 종료 - 생각해보니깐 따로 프로세스 돌아가는건데 종료할 필요가 없다 ...
-        public void ExitAVD(int ClientNum) 
+        public void startCMD()
         {
-            String cmd_string = "";
-
-            ControlCMD(cmd_string);
-        }
-
-        // AVD 생성
-        public void CreateAVD(int ClientNum, String Version)
-        {
-            String cmd_string = "";
-            
-            ControlCMD(cmd_string);
-        }
-
-        // AVD 삭제
-        public void RemoveAVD(int ClientNum, String Version) 
-        {
-            String cmd_string = "";
-
-            ControlCMD(cmd_string);
-
-        }
-
-        // ADB를 통해 AVD로 명령어 전달(센서값) , SensorType : ACTION / KECODE / GPS / GYRO / BATTERY , str -> SensorValue 
-        public void SensorValueToAVD(String SensorType, String str)
-        {
-            String cmd_string = "";
-
-            if (SensorType == "ACTION")
-            {
-                
-            }
-            else if (SensorType == "KEYCODE")
-            {
-
-            }
-            else if (SensorType == "GPS")
-            {
-
-            }
-            else if (SensorType == "GYRO")
-            {
-
-            }
-            else if (SensorType == "BATTERY")
-            {
-
-            }
-
-            ControlCMD(cmd_string);
-
+            proc_cmd.Start();
         }
 
         public void ControlCMD(String cmd_Msg)
         {
             try
             {
-                logMSG("info", "ControlCMD : " + cmd_Msg);
+                //logMSG("info", "ControlCMD : " + cmd_Msg);
                 // CMD에 입력
-                proc_cmd.Start();
+
                 proc_cmd.StandardInput.Write(cmd_Msg + Environment.NewLine);
-                proc_cmd.StandardInput.Close();
-               // ret = proc_cmd.StandardOutput.ReadToEnd();
-               // ret_buf = ret.Substring(ret.IndexOf(cmd_Msg) + cmd_Msg.Length);
-               // logMSG("info", "ControlCMD Return String : " + ret_buf);
-                proc_cmd.WaitForExit();
-                proc_cmd.Close();
 
             }
 
@@ -492,7 +421,13 @@ namespace Server
             {
                 logMSG("error", "ControlCMD Error : " + e.Message);
             }
+        }
 
+        public void exitCMD()
+        {
+            proc_cmd.StandardInput.Close();
+            proc_cmd.WaitForExit();
+            proc_cmd.Close();
         }
 
         // LogEnd
@@ -506,12 +441,12 @@ namespace Server
         private void logMSG(String msgType, String msg)
         {
             String date = System.DateTime.Now.ToString("MM-dd hh:mm:ss ");
-            
-            if(msgType == "info")
+
+            if (msgType == "info")
                 Log_List.Items.Add(new ListBoxItem(Color.Green, "Info : " + date + msg));
-            else if(msgType == "warn")
+            else if (msgType == "warn")
                 Log_List.Items.Add(new ListBoxItem(Color.DarkOrange, "Warning : " + date + msg));
-            else if(msgType == "error")
+            else if (msgType == "error")
                 Log_List.Items.Add(new ListBoxItem(Color.Red, "Error : " + date + msg));
 
             logEnd();
@@ -545,5 +480,78 @@ namespace Server
 
         public Color ItemColor { get; set; }
         public String Message { get; set; }
+    }
+
+    public class ClientData
+    {
+        private Thread tcpThread;
+        private Thread udpThread;
+        private Thread ackThread;
+        private CheckACKThread _ackThreadClass;
+        private CheckBackGroundThread _udpThreadClass;
+        private ConnectHandler _tcpThreadClass;
+        private int avdPortNum;
+        private String clientID;
+        private String clientIP;
+
+        public Thread TCPThread
+        {
+            get { return tcpThread; }
+            set { tcpThread = value; }
+        }
+        public Thread UDPThread
+        {
+            get { return udpThread; }
+            set { udpThread = value; }
+        }
+        public Thread ACKThread
+        {
+            get { return ackThread; }
+            set { ackThread = value; }
+        }
+        public CheckACKThread _AckThreadClass
+        {
+            get { return _ackThreadClass; }
+            set { _ackThreadClass = value; }
+        }
+        public CheckBackGroundThread _UdpThreadClass
+        {
+            get { return _udpThreadClass; }
+            set { _udpThreadClass = value; }
+        }
+        public ConnectHandler _TcpThreadClass
+        {
+            get { return _tcpThreadClass; }
+            set { _tcpThreadClass = value; }
+        }
+        public int AVDPortNum
+        {
+            get { return avdPortNum; }
+            set { avdPortNum = value; }
+        }
+        public String ClientID
+        {
+            get { return clientID; }
+            set { clientID = value; }
+        }
+        public String ClientIP
+        {
+            get { return clientIP; }
+            set { clientIP = value; }
+        }
+
+        public ClientData()
+        {
+            tcpThread = null;
+            udpThread = null;
+            ackThread = null;
+            _ackThreadClass = null;
+            _udpThreadClass = null;
+            _tcpThreadClass = null;
+            avdPortNum = 0;
+            clientID = null;
+            clientIP = null;
+        }
+
     }
 }
